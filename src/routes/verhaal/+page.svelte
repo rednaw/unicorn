@@ -107,11 +107,14 @@
 			gsap.set(drawingsEl, { autoAlpha: 0, scale: 0.94 });
 			gsap.set(poemEl, { autoAlpha: 0, y: 30 });
 
+			// Per-act scroll length. Long enough that the poem-reveal dwell
+			// (~half the timeline) gives roughly a full viewport of comfortable
+			// reading distance, even on small screens with eight-line poems.
 			const tl = gsap.timeline({
 				scrollTrigger: {
 					trigger: act,
 					start: 'top top',
-					end: '+=2200',
+					end: '+=3600',
 					scrub: 0.6,
 					pin: true,
 					anticipatePin: 1
@@ -119,11 +122,14 @@
 			});
 
 			tl.to(drawingsEl[0], { autoAlpha: 1, scale: 1, duration: 0.5 })
-				.to(drawingsEl[0], { autoAlpha: 0.18, duration: 0.4 }, '+=0.5')
-				.to(drawingsEl[1], { autoAlpha: 1, scale: 1, duration: 0.5 }, '<')
-				.to(poemEl, { autoAlpha: 1, y: 0, duration: 0.5 }, '+=0.1')
-				.to({}, { duration: 0.6 })
-				.to([drawingsEl, poemEl, titleEl], { autoAlpha: 0, duration: 0.3 });
+				.to(drawingsEl[1], { autoAlpha: 1, scale: 1, duration: 0.5 }, '+=0.6')
+				.to(drawingsEl[0], { autoAlpha: 0.35, duration: 0.4 }, '<')
+				.to(poemEl, { autoAlpha: 1, y: 0, duration: 0.6 }, '+=0.2')
+				// Long dwell on the poem at full opacity — this is the act's
+				// "reading time", and is what makes the section feel paced rather
+				// than flashy. Roughly half of the act's total scroll distance.
+				.to({}, { duration: 3.5 })
+				.to([drawingsEl, poemEl, titleEl], { autoAlpha: 0, duration: 0.4 });
 		});
 
 		ScrollTrigger.refresh();
