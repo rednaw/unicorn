@@ -105,7 +105,8 @@
 		// so their own click handlers always win.
 		if (pointers.size === 0) {
 			const target = e.target as HTMLElement;
-			if (target.closest('.speaker, .atelier__reset, .atelier__back, .minimap')) return;
+			if (target.closest('.speaker, .atelier__reset, .atelier__back, .atelier__close, .minimap'))
+				return;
 		}
 		pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 		try {
@@ -235,6 +236,15 @@
 		raf = requestAnimationFrame(updateAudio);
 	}
 
+	function stop() {
+		started = false;
+		cancelAnimationFrame(raf);
+		raf = 0;
+		for (const a of audioEls) a.pause();
+		// Silence all gain nodes so a subsequent start() begins from quiet.
+		for (const g of gainNodes) g.gain.value = 0;
+	}
+
 	onMount(() => {
 		resetView();
 		const onResize = () => {
@@ -275,6 +285,8 @@
 			</p>
 			<button type="button" class="atelier__begin" onclick={start}>Binnen</button>
 		</div>
+	{:else}
+		<button type="button" class="atelier__close" onclick={stop} aria-label="Sluiten">×</button>
 	{/if}
 
 	<div class="atelier__audio" aria-hidden="true">
@@ -654,7 +666,7 @@
 	.atelier__reset {
 		position: absolute;
 		top: 1rem;
-		right: 1rem;
+		right: 4rem;
 		appearance: none;
 		background: rgba(255, 255, 255, 0.6);
 		border: 1px solid rgba(0, 0, 0, 0.2);
@@ -667,6 +679,31 @@
 		backdrop-filter: blur(8px);
 		-webkit-backdrop-filter: blur(8px);
 		z-index: 20;
+	}
+
+	.atelier__close {
+		position: absolute;
+		top: 0.5rem;
+		right: 0.75rem;
+		z-index: 30;
+		appearance: none;
+		background: rgba(255, 255, 255, 0.55);
+		border: 1px solid rgba(0, 0, 0, 0.15);
+		width: 2.5rem;
+		height: 2.5rem;
+		border-radius: 9999px;
+		font-size: 1.6rem;
+		line-height: 1;
+		color: var(--color-ink);
+		cursor: pointer;
+		backdrop-filter: blur(8px);
+		-webkit-backdrop-filter: blur(8px);
+		opacity: 0.7;
+		transition: opacity 200ms ease;
+	}
+
+	.atelier__close:hover {
+		opacity: 1;
 	}
 
 	.minimap {
