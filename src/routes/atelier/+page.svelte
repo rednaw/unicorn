@@ -6,7 +6,7 @@
 	// Canvas dimensions — large worktable that the viewer pans/zooms over.
 	const CANVAS_W = 2200;
 	const CANVAS_H = 1400;
-	const MIN_ZOOM = 0.35;
+	const MIN_ZOOM = 0.25;
 	const MAX_ZOOM = 2.5;
 	const PROX_RADIUS = 520; // canvas-px distance over which a track is audible
 
@@ -42,6 +42,11 @@
 	let dragging = $state(false);
 	let dragStart = { x: 0, y: 0, tx: 0, ty: 0 };
 
+	// Multi-pointer tracking for pinch-zoom on touch.
+	const pointers = new Map<number, { x: number; y: number }>();
+	type Pinch = { midX: number; midY: number; dist: number };
+	let pinch: Pinch | undefined;
+
 	// Clamp the pan so we never lose the canvas off-screen.
 	function clamp() {
 		if (!viewport) return;
@@ -57,41 +62,110 @@
 		ty = Math.max(Math.min(ty, Math.max(maxY, minY)), Math.min(maxY, minY));
 	}
 
+	function applyZoomAt(viewportX: number, viewportY: number, nextZoom: number) {
+		const clamped = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, nextZoom));
+		// Keep the point under (viewportX, viewportY) stationary.
+		tx = viewportX - ((viewportX - tx) * clamped) / zoom;
+		ty = viewportY - ((viewportY - ty) * clamped) / zoom;
+		zoom = clamped;
+		clamp();
+	}
+
+	function startPinch() {
+		if (!viewport || pointers.size < 2) return;
+		const [a, b] = Array.from(pointers.values()).slice(0, 2);
+		const rect = viewport.getBoundingClientRect();
+		pinch = {
+			midX: (a.x + b.x) / 2 - rect.left,
+			midY: (a.y + b.y) / 2 - rect.top,
+			dist: Math.hypot(b.x - a.x, b.y - a.y)
+		};
+	}
+
+	function updatePinch() {
+		if (!viewport || !pinch || pointers.size < 2) return;
+		const [a, b] = Array.from(pointers.values()).slice(0, 2);
+		const rect = viewport.getBoundingClientRect();
+		const midX = (a.x + b.x) / 2 - rect.left;
+		const midY = (a.y + b.y) / 2 - rect.top;
+		const dist = Math.hypot(b.x - a.x, b.y - a.y);
+
+		// 1. Pan by midpoint translation.
+		tx += midX - pinch.midX;
+		ty += midY - pinch.midY;
+		// 2. Zoom around the current midpoint by the distance change.
+		applyZoomAt(midX, midY, zoom * (dist / pinch.dist));
+
+		pinch = { midX, midY, dist };
+	}
+
 	function onPointerDown(e: PointerEvent) {
-		// Only start a drag on the canvas surface, not on a clickable element.
-		const target = e.target as HTMLElement;
-		if (target.closest('button, a, .speaker')) return;
-		dragging = true;
-		dragStart = { x: e.clientX, y: e.clientY, tx, ty };
-		(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+		// Drawings allow drag-or-tap (the browser auto-suppresses click after
+		// movement). Only UI chrome and the audio speaker toggles are exempt,
+		// so their own click handlers always win.
+		if (pointers.size === 0) {
+			const target = e.target as HTMLElement;
+			if (target.closest('.speaker, .atelier__reset, .atelier__back, .minimap')) return;
+		}
+		pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+		try {
+			(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+		} catch {}
+
+		if (pointers.size === 1) {
+			dragging = true;
+			dragStart = { x: e.clientX, y: e.clientY, tx, ty };
+		} else if (pointers.size === 2) {
+			dragging = false;
+			startPinch();
+		}
 	}
 
 	function onPointerMove(e: PointerEvent) {
-		if (!dragging) return;
-		tx = dragStart.tx + (e.clientX - dragStart.x);
-		ty = dragStart.ty + (e.clientY - dragStart.y);
-		clamp();
+		if (!pointers.has(e.pointerId)) return;
+		pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+		if (pointers.size >= 2) {
+			updatePinch();
+		} else if (dragging) {
+			tx = dragStart.tx + (e.clientX - dragStart.x);
+			ty = dragStart.ty + (e.clientY - dragStart.y);
+			clamp();
+		}
 	}
 
 	function onPointerUp(e: PointerEvent) {
-		dragging = false;
+		pointers.delete(e.pointerId);
 		try {
 			(e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
 		} catch {}
+
+		if (pointers.size < 2) pinch = undefined;
+		if (pointers.size === 0) {
+			dragging = false;
+		} else if (pointers.size === 1) {
+			// Lift one finger of a pinch — continue as a drag with the survivor.
+			const [p] = pointers.values();
+			dragStart = { x: p.x, y: p.y, tx, ty };
+			dragging = true;
+		}
 	}
 
 	function onWheel(e: WheelEvent) {
-		e.preventDefault();
 		if (!viewport) return;
+		e.preventDefault();
 		const rect = viewport.getBoundingClientRect();
 		const cx = e.clientX - rect.left;
 		const cy = e.clientY - rect.top;
-		const next = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom * (e.deltaY < 0 ? 1.08 : 0.93)));
-		// Keep the point under the cursor stable.
-		tx = cx - ((cx - tx) * next) / zoom;
-		ty = cy - ((cy - ty) * next) / zoom;
-		zoom = next;
-		clamp();
+		// macOS trackpad pinch fires wheel events with ctrlKey set; treat that
+		// (and a real Ctrl+wheel) as zoom. Plain wheel = pan.
+		if (e.ctrlKey || e.metaKey) {
+			applyZoomAt(cx, cy, zoom * Math.exp(-e.deltaY * 0.01));
+		} else {
+			tx -= e.deltaX;
+			ty -= e.deltaY;
+			clamp();
+		}
 	}
 
 	// Zoom-to-fit a drawing centered.
@@ -115,9 +189,13 @@
 		if (!viewport) return;
 		const vw = viewport.clientWidth;
 		const vh = viewport.clientHeight;
-		zoom = Math.min(vw / CANVAS_W, vh / CANVAS_H) * 0.95;
+		// Fit the canvas to the viewport, but never below MIN_ZOOM —
+		// on small phone screens "fit" would render the pieces unreadably small.
+		const fit = Math.min(vw / CANVAS_W, vh / CANVAS_H) * 0.95;
+		zoom = Math.max(MIN_ZOOM, fit);
 		tx = (vw - CANVAS_W * zoom) / 2;
 		ty = (vh - CANVAS_H * zoom) / 2;
+		clamp();
 	}
 
 	// Proximity audio. RAF loop computes each track's gain from distance.
@@ -192,8 +270,8 @@
 			<p class="atelier__eyebrow">Een oneindige werktafel</p>
 			<h1 class="atelier__title">{artist.name}</h1>
 			<p class="atelier__hint">
-				Sleep om te verplaatsen, scrol om in te zoomen, klik op een tekening om die te focussen.
-				Het geluid stijgt naarmate je een luidspreker nadert.
+				Sleep om te verplaatsen, scrol of knijp om te zoomen, tik op een tekening om die te
+				focussen. Het geluid stijgt naarmate je een luidspreker nadert.
 			</p>
 			<button type="button" class="atelier__begin" onclick={start}>Binnen</button>
 		</div>
@@ -329,6 +407,7 @@
 		background: #c9c0a8;
 		color: #1a1814;
 		height: 100vh;
+		height: 100svh; /* iOS Safari: avoid jumping under the dynamic chrome */
 		overflow: hidden;
 		position: relative;
 		font-family: var(--font-serif);
@@ -337,6 +416,9 @@
 		background-size:
 			8px 8px,
 			100% 100%;
+		/* Prevent the browser from intercepting touch gestures we handle ourselves. */
+		touch-action: none;
+		overscroll-behavior: none;
 	}
 
 	.atelier__overlay {
@@ -393,7 +475,8 @@
 		background: var(--color-ink);
 		border: none;
 		color: var(--color-paper);
-		padding: 0.85rem 2.5rem;
+		padding: 1.1rem 2.75rem;
+		min-height: 48px; /* iOS HIG: comfortable tap target */
 		font-family: var(--font-sans);
 		font-size: 0.78rem;
 		letter-spacing: 0.24em;
