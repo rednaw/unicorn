@@ -1,16 +1,17 @@
-# Unicorn — Artist Prototype, Four Variants
+# Unicorn — Artist Prototype, Five Variants
 
 A SvelteKit prototype presenting one (fictional) artist's drawings, piano recordings,
-and poetry through **four contrasting design languages**. The same content runs through
+and poetry through **five contrasting design languages**. The same content runs through
 each variant so the design directions can be compared apples-to-apples.
 
-| Route        | Idea                                                     |
-| ------------ | -------------------------------------------------------- |
-| `/`          | Landing — artist intro and four variant cards            |
-| `/scroll/`   | Scroll-driven storytelling (Lenis + GSAP ScrollTrigger)  |
-| `/museum/`   | Quiet white-walls gallery with detail pages              |
-| `/editorial/`| Magazine-style spreads with drop caps and pull quotes    |
-| `/atelier/`  | Pannable + zoomable canvas with proximity-based audio    |
+| Route          | Idea                                                        |
+| -------------- | ----------------------------------------------------------- |
+| `/`            | Landing — artist intro and the five variant cards           |
+| `/museum/`     | Quiet white-walls gallery with detail pages                 |
+| `/verhaal/`    | Scroll-driven storytelling (Lenis + GSAP ScrollTrigger)     |
+| `/tijdschrift/`| Magazine-style spreads with drop caps and pull quotes       |
+| `/atelier/`    | Pannable + zoomable canvas with proximity-based audio       |
+| `/dagboek/`    | Reverse-chronological diary — polaroids, handwriting, music |
 
 ## Prerequisites
 
@@ -77,7 +78,7 @@ already exist.)
 1. Drop new files into `/static/drawings/`, `/static/audio/`, etc.
 2. Edit `src/lib/content.ts` — update the `drawings`, `tracks`, and `poems`
    arrays to point at the new paths and metadata.
-3. That's it. All four variants automatically pick up the new content.
+3. That's it. All five variants automatically pick up the new content.
 
 The shape is:
 

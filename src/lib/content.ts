@@ -1,5 +1,5 @@
 // Single source of truth for the prototype's content.
-// All four variants (/verhaal, /museum, /tijdschrift, /atelier) import from here.
+// All five variants (/museum, /verhaal, /tijdschrift, /atelier, /dagboek) import from here.
 // User-facing strings are in Dutch (the site language); code and types stay English.
 
 import { base } from '$app/paths';
@@ -40,6 +40,30 @@ export type Poem = {
 	rotation?: number;
 };
 
+/**
+ * A single dagboek (diary) entry. Images and music carry the entry; the poetry
+ * snippet, when present, is a single pasted-in fragment of one or two lines.
+ */
+export type DiaryEntry = {
+	id: string;
+	/** Display date in the upper-right stamp, e.g. "12 maart". */
+	dateLabel: string;
+	/** ISO-ish key used only for sort order — never displayed. */
+	sortKey: string;
+	/** Empty body marks a "niets" / blank day; render only the date stamp. */
+	body?: string;
+	/** Optional caption written under the (first) attached drawing. */
+	drawingCaption?: string;
+	/** Drawings to tape into the entry, in order. */
+	drawingIds?: string[];
+	/** A piece "today on the gramophone" — rendered as a luister-pill. */
+	trackId?: string;
+	/** A pasted-in poem fragment — kept deliberately short (1–2 lines). */
+	poemFragment?: { lines: string[]; author?: string };
+	/** Slight rotation applied to the entire entry card (deg). */
+	rotation?: number;
+};
+
 /** Resolve a /static path to one that respects the BASE_PATH GitHub Pages prefix. */
 const asset = (path: string) => `${base}${path}`;
 
@@ -50,7 +74,7 @@ export const artist = {
 hier zijn studies uit het publieke domein; de muziek bestaat uit fragmenten van
 pianowerken uit het publieke domein; de gedichten zijn Nederlandstalige verzen
 uit het publieke domein. Samen staan ze in voor een echt oeuvre — het prototype
-laat zien hoe vier verschillende ontwerptalen dat werk kunnen presenteren.`
+laat zien hoe vijf verschillende ontwerptalen dat werk kunnen presenteren.`
 };
 
 export const drawings: Drawing[] = [
@@ -223,6 +247,105 @@ export const poems: Poem[] = [
 	}
 ];
 
+/**
+ * Dagboek entries. Reverse-chronological by sortKey at render time.
+ * Tone: fragmentary, intimate, period-flavoured but year-agnostic. The drawing
+ * and the music are the centre of each entry; the poetry — when it appears at
+ * all — is a single short pasted-in scrap, never a full poem.
+ */
+export const entries: DiaryEntry[] = [
+	{
+		id: 'mar-14',
+		dateLabel: '14 maart',
+		sortKey: '03-14',
+		body: 'Weer niets afgemaakt vandaag. De spiegel is een vreemde geworden — ik teken hetzelfde gezicht steeds opnieuw, en steeds is het van iemand anders.',
+		drawingIds: ['self-portrait'],
+		drawingCaption: 'naar het raam toe, half licht',
+		rotation: -0.6
+	},
+	{
+		id: 'mar-12',
+		dateLabel: '12 maart',
+		sortKey: '03-12',
+		body: `Vanochtend de figuur naar Dürer hervat. De plooien in de kleding willen niet komen — ze blijven hangen waar ik ze niet wil. Maar de schouder zit goed, eindelijk.
+
+De Prelude op de plaat gezet, op zachtere stand. Drie maal achter elkaar, terwijl de hand bewoog. Wonderlijk hoe het potlood luistert wanneer de kamer wordt geluisterd.`,
+		drawingIds: ['figure-study'],
+		drawingCaption: 'drie uur, zes potlood',
+		trackId: 'rachmaninov-prelude',
+		poemFragment: { lines: ['Een nieuwe lente en een nieuw geluid'], author: 'Gorter' },
+		rotation: 0.8
+	},
+	{
+		id: 'mar-11',
+		dateLabel: '11 maart',
+		sortKey: '03-11'
+	},
+	{
+		id: 'mar-09',
+		dateLabel: '9 maart',
+		sortKey: '03-09',
+		body: 'De anatomie. Ik begrijp niet hoe da Vinci dit kon, met al die warmte. Ik werk in kou en zie alles helder, te helder. Een merel klopte vroeg in de morgen tegen het raam — een teken, of niets.',
+		drawingIds: ['anatomy-foetus'],
+		drawingCaption: 'pen en wassing, op te dun papier',
+		rotation: -1.1
+	},
+	{
+		id: 'mar-07',
+		dateLabel: '7 maart',
+		sortKey: '03-07',
+		body: `Vandaag aan het concert begonnen. Het is meer een herinnering aan een zaal dan een tekening: licht dat door iemands hoed valt, schouders die wachten op een toon.
+
+De Liebestraum erbij — maar half. Het stuk maakt me melancholiek voor iets dat ik niet bezit.`,
+		drawingIds: ['concert'],
+		drawingCaption: 'krijt, drie kwartier',
+		trackId: 'liszt-liebestraum',
+		rotation: 0.4
+	},
+	{
+		id: 'mar-05',
+		dateLabel: '5 maart',
+		sortKey: '03-05',
+		body: 'Te koud om de hand stil te houden.'
+	},
+	{
+		id: 'mar-03',
+		dateLabel: '3 maart',
+		sortKey: '03-03',
+		body: `Vroeg buiten geweest. Op het pad ten oosten van de molen zat een haas, doodstil. Ik had geen papier bij me, alleen het oog.
+
+Thuis later het beeld weergegeven, met aquarel deze keer. De pels is fout maar de oren staan.`,
+		drawingIds: ['hare'],
+		drawingCaption: 'uit het hoofd',
+		poemFragment: { lines: ['wat zien ik toch geren uw kopke flink'], author: 'Gezelle' },
+		rotation: -0.5
+	},
+	{
+		id: 'mar-01',
+		dateLabel: '1 maart',
+		sortKey: '03-01',
+		body: `Het paard van een buurman, vanmiddag in de stal. Slechts zilverstift, slechts twintig minuten, want hij werd onrustig.
+
+Chopin daarna, een Polonaise. Veel te grootsch voor wat ik gedaan had. Maar het paard verdiende muziek.`,
+		drawingIds: ['horse'],
+		drawingCaption: 'zilverstift, twintig minuten',
+		trackId: 'chopin-polonaise',
+		rotation: 0.7
+	},
+	{
+		id: 'feb-28',
+		dateLabel: '28 februari',
+		sortKey: '02-28'
+	},
+	{
+		id: 'feb-25',
+		dateLabel: '25 februari',
+		sortKey: '02-25',
+		body: 'Een nieuw schrift. De kaft is bruin, het papier dun. Ik beloof mezelf niets.',
+		rotation: -0.3
+	}
+];
+
 /** Variants metadata for the landing page. */
 export const variants = [
 	{
@@ -248,5 +371,11 @@ export const variants = [
 		title: 'Atelier',
 		tagline: 'Een oneindige werktafel',
 		rationale: 'Pannen en zoomen over verspreide werken — geluid stijgt naarmate je nadert.'
+	},
+	{
+		slug: 'dagboek',
+		title: 'Dagboek',
+		tagline: 'Aantekeningen rond elk werk',
+		rationale: 'Polaroids, korte handgeschreven notities en muziek uit de kamer — het werk als residu van het werken.'
 	}
 ] as const;
