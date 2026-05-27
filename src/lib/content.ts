@@ -72,7 +72,7 @@ export const artist = {
 	tagline: 'potloodtekeningen, pianoschetsen, fragmenten van poëzie',
 	bio: `Een fictieve kunstenaar die werkt in grafiet, geluid en vers. De voorbeelden
 hier zijn allemaal uit het publieke domein. Samen staan ze in voor een echt oeuvre
-— het prototype laat zien hoe vijf verschillende ontwerptalen dat werk kunnen presenteren.`
+— dit prototype laat vijf verschillende ontwerpstijlen zien om dat werk te presenteren.`
 };
 
 export const drawings: Drawing[] = [
