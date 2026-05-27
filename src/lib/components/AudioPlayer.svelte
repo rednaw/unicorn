@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Track } from '$lib/content';
+	import { claim, release } from './audio-bus';
 
 	type Variant = 'inline' | 'docked' | 'minimal';
 
@@ -21,6 +22,16 @@
 	let duration = $state(0);
 
 	const progress = $derived(duration > 0 ? (current / duration) * 100 : 0);
+
+	$effect(() => {
+		// Cleanup on unmount: stop playback and free the audio bus.
+		return () => {
+			if (audio) {
+				audio.pause();
+				release(audio);
+			}
+		};
+	});
 
 	function toggle() {
 		if (!audio) return;
@@ -50,11 +61,20 @@
 		src={track.src}
 		{autoplay}
 		preload="metadata"
-		onplay={() => (playing = true)}
-		onpause={() => (playing = false)}
+		onplay={() => {
+			playing = true;
+			if (audio) claim(audio);
+		}}
+		onpause={() => {
+			playing = false;
+			if (audio) release(audio);
+		}}
 		ontimeupdate={() => (current = audio?.currentTime ?? 0)}
 		onloadedmetadata={() => (duration = audio?.duration ?? 0)}
-		onended={() => (playing = false)}
+		onended={() => {
+			playing = false;
+			if (audio) release(audio);
+		}}
 	></audio>
 
 	<button
