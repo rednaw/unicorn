@@ -70,11 +70,9 @@ const asset = (path: string) => `${base}${path}`;
 export const artist = {
 	name: 'V. Solenne',
 	tagline: 'potloodtekeningen, pianoschetsen, fragmenten van poëzie',
-	bio: `Een fictieve kunstenaar die werkt in grafiet, geluid en vers. De tekeningen
-hier zijn studies uit het publieke domein; de muziek bestaat uit fragmenten van
-pianowerken uit het publieke domein; de gedichten zijn Nederlandstalige verzen
-uit het publieke domein. Samen staan ze in voor een echt oeuvre — het prototype
-laat zien hoe vijf verschillende ontwerptalen dat werk kunnen presenteren.`
+	bio: `Een fictieve kunstenaar die werkt in grafiet, geluid en vers. De voorbeelden
+hier zijn allemaal uit het publieke domein. Samen staan ze in voor een echt oeuvre
+— het prototype laat zien hoe vijf verschillende ontwerptalen dat werk kunnen presenteren.`
 };
 
 export const drawings: Drawing[] = [
