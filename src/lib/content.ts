@@ -226,16 +226,16 @@ export const poems: Poem[] = [
 /** Variants metadata for the landing page. */
 export const variants = [
 	{
-		slug: 'verhaal',
-		title: 'Verhaal',
-		tagline: 'Scrollend vertellen',
-		rationale: 'Een lineaire, filmische onthulling — scrollen is de enige interface.'
-	},
-	{
 		slug: 'museum',
 		title: 'Museum',
 		tagline: 'Stille witte-muren-galerij',
 		rationale: 'Royale witruimte, schreefletter, één werk tegelijk.'
+	},
+	{
+		slug: 'verhaal',
+		title: 'Verhaal',
+		tagline: 'Scrollend vertellen',
+		rationale: 'Een lineaire, filmische onthulling — scrollen is de enige interface.'
 	},
 	{
 		slug: 'tijdschrift',

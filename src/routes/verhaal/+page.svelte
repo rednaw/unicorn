@@ -170,8 +170,7 @@
 			<p class="scrollv__eyebrow">Drie bedrijven</p>
 			<h1 id="verhaal-title" class="scrollv__title">{artist.name}</h1>
 			<p class="scrollv__hint">
-				Dit stuk onthult zich terwijl je scrolt. Het geluid vervaagt tussen de bedrijven. Gebruik
-				een koptelefoon voor het geluid van de kamer.
+				Dit stuk onthult zich terwijl je scrolt. Het geluid vervaagt tussen de bedrijven.
 			</p>
 			<button type="button" class="scrollv__begin" onclick={start}>Begin</button>
 		</div>
