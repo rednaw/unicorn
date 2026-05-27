@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { base } from '$app/paths';
 	import AudioPlayer from '$lib/components/AudioPlayer.svelte';
+	import BackLink from '$lib/components/BackLink.svelte';
 	import { artist } from '$lib/content';
 	import { museum } from './museum-state.svelte';
 
@@ -9,7 +10,7 @@
 
 <div class="museum">
 	<header class="museum__header">
-		<a class="museum__home" href="{base}/" aria-label="Terug naar de prototype-index">←</a>
+		<BackLink theme="light" fixed={false} />
 		<div class="museum__brand">
 			<p class="museum__brand-eyebrow">Een retrospectief</p>
 			<h1 class="museum__brand-title">{artist.name}</h1>
@@ -41,18 +42,6 @@
 		gap: 1.5rem;
 		padding: 1.5rem clamp(1.5rem, 5vw, 3.5rem);
 		border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-	}
-
-	.museum__home {
-		font-size: 1.25rem;
-		color: var(--color-ink-soft);
-		text-decoration: none;
-		opacity: 0.7;
-		transition: opacity 200ms ease;
-	}
-
-	.museum__home:hover {
-		opacity: 1;
 	}
 
 	.museum__brand {

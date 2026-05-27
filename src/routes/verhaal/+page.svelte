@@ -2,6 +2,7 @@
 	import { base } from '$app/paths';
 	import { onMount } from 'svelte';
 	import { drawings, poems, tracks, artist } from '$lib/content';
+	import BackLink from '$lib/components/BackLink.svelte';
 
 	// Compose 3 "acts" — each act pairs ~2 drawings, a poem, and a track.
 	type Act = {
@@ -164,9 +165,10 @@
 </svelte:head>
 
 <div class="scrollv">
+	<BackLink theme="dark" />
+
 	{#if !started}
 		<div class="scrollv__overlay" role="dialog" aria-modal="true" aria-labelledby="verhaal-title">
-			<a class="scrollv__back" href="{base}/" aria-label="Terug naar de index">←</a>
 			<p class="scrollv__eyebrow">Drie bedrijven</p>
 			<h1 id="verhaal-title" class="scrollv__title">{artist.name}</h1>
 			<p class="scrollv__hint">
@@ -248,16 +250,6 @@
 		text-align: center;
 		padding: 2rem;
 		align-content: center;
-	}
-
-	.scrollv__back {
-		position: absolute;
-		top: 1.5rem;
-		left: 1.5rem;
-		color: #efe9da;
-		opacity: 0.5;
-		font-size: 1.25rem;
-		text-decoration: none;
 	}
 
 	.scrollv__eyebrow {

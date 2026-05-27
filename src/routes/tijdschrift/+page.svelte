@@ -2,6 +2,7 @@
 	import { base } from '$app/paths';
 	import { artist, drawings, poems, tracks } from '$lib/content';
 	import AudioPlayer from '$lib/components/AudioPlayer.svelte';
+	import BackLink from '$lib/components/BackLink.svelte';
 
 	// Pair each drawing with its companion poem (if any) and rotate through tracks.
 	const spreads = drawings.map((drawing, i) => ({
@@ -16,8 +17,9 @@
 </svelte:head>
 
 <div class="ed">
+	<BackLink theme="light" />
+
 	<header class="ed__masthead">
-		<a class="ed__home" href="{base}/" aria-label="Terug naar de index">←</a>
 		<div class="ed__mast-meta">
 			<span>Nr. 01</span>
 			<span>Voorjaar 2026</span>
@@ -122,19 +124,11 @@
 		padding: 0 clamp(1.5rem, 5vw, 4rem);
 	}
 
-	.ed__home {
-		position: absolute;
-		top: 1.5rem;
-		left: 1.5rem;
-		font-size: 1.25rem;
-		color: var(--color-ink-soft);
-		text-decoration: none;
-		opacity: 0.6;
-	}
-
 	.ed__masthead {
 		text-align: center;
 		position: relative;
+		/* Leave room under the fixed BackLink pill so the masthead meta line clears it. */
+		padding-top: 3.5rem;
 	}
 
 	.ed__mast-meta {

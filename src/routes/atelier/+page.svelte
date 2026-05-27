@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { base } from '$app/paths';
 	import { onMount } from 'svelte';
 	import { drawings, poems, tracks, artist } from '$lib/content';
+	import BackLink from '$lib/components/BackLink.svelte';
 
 	// Canvas dimensions — large worktable that the viewer pans/zooms over.
 	const CANVAS_W = 2200;
@@ -105,7 +105,7 @@
 		// so their own click handlers always win.
 		if (pointers.size === 0) {
 			const target = e.target as HTMLElement;
-			if (target.closest('.speaker, .atelier__reset, .atelier__back, .atelier__close, .minimap'))
+			if (target.closest('.speaker, .atelier__reset, .atelier__close, .minimap, .back'))
 				return;
 		}
 		pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
@@ -274,9 +274,10 @@
 </svelte:head>
 
 <div class="atelier">
+	<BackLink theme="light" />
+
 	{#if !started}
 		<div class="atelier__overlay" role="dialog" aria-modal="true">
-			<a class="atelier__back" href="{base}/" aria-label="Terug naar de index">←</a>
 			<p class="atelier__eyebrow">Een oneindige werktafel</p>
 			<h1 class="atelier__title">{artist.name}</h1>
 			<p class="atelier__hint">
@@ -444,16 +445,6 @@
 		text-align: center;
 		z-index: 100;
 		padding: 2rem;
-	}
-
-	.atelier__back {
-		position: absolute;
-		top: 1.5rem;
-		left: 1.5rem;
-		font-size: 1.25rem;
-		color: var(--color-ink-soft);
-		opacity: 0.6;
-		text-decoration: none;
 	}
 
 	.atelier__eyebrow {
