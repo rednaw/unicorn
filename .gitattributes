@@ -1,0 +1,2 @@
+static/drawings/** filter=lfs diff=lfs merge=lfs -text
+static/audio/** filter=lfs diff=lfs merge=lfs -text
