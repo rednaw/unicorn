@@ -14,6 +14,27 @@
 	let viewport = $state<HTMLDivElement>();
 	let audioEls = $state<HTMLAudioElement[]>([]);
 
+	// Web Audio plumbing — iOS Safari ignores HTMLAudioElement.volume,
+	// so proximity gain must route through GainNodes.
+	let audioCtx: AudioContext | undefined;
+	let gainNodes: GainNode[] = [];
+	let audioGraphReady = false;
+
+	function setupAudioGraph() {
+		if (audioGraphReady) return;
+		const Ctx: typeof AudioContext =
+			window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+		audioCtx = new Ctx();
+		audioEls.forEach((a, i) => {
+			const source = audioCtx!.createMediaElementSource(a);
+			const gain = audioCtx!.createGain();
+			gain.gain.value = 0;
+			source.connect(gain).connect(audioCtx!.destination);
+			gainNodes[i] = gain;
+		});
+		audioGraphReady = true;
+	}
+
 	let zoom = $state(0.7);
 	let tx = $state(0);
 	let ty = $state(0);
@@ -99,7 +120,7 @@
 		ty = (vh - CANVAS_H * zoom) / 2;
 	}
 
-	// Proximity audio. RAF loop computes each track's volume from distance.
+	// Proximity audio. RAF loop computes each track's gain from distance.
 	let raf = 0;
 	function updateAudio() {
 		if (!viewport) return;
@@ -109,21 +130,25 @@
 		const centreCanvasX = (vw / 2 - tx) / zoom;
 		const centreCanvasY = (vh / 2 - ty) / zoom;
 		tracks.forEach((track, i) => {
-			const a = audioEls[i];
-			if (!a || !track.pos) return;
+			if (!track.pos) return;
+			const gain = gainNodes[i];
+			if (!gain) return;
 			const dx = track.pos.x - centreCanvasX;
 			const dy = track.pos.y - centreCanvasY;
 			const dist = Math.hypot(dx, dy);
 			const vol = Math.max(0, 1 - dist / PROX_RADIUS);
-			a.volume = vol * vol;
+			gain.gain.value = vol * vol;
 		});
 		raf = requestAnimationFrame(updateAudio);
 	}
 
 	async function start() {
 		started = true;
+		setupAudioGraph();
+		try {
+			await audioCtx?.resume();
+		} catch {}
 		for (const a of audioEls) {
-			a.volume = 0;
 			a.loop = true;
 			try {
 				await a.play();
@@ -142,6 +167,7 @@
 			window.removeEventListener('resize', onResize);
 			cancelAnimationFrame(raf);
 			for (const a of audioEls) a.pause();
+			audioCtx?.close().catch(() => {});
 		};
 	});
 

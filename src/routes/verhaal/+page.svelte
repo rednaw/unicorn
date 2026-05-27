@@ -39,15 +39,37 @@
 
 	let lenis: import('lenis').default | undefined;
 
+	// Web Audio plumbing — iOS Safari ignores HTMLAudioElement.volume, so we
+	// must route audio through GainNodes to control track volumes.
+	let audioCtx: AudioContext | undefined;
+	let gainNodes: GainNode[] = [];
+	let audioGraphReady = false;
+
+	function setupAudioGraph() {
+		if (audioGraphReady) return;
+		const Ctx: typeof AudioContext =
+			window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+		audioCtx = new Ctx();
+		audioEls.forEach((a, i) => {
+			const source = audioCtx!.createMediaElementSource(a);
+			const gain = audioCtx!.createGain();
+			gain.gain.value = i === 0 ? 1 : 0;
+			source.connect(gain).connect(audioCtx!.destination);
+			gainNodes[i] = gain;
+		});
+		audioGraphReady = true;
+	}
+
 	async function start() {
 		started = true;
-		// Unlock audio with user gesture, then mount Lenis + ScrollTrigger.
+		setupAudioGraph();
+		try {
+			await audioCtx?.resume();
+		} catch {}
 		for (const a of audioEls) {
-			a.volume = 0;
 			a.loop = true;
 			a.play().catch(() => {});
 		}
-		if (audioEls[0]) audioEls[0].volume = 1;
 
 		const [{ default: Lenis }, gsapMod, scrollTriggerMod] = await Promise.all([
 			import('lenis'),
@@ -107,15 +129,17 @@
 	}
 
 	function crossfadeAudio(p: number) {
-		// p is global scroll progress 0..1. Map to 3 tracks.
-		// Each track has a centre and ramps in/out around it.
+		// p is global scroll progress 0..1. Track i is at full volume when
+		// p === i/(n-1) and silent at adjacent centres. Routed through Web
+		// Audio GainNodes because iOS Safari ignores HTMLAudioElement.volume.
 		const n = audioEls.length;
-		audioEls.forEach((a, i) => {
-			const centre = (i + 0.5) / n;
-			const width = 1 / n;
+		const width = 1 / Math.max(1, n - 1);
+		audioEls.forEach((_, i) => {
+			const centre = i / Math.max(1, n - 1);
 			const distance = Math.abs(p - centre) / width;
 			const vol = Math.max(0, 1 - distance);
-			a.volume = vol;
+			const gain = gainNodes[i];
+			if (gain) gain.gain.value = vol;
 		});
 	}
 
@@ -130,6 +154,7 @@
 	onMount(() => {
 		return () => {
 			if (lenis) lenis.destroy();
+			audioCtx?.close().catch(() => {});
 		};
 	});
 </script>
