@@ -13,6 +13,7 @@
 	let started = $state(false);
 	let viewport = $state<HTMLDivElement>();
 	let audioEls = $state<HTMLAudioElement[]>([]);
+	let poemEls = $state<HTMLElement[]>([]);
 
 	// Web Audio plumbing — iOS Safari ignores HTMLAudioElement.volume,
 	// so proximity gain must route through GainNodes.
@@ -41,6 +42,12 @@
 
 	let dragging = $state(false);
 	let dragStart = { x: 0, y: 0, tx: 0, ty: 0 };
+	let hasUserNavigatedView = $state(false);
+
+	type InteractionMode = 'idle' | 'pending-pan' | 'panning' | 'pinching';
+	let interactionMode = $state<InteractionMode>('idle');
+	let primaryPointerId = $state<number | null>(null);
+	let primaryPointerType = $state<string>('mouse');
 
 	// Multi-pointer tracking for pinch-zoom on touch.
 	const pointers = new Map<number, { x: number; y: number }>();
@@ -69,6 +76,7 @@
 		ty = viewportY - ((viewportY - ty) * clamped) / zoom;
 		zoom = clamped;
 		clamp();
+		hasUserNavigatedView = true;
 	}
 
 	function startPinch() {
@@ -100,6 +108,7 @@
 	}
 
 	function onPointerDown(e: PointerEvent) {
+		if (e.button !== 0) return;
 		// Drawings allow drag-or-tap (the browser auto-suppresses click after
 		// movement). Only UI chrome and the audio speaker toggles are exempt,
 		// so their own click handlers always win.
@@ -114,10 +123,14 @@
 		} catch {}
 
 		if (pointers.size === 1) {
-			dragging = true;
+			primaryPointerId = e.pointerId;
+			primaryPointerType = e.pointerType || 'mouse';
 			dragStart = { x: e.clientX, y: e.clientY, tx, ty };
+			dragging = false;
+			interactionMode = 'pending-pan';
 		} else if (pointers.size === 2) {
 			dragging = false;
+			interactionMode = 'pinching';
 			startPinch();
 		}
 	}
@@ -126,12 +139,26 @@
 		if (!pointers.has(e.pointerId)) return;
 		pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
-		if (pointers.size >= 2) {
+		if (pointers.size >= 2 || interactionMode === 'pinching') {
+			interactionMode = 'pinching';
 			updatePinch();
-		} else if (dragging) {
+			return;
+		}
+
+		if (interactionMode === 'pending-pan' && e.pointerId === primaryPointerId) {
+			const moved = Math.hypot(e.clientX - dragStart.x, e.clientY - dragStart.y);
+			const threshold = primaryPointerType === 'touch' ? 10 : 6;
+			if (moved >= threshold) {
+				interactionMode = 'panning';
+				dragging = true;
+			}
+		}
+
+		if (interactionMode === 'panning' && e.pointerId === primaryPointerId) {
 			tx = dragStart.tx + (e.clientX - dragStart.x);
 			ty = dragStart.ty + (e.clientY - dragStart.y);
 			clamp();
+			hasUserNavigatedView = true;
 		}
 	}
 
@@ -144,11 +171,17 @@
 		if (pointers.size < 2) pinch = undefined;
 		if (pointers.size === 0) {
 			dragging = false;
+			interactionMode = 'idle';
+			primaryPointerId = null;
 		} else if (pointers.size === 1) {
 			// Lift one finger of a pinch — continue as a drag with the survivor.
 			const [p] = pointers.values();
 			dragStart = { x: p.x, y: p.y, tx, ty };
-			dragging = true;
+			const [id] = pointers.keys();
+			primaryPointerId = id;
+			primaryPointerType = 'touch';
+			dragging = false;
+			interactionMode = 'pending-pan';
 		}
 	}
 
@@ -158,14 +191,24 @@
 		const rect = viewport.getBoundingClientRect();
 		const cx = e.clientX - rect.left;
 		const cy = e.clientY - rect.top;
+		// Normalize wheel deltas so behavior is consistent across browsers/devices.
+		const deltaUnit =
+			e.deltaMode === WheelEvent.DOM_DELTA_LINE
+				? 16
+				: e.deltaMode === WheelEvent.DOM_DELTA_PAGE
+					? viewport.clientHeight
+					: 1;
+		const dx = e.deltaX * deltaUnit;
+		const dy = e.deltaY * deltaUnit;
 		// macOS trackpad pinch fires wheel events with ctrlKey set; treat that
 		// (and a real Ctrl+wheel) as zoom. Plain wheel = pan.
 		if (e.ctrlKey || e.metaKey) {
-			applyZoomAt(cx, cy, zoom * Math.exp(-e.deltaY * 0.01));
+			applyZoomAt(cx, cy, zoom * Math.exp(-dy * 0.0018));
 		} else {
-			tx -= e.deltaX;
-			ty -= e.deltaY;
+			tx -= dx;
+			ty -= dy;
 			clamp();
+			hasUserNavigatedView = true;
 		}
 	}
 
@@ -178,12 +221,41 @@
 		tx = vw / 2 - centreX * target;
 		ty = vh / 2 - centreY * target;
 		clamp();
+		hasUserNavigatedView = true;
+	}
+
+	function focusTargetZoom(itemW: number, itemH: number, fill = 0.74) {
+		if (!viewport) return zoom;
+		const vw = viewport.clientWidth;
+		const vh = viewport.clientHeight;
+		// Pick the zoom where the item occupies ~fill of the viewport while
+		// still fitting both dimensions.
+		const byWidth = (vw * fill) / Math.max(1, itemW);
+		const byHeight = (vh * fill) / Math.max(1, itemH);
+		return Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, Math.min(byWidth, byHeight)));
 	}
 
 	function focusDrawing(d: (typeof drawings)[number]) {
-		const cx = (d.pos?.x ?? 0) + (d.width ?? 320) / 2;
-		const cy = (d.pos?.y ?? 0) + ((d.width ?? 320) * 1.25) / 2;
-		zoomTo(cx, cy, 1.4);
+		const itemW = d.width ?? 320;
+		const itemH = itemW * 1.25;
+		const cx = (d.pos?.x ?? 0) + itemW / 2;
+		const cy = (d.pos?.y ?? 0) + itemH / 2;
+		const fitTarget = focusTargetZoom(itemW, itemH, 0.76);
+		const steppedTarget = Math.min(MAX_ZOOM, zoom + 0.22);
+		const target = Math.max(fitTarget, steppedTarget);
+		zoomTo(cx, cy, target);
+	}
+
+	function focusPoem(poem: (typeof poems)[number], idx: number) {
+		const el = poemEls[idx];
+		const width = el?.offsetWidth ?? 352; // fallback for 22rem at 16px root
+		const height = el?.offsetHeight ?? 220;
+		const cx = (poem.pos?.x ?? 0) + width / 2;
+		const cy = (poem.pos?.y ?? 0) + height / 2;
+		const fitTarget = focusTargetZoom(width, height, 0.72);
+		const steppedTarget = Math.min(MAX_ZOOM, zoom + 0.22);
+		const target = Math.max(fitTarget, steppedTarget);
+		zoomTo(cx, cy, target);
 	}
 
 	function resetView() {
@@ -197,6 +269,7 @@
 		tx = (vw - CANVAS_W * zoom) / 2;
 		ty = (vh - CANVAS_H * zoom) / 2;
 		clamp();
+		hasUserNavigatedView = false;
 	}
 
 	// Proximity audio. RAF loop computes each track's gain from distance.
@@ -248,7 +321,13 @@
 	onMount(() => {
 		resetView();
 		const onResize = () => {
-			resetView();
+			// Keep the user's current framing after they have started navigating;
+			// only recenter when still in the initial untouched state.
+			if (hasUserNavigatedView) {
+				clamp();
+			} else {
+				resetView();
+			}
 		};
 		window.addEventListener('resize', onResize);
 		return () => {
@@ -329,12 +408,16 @@
 				</button>
 			{/each}
 
-			{#each poems as poem (poem.id)}
-				<div
+			{#each poems as poem, pi (poem.id)}
+				<button
+					type="button"
 					class="piece piece--poem"
 					style:left="{poem.pos?.x ?? 0}px"
 					style:top="{poem.pos?.y ?? 0}px"
 					style:--rot="{poem.rotation ?? 0}deg"
+					bind:this={poemEls[pi]}
+					onclick={() => focusPoem(poem, pi)}
+					aria-label={poem.title}
 				>
 					<div class="piece__poem">
 						<h3>{poem.title}</h3>
@@ -347,7 +430,7 @@
 						{/each}
 						<p class="piece__author">— {poem.author}</p>
 					</div>
-				</div>
+				</button>
 			{/each}
 
 			{#each tracks as track, i (track.id)}
@@ -556,6 +639,13 @@
 	}
 
 	.piece--poem {
+		appearance: none;
+		border: none;
+		padding: 0;
+		margin: 0;
+		background: none;
+		text-align: left;
+		cursor: zoom-in;
 		width: 22rem;
 		max-width: 22rem;
 	}
