@@ -56,21 +56,21 @@ host — see Deployment below.
 
 ## Content & assets
 
-The prototype currently uses **procedurally generated placeholder assets**:
+The prototype currently uses a curated public-domain-inspired set:
 
-- `/static/drawings/*.svg` — six themed line-drawing placeholders
-- `/static/audio/*.ogg` — three procedural piano-like tones (ffmpeg)
-- Poetry — inlined public-domain verse (Dickinson, Whitman, Blake, Rossetti)
+- `/static/drawings/*.svg` — six drawing placeholders used across all variants
+- `/static/audio/*.ogg` — three one-minute solo piano fragments
+- Poetry — Dutch public-domain excerpts in `src/lib/content.ts`
 
 See `static/CREDITS.md` for sources and licensing.
 
-### Regenerate placeholders
+### Regenerate assets
 
 ```sh
 ./scripts/fetch-assets.sh
 ```
 
-(Uses the `jrottenberg/ffmpeg` container for audio. Idempotent — skips files that
+(Uses `yt-dlp` + `jrottenberg/ffmpeg` via Docker. Idempotent — skips files that
 already exist.)
 
 ### Swap in real assets
@@ -86,10 +86,11 @@ The shape is:
 type Drawing = { id; title; year; medium; src; alt; rotation?; pos?; width? }
 type Track   = { id; title; composer; src; pos? }
 type Poem    = { id; title; author; lines; pairsWith?; pos?; rotation? }
+type DiaryEntry = { id; dateLabel; sortKey; body?; drawingIds?; trackId?; poemFragment? }
 ```
 
 `pos` and `rotation` only matter for `/atelier`. `pairsWith` (a drawing id) is
-used by `/editorial` and `/scroll` to associate a poem with a drawing.
+used by `/tijdschrift` and `/verhaal` to associate a poem with a drawing.
 
 ## Architecture
 
@@ -101,15 +102,16 @@ src/
     +layout.svelte      # global head (favicon, CSS)
     layout.css          # Tailwind + theme tokens (fonts, colours)
     +page.svelte        # landing
-    scroll/+page.svelte
+    verhaal/+page.svelte
     museum/
       +layout.svelte    # museum chrome + docked AudioPlayer
       +page.svelte      # grid
       [slug]/+page.ts   # entries() + load()
       [slug]/+page.svelte
       museum-state.svelte.ts  # shared $state for current track
-    editorial/+page.svelte
+    tijdschrift/+page.svelte
     atelier/+page.svelte
+    dagboek/+page.svelte
   lib/
     content.ts          # single source of truth
     components/
@@ -143,7 +145,7 @@ For a custom domain or user/org pages (`username.github.io`), unset
 
 - **SvelteKit 2 + Svelte 5** (runes mode)
 - **Tailwind CSS 4** with `@tailwindcss/typography`
-- **GSAP + ScrollTrigger** for the `/scroll` variant
+- **GSAP + ScrollTrigger** for the `/verhaal` variant
 - **Lenis** for smooth scroll
 - **Web Audio + native `<audio>`** for the `/atelier` proximity gain
 - **@sveltejs/adapter-static** with `404.html` SPA fallback
