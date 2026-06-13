@@ -3,12 +3,13 @@
 	import { page } from '$app/state';
 	import AudioPlayer from '$lib/components/AudioPlayer.svelte';
 	import BackLink from '$lib/components/BackLink.svelte';
-	import { artist } from '$lib/content';
-	import { site } from '$lib/site-state.svelte';
+	import { artist, tracks } from '$lib/content';
+	import { next, prev, site } from '$lib/site-state.svelte';
 
 	let { children } = $props();
 
 	const isHome = $derived(page.url.pathname === `${base}/` || page.url.pathname === base);
+	const currentTrack = $derived(tracks[site.index]);
 </script>
 
 <div class="site">
@@ -30,11 +31,20 @@
 		</nav>
 	</header>
 
-	<main class="site__main">
+	<main class="site__main" class:site__main--player={site.playToken > 0}>
 		{@render children()}
 	</main>
 
-	<AudioPlayer track={site.currentTrack} variant="docked" />
+	{#if site.playToken > 0}
+		<AudioPlayer
+			track={currentTrack}
+			variant="docked"
+			playToken={site.playToken}
+			pauseToken={site.pauseToken}
+			onnext={next}
+			onprev={prev}
+		/>
+	{/if}
 </div>
 
 <style>
@@ -108,6 +118,10 @@
 	}
 
 	.site__main {
-		padding-bottom: 8rem;
+		padding-bottom: 3rem;
+	}
+
+	.site__main--player {
+		padding-bottom: 5.5rem;
 	}
 </style>

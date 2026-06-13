@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { base } from '$app/paths';
 	import { artist, drawings, tracks } from '$lib/content';
-	import { selectTrack, site } from '$lib/site-state.svelte';
+	import { playTrack, site, toggleHeroPlayback } from '$lib/site-state.svelte';
 </script>
 
 <svelte:head>
@@ -20,6 +20,43 @@
 		</p>
 	</div>
 
+	<div class="gallery__listening" aria-label="Luister mee">
+		<p class="gallery__listening-label">Luister mee</p>
+		<div class="gallery__listening-row">
+			<button
+				type="button"
+				class="gallery__play"
+				onclick={toggleHeroPlayback}
+				aria-label={site.isPlaying ? 'Pauzeer' : 'Begin met luisteren'}
+			>
+				{#if site.isPlaying}
+					<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
+						<rect x="6" y="5" width="4" height="14" />
+						<rect x="14" y="5" width="4" height="14" />
+					</svg>
+				{:else}
+					<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
+						<path d="M7 5v14l12-7z" />
+					</svg>
+				{/if}
+			</button>
+			<ul class="gallery__tracks">
+				{#each tracks as track, i (track.id)}
+					<li>
+						<button
+							type="button"
+							class="gallery__track"
+							class:gallery__track--active={site.index === i}
+							onclick={() => playTrack(i)}
+						>
+							{track.title}
+						</button>
+					</li>
+				{/each}
+			</ul>
+		</div>
+	</div>
+
 	<ul class="gallery__grid">
 		{#each drawings as drawing (drawing.id)}
 			<li class="gallery__item">
@@ -35,28 +72,6 @@
 			</li>
 		{/each}
 	</ul>
-
-	<aside class="gallery__listening">
-		<p class="gallery__listening-label">Nu te horen</p>
-		<ul>
-			{#each tracks as track (track.id)}
-				<li>
-					<button
-						type="button"
-						class="gallery__track"
-						class:gallery__track--active={site.currentTrack.id === track.id}
-						onclick={() => selectTrack(track)}
-					>
-						<span class="gallery__track-title">{track.title}</span>
-						<span class="gallery__track-composer">{track.composer}</span>
-					</button>
-				</li>
-			{/each}
-		</ul>
-		<p class="gallery__listening-hint">
-			In het <a href="{base}/atelier/">atelier</a> volgt de muziek je terwijl je beweegt.
-		</p>
-	</aside>
 </section>
 
 <style>
@@ -68,7 +83,7 @@
 
 	.gallery__intro {
 		max-width: 32rem;
-		margin: 0 auto 4rem;
+		margin: 0 auto 2rem;
 		text-align: center;
 	}
 
@@ -97,6 +112,86 @@
 
 	.gallery__atelier a:hover {
 		opacity: 1;
+	}
+
+	.gallery__listening {
+		max-width: 42rem;
+		margin: 0 auto 3rem;
+		text-align: center;
+	}
+
+	.gallery__listening-label {
+		font-family: var(--font-sans);
+		font-size: 0.68rem;
+		letter-spacing: 0.22em;
+		text-transform: uppercase;
+		color: var(--color-ink-soft);
+		opacity: 0.55;
+		margin: 0 0 0.65rem;
+	}
+
+	.gallery__listening-row {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-wrap: wrap;
+		gap: 0.5rem 0.35rem;
+	}
+
+	.gallery__play {
+		flex: none;
+		width: 2rem;
+		height: 2rem;
+		border-radius: 9999px;
+		border: none;
+		background: var(--color-ink);
+		color: var(--color-paper);
+		display: grid;
+		place-items: center;
+		cursor: pointer;
+		transition: transform 150ms ease;
+	}
+
+	.gallery__play:hover {
+		transform: scale(1.06);
+	}
+
+	.gallery__tracks {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.35rem;
+	}
+
+	.gallery__track {
+		appearance: none;
+		background: transparent;
+		border: 1px solid rgba(0, 0, 0, 0.12);
+		border-radius: 9999px;
+		cursor: pointer;
+		padding: 0.35rem 0.85rem;
+		font-family: var(--font-museum);
+		font-style: italic;
+		font-size: 0.88rem;
+		color: var(--color-ink-soft);
+		transition:
+			color 150ms ease,
+			border-color 150ms ease,
+			background 150ms ease;
+	}
+
+	.gallery__track:hover {
+		color: var(--color-ink);
+		border-color: rgba(0, 0, 0, 0.22);
+	}
+
+	.gallery__track--active {
+		color: var(--color-ink);
+		background: var(--color-paper);
+		border-color: rgba(0, 0, 0, 0.18);
 	}
 
 	.gallery__grid {
@@ -161,85 +256,5 @@
 		color: var(--color-ink-soft);
 		opacity: 0.7;
 		margin: 0.4rem 0 0;
-	}
-
-	.gallery__listening {
-		margin: 5rem auto 2rem;
-		max-width: 32rem;
-		text-align: center;
-		border-top: 1px solid rgba(0, 0, 0, 0.08);
-		padding-top: 2.5rem;
-	}
-
-	.gallery__listening-label {
-		font-family: var(--font-sans);
-		font-size: 0.7rem;
-		letter-spacing: 0.22em;
-		text-transform: uppercase;
-		color: var(--color-ink-soft);
-		opacity: 0.6;
-		margin: 0 0 1rem;
-	}
-
-	.gallery__listening ul {
-		list-style: none;
-		padding: 0;
-		margin: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 0.25rem;
-	}
-
-	.gallery__track {
-		appearance: none;
-		background: none;
-		border: none;
-		cursor: pointer;
-		padding: 0.5rem 1rem;
-		font-family: var(--font-museum);
-		display: flex;
-		justify-content: space-between;
-		align-items: baseline;
-		gap: 1rem;
-		width: 100%;
-		color: var(--color-ink-soft);
-		transition: color 200ms ease;
-	}
-
-	.gallery__track:hover,
-	.gallery__track--active {
-		color: var(--color-ink);
-	}
-
-	.gallery__track--active::before {
-		content: '▸';
-		margin-right: 0.4em;
-		opacity: 0.6;
-	}
-
-	.gallery__track-title {
-		font-size: 1.05rem;
-		font-style: italic;
-	}
-
-	.gallery__track-composer {
-		font-family: var(--font-sans);
-		font-size: 0.72rem;
-		letter-spacing: 0.14em;
-		text-transform: uppercase;
-		opacity: 0.7;
-	}
-
-	.gallery__listening-hint {
-		margin: 1.5rem 0 0;
-		font-family: var(--font-serif);
-		font-style: italic;
-		font-size: 0.92rem;
-		color: var(--color-ink-soft);
-		opacity: 0.7;
-	}
-
-	.gallery__listening-hint a {
-		color: inherit;
 	}
 </style>

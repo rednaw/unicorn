@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Track } from '$lib/content';
+	import { site } from '$lib/site-state.svelte';
 	import { claim, release } from './audio-bus';
 
 	type Variant = 'inline' | 'docked' | 'minimal';
@@ -8,11 +9,19 @@
 		track,
 		variant = 'inline',
 		autoplay = false,
+		playToken,
+		pauseToken,
+		onnext,
+		onprev,
 		class: className = ''
 	}: {
 		track: Track;
 		variant?: Variant;
 		autoplay?: boolean;
+		playToken?: number;
+		pauseToken?: number;
+		onnext?: () => void;
+		onprev?: () => void;
 		class?: string;
 	} = $props();
 
@@ -22,15 +31,32 @@
 	let duration = $state(0);
 
 	const progress = $derived(duration > 0 ? (current / duration) * 100 : 0);
+	const showTransport = $derived(variant !== 'minimal' && (onnext || onprev));
+
+	function syncPlaying(value: boolean) {
+		if (playToken !== undefined) site.isPlaying = value;
+	}
 
 	$effect(() => {
-		// Cleanup on unmount: stop playback and free the audio bus.
 		return () => {
 			if (audio) {
 				audio.pause();
 				release(audio);
 			}
 		};
+	});
+
+	$effect(() => {
+		if (playToken === undefined || playToken === 0) return;
+		track.src;
+		const el = audio;
+		if (!el) return;
+		void el.play().catch(() => {});
+	});
+
+	$effect(() => {
+		if (pauseToken === undefined || pauseToken === 0) return;
+		audio?.pause();
 	});
 
 	function toggle() {
@@ -63,19 +89,36 @@
 		preload="metadata"
 		onplay={() => {
 			playing = true;
+			syncPlaying(true);
 			if (audio) claim(audio);
 		}}
 		onpause={() => {
 			playing = false;
+			syncPlaying(false);
 			if (audio) release(audio);
 		}}
 		ontimeupdate={() => (current = audio?.currentTime ?? 0)}
 		onloadedmetadata={() => (duration = audio?.duration ?? 0)}
 		onended={() => {
 			playing = false;
+			syncPlaying(false);
 			if (audio) release(audio);
+			onnext?.();
 		}}
 	></audio>
+
+	{#if showTransport && onprev}
+		<button
+			type="button"
+			class="player__nav"
+			onclick={onprev}
+			aria-label="Vorig stuk"
+		>
+			<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+				<path d="M6 6h2v12H6V6zm3.5 6 8.5 6V6l-8.5 6z" />
+			</svg>
+		</button>
+	{/if}
 
 	<button
 		type="button"
@@ -94,6 +137,19 @@
 			</svg>
 		{/if}
 	</button>
+
+	{#if showTransport && onnext}
+		<button
+			type="button"
+			class="player__nav"
+			onclick={onnext}
+			aria-label="Volgend stuk"
+		>
+			<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+				<path d="M16 18h2V6h-2v12zM6 18l8.5-6L6 6v12z" />
+			</svg>
+		</button>
+	{/if}
 
 	<div class="player__meta">
 		<div class="player__title">{track.title}</div>
@@ -139,6 +195,26 @@
 	}
 
 	.player__btn:hover {
+		transform: scale(1.05);
+	}
+
+	.player__nav {
+		flex: none;
+		width: 1.75rem;
+		height: 1.75rem;
+		border-radius: 9999px;
+		display: grid;
+		place-items: center;
+		background: transparent;
+		color: var(--color-ink-soft);
+		border: none;
+		cursor: pointer;
+		opacity: 0.75;
+		transition: opacity 150ms ease, transform 150ms ease;
+	}
+
+	.player__nav:hover {
+		opacity: 1;
 		transform: scale(1.05);
 	}
 
@@ -194,18 +270,29 @@
 	/* Docked: frosted glass, fixed at bottom-center */
 	.player--docked {
 		position: fixed;
-		bottom: 1.5rem;
+		bottom: 1rem;
 		left: 50%;
 		transform: translateX(-50%);
-		padding: 0.75rem 1.25rem;
-		min-width: 24rem;
-		max-width: calc(100vw - 2rem);
-		background: color-mix(in oklab, var(--color-wall) 85%, transparent);
+		padding: 0.5rem 0.85rem;
+		min-width: min(100%, 20rem);
+		max-width: calc(100vw - 1.5rem);
+		background: color-mix(in oklab, var(--color-wall) 88%, transparent);
 		backdrop-filter: blur(12px);
 		-webkit-backdrop-filter: blur(12px);
 		border-radius: 9999px;
-		box-shadow: 0 12px 36px -16px rgba(0, 0, 0, 0.25);
+		box-shadow: 0 8px 28px -14px rgba(0, 0, 0, 0.22);
 		z-index: 50;
+		gap: 0.5rem;
+	}
+
+	@media (max-width: 540px) {
+		.player--docked .player__time {
+			display: none;
+		}
+
+		.player--docked .player__composer {
+			display: none;
+		}
 	}
 
 	/* Inline: in flow, footnote-like */
