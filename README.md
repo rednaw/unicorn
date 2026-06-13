@@ -1,58 +1,50 @@
-# Unicorn — Artist Prototype, Five Variants
+# Unicorn — Artist Prototype, Two Variants
 
 A SvelteKit prototype presenting one (fictional) artist's drawings, piano recordings,
-and poetry through **five contrasting design languages**. The same content runs through
+and poetry through **two contrasting design languages**. The same content runs through
 each variant so the design directions can be compared apples-to-apples.
 
 | Route          | Idea                                                        |
 | -------------- | ----------------------------------------------------------- |
-| `/`            | Landing — artist intro and the five variant cards           |
+| `/`            | Landing — artist intro and the two variant cards            |
 | `/museum/`     | Quiet white-walls gallery with detail pages                 |
-| `/verhaal/`    | Scroll-driven storytelling (Lenis + GSAP ScrollTrigger)     |
-| `/tijdschrift/`| Magazine-style spreads with drop caps and pull quotes       |
 | `/atelier/`    | Pannable + zoomable canvas with proximity-based audio       |
-| `/dagboek/`    | Reverse-chronological diary — polaroids, handwriting, music |
 
 ## Prerequisites
 
-**Only Docker.** No Node, no pnpm, no Vite on your host. Everything runs inside the
-`unicorn-dev` container.
+**Only Docker and VS Code / Cursor** — no Node, pnpm, or Vite on your host.
 
-- Docker (with Compose v2)
+- Docker
+- VS Code or Cursor with the **Dev Containers** extension
 
-## Running it
+## Development
 
-```sh
-make build      # build the dev image (first time only)
-make install    # install dependencies inside the container
-make dev        # vite dev server -> http://localhost:5173
-```
+1. Open this folder in VS Code or Cursor.
+2. **Reopen in Container** (Command Palette → `Dev Containers: Reopen in Container`).
+3. Wait for `pnpm install` and the dev server — open **http://localhost:5173**.
 
-Stop with `Ctrl-C`, then `make down` to remove the container.
-
-| Command | What it does |
-| --- | --- |
-| `make dev` | Boots the dev server on `:5173` with HMR |
-| `make stop` / `make down` | Stop / stop-and-remove the dev container |
-| `make install` | `pnpm install` inside the container |
-| `make add PKG=foo` | `pnpm add foo` |
-| `make add-dev PKG=foo` | `pnpm add -D foo` |
-| `make pnpm ARGS='check'` | Run any pnpm command (e.g. `pnpm check`) |
-| `make sh` | Open a shell inside the container |
-| `make clean` / `make nuke` | Drop build artifacts / also drop `node_modules` |
-
-`node_modules/` lives in the project folder (so Cursor / VS Code can see types
-for IntelliSense) but is installed **by** the container's pnpm — your host never
-touches Node.
-
-## Building for production
+Common commands (inside the container terminal):
 
 ```sh
-make pnpm ARGS=build
+pnpm dev          # already started on container launch
+pnpm check        # type-check
+pnpm build        # production build → build/
 ```
 
-Output goes to `build/`. It's a fully static site (~750 KB) ready for any static
-host — see Deployment below.
+`node_modules/` lives in the project folder (installed by the container's pnpm) so
+the editor gets full TypeScript and Svelte IntelliSense.
+
+## Deployment (GitHub Pages)
+
+Push to `main` — GitHub Actions builds and publishes automatically.
+
+1. Create a GitHub repo and push this directory.
+2. In the repo's **Settings → Pages**, set **Source: GitHub Actions**.
+3. The workflow (`.github/workflows/deploy.yml`) runs `pnpm build` and deploys `build/`.
+   `BASE_PATH` is set from the repo name for project Pages sites.
+
+For a custom domain or user/org pages (`username.github.io`), unset `BASE_PATH` in
+the workflow.
 
 ## Content & assets
 
@@ -64,21 +56,21 @@ The prototype currently uses a curated public-domain-inspired set:
 
 See `static/CREDITS.md` for sources and licensing.
 
-### Regenerate assets
+### Regenerate drawing placeholders
 
 ```sh
 ./scripts/fetch-assets.sh
 ```
 
-(Uses `yt-dlp` + `jrottenberg/ffmpeg` via Docker. Idempotent — skips files that
-already exist.)
+Generates SVG placeholders (idempotent). The audio step in that script uses host
+Docker (`docker run` for yt-dlp) — only needed if you want to re-fetch audio files.
 
 ### Swap in real assets
 
 1. Drop new files into `/static/drawings/`, `/static/audio/`, etc.
 2. Edit `src/lib/content.ts` — update the `drawings`, `tracks`, and `poems`
    arrays to point at the new paths and metadata.
-3. That's it. All five variants automatically pick up the new content.
+3. That's it. Both variants automatically pick up the new content.
 
 The shape is:
 
@@ -86,11 +78,10 @@ The shape is:
 type Drawing = { id; title; year; medium; src; alt; rotation?; pos?; width? }
 type Track   = { id; title; composer; src; pos? }
 type Poem    = { id; title; author; lines; pairsWith?; pos?; rotation? }
-type DiaryEntry = { id; dateLabel; sortKey; body?; drawingIds?; trackId?; poemFragment? }
 ```
 
 `pos` and `rotation` only matter for `/atelier`. `pairsWith` (a drawing id) is
-used by `/tijdschrift` and `/verhaal` to associate a poem with a drawing.
+used by `/museum` detail pages to associate a poem with a drawing.
 
 ## Architecture
 
@@ -102,54 +93,33 @@ src/
     +layout.svelte      # global head (favicon, CSS)
     layout.css          # Tailwind + theme tokens (fonts, colours)
     +page.svelte        # landing
-    verhaal/+page.svelte
     museum/
       +layout.svelte    # museum chrome + docked AudioPlayer
       +page.svelte      # grid
       [slug]/+page.ts   # entries() + load()
       [slug]/+page.svelte
       museum-state.svelte.ts  # shared $state for current track
-    tijdschrift/+page.svelte
     atelier/+page.svelte
-    dagboek/+page.svelte
   lib/
     content.ts          # single source of truth
     components/
       AudioPlayer.svelte  # variants: inline | docked | minimal
-      Drawing.svelte
       PoemBlock.svelte
 static/
   drawings/, audio/, .nojekyll, CREDITS.md
 scripts/
   fetch-assets.sh
+.devcontainer/
+  Dockerfile, devcontainer.json
 ```
-
-## Deployment (GitHub Pages)
-
-The static adapter is preconfigured. To deploy on push to `main`:
-
-1. Create a new GitHub repo and push this directory:
-   ```sh
-   git init && git add . && git commit -m "init"
-   git remote add origin git@github.com:<you>/<repo>.git
-   git push -u origin main
-   ```
-2. In the repo's **Settings → Pages**, set **Source: GitHub Actions**.
-3. The included workflow (`.github/workflows/deploy.yml`) builds the site and
-   publishes it. The `BASE_PATH` is set automatically from the repo name.
-
-For a custom domain or user/org pages (`username.github.io`), unset
-`BASE_PATH` in the workflow.
 
 ## Stack
 
 - **SvelteKit 2 + Svelte 5** (runes mode)
 - **Tailwind CSS 4** with `@tailwindcss/typography`
-- **GSAP + ScrollTrigger** for the `/verhaal` variant
-- **Lenis** for smooth scroll
 - **Web Audio + native `<audio>`** for the `/atelier` proximity gain
 - **@sveltejs/adapter-static** with `404.html` SPA fallback
-- All tooling runs in Docker (`Dockerfile.dev`)
+- Dev tooling in `.devcontainer/` — GitHub Actions for production builds
 
 ## Out of scope
 

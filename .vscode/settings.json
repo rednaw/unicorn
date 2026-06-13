@@ -1,5 +1,9 @@
 {
 	"files.associations": {
 		"*.css": "tailwindcss"
-	}
+	},
+	"npm.packageManager": "pnpm",
+	"typescript.tsdk": "node_modules/typescript/lib",
+	"typescript.enablePromptUseWorkspaceTsdk": true,
+	"svelte.enable-ts-plugin": true
 }

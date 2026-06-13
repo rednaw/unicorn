@@ -1,6 +1,6 @@
 // Module-level coordinator: only one <AudioPlayer> may play at a time.
 // Whichever player claims the bus pauses whatever was playing before.
-// Variants that use raw <audio> elements (/verhaal, /atelier) bypass this
+// Variants that use raw <audio> elements (/atelier) bypass this
 // intentionally — they want simultaneous playback for cross-fade / proximity.
 
 let active: HTMLAudioElement | null = null;

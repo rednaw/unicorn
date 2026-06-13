@@ -48,7 +48,7 @@
 		position: fixed;
 		top: 1rem;
 		left: 1rem;
-		z-index: 110; /* above the verhaal/atelier intro overlays (z-index 100) */
+		z-index: 110; /* above the atelier intro overlay (z-index 100) */
 	}
 
 	.back--light {

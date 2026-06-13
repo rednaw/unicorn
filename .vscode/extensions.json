@@ -1,5 +1,6 @@
 {
 	"recommendations": [
+		"ms-vscode-remote.remote-containers",
 		"svelte.svelte-vscode",
 		"bradlc.vscode-tailwindcss"
 	]

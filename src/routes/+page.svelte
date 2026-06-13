@@ -4,7 +4,7 @@
 </script>
 
 <svelte:head>
-	<title>{artist.name} — vijf ontwerpvarianten</title>
+	<title>{artist.name} — twee ontwerpvarianten</title>
 	<meta name="description" content={artist.tagline} />
 </svelte:head>
 
@@ -17,7 +17,7 @@
 	</header>
 
 	<section class="landing__variants" aria-label="Ontwerpvarianten">
-		<p class="landing__variants-label">Vijf manieren om hetzelfde werk te zien</p>
+		<p class="landing__variants-label">Twee manieren om hetzelfde werk te zien</p>
 		<ul class="landing__cards">
 			{#each variants as variant (variant.slug)}
 				<li class="card">
