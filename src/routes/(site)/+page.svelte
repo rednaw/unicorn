@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { base } from '$app/paths';
-	import { drawings, tracks } from '$lib/content';
-	import { selectTrack, museum } from './museum-state.svelte';
+	import { artist, drawings, tracks } from '$lib/content';
+	import { selectTrack, site } from '$lib/site-state.svelte';
 </script>
 
 <svelte:head>
-	<title>Museum — V. Solenne</title>
+	<title>{artist.name}</title>
+	<meta name="description" content={artist.tagline} />
 </svelte:head>
 
 <section class="gallery">
@@ -14,12 +15,15 @@
 			Zes studies in grafiet. De werken worden in omgekeerde chronologische volgorde getoond — de
 			meest recente eerst.
 		</p>
+		<p class="gallery__atelier">
+			<a href="{base}/atelier/">Of bekijk alles verspreid op de werktafel →</a>
+		</p>
 	</div>
 
 	<ul class="gallery__grid">
 		{#each drawings as drawing (drawing.id)}
 			<li class="gallery__item">
-				<a class="plate" href="{base}/museum/{drawing.id}/">
+				<a class="plate" href="{base}/werk/{drawing.id}/">
 					<div class="plate__frame">
 						<img src={drawing.src} alt={drawing.alt} loading="lazy" />
 					</div>
@@ -40,7 +44,7 @@
 					<button
 						type="button"
 						class="gallery__track"
-						class:gallery__track--active={museum.currentTrack.id === track.id}
+						class:gallery__track--active={site.currentTrack.id === track.id}
 						onclick={() => selectTrack(track)}
 					>
 						<span class="gallery__track-title">{track.title}</span>
@@ -49,6 +53,9 @@
 				</li>
 			{/each}
 		</ul>
+		<p class="gallery__listening-hint">
+			In het <a href="{base}/atelier/">atelier</a> volgt de muziek je terwijl je beweegt.
+		</p>
 	</aside>
 </section>
 
@@ -72,6 +79,24 @@
 		line-height: 1.55;
 		color: var(--color-ink-soft);
 		margin: 0;
+	}
+
+	.gallery__atelier {
+		margin: 1.25rem 0 0;
+		font-family: var(--font-sans);
+		font-size: 0.78rem;
+		letter-spacing: 0.08em;
+	}
+
+	.gallery__atelier a {
+		color: var(--color-ink-soft);
+		text-decoration: none;
+		opacity: 0.75;
+		transition: opacity 200ms ease;
+	}
+
+	.gallery__atelier a:hover {
+		opacity: 1;
 	}
 
 	.gallery__grid {
@@ -203,5 +228,18 @@
 		letter-spacing: 0.14em;
 		text-transform: uppercase;
 		opacity: 0.7;
+	}
+
+	.gallery__listening-hint {
+		margin: 1.5rem 0 0;
+		font-family: var(--font-serif);
+		font-style: italic;
+		font-size: 0.92rem;
+		color: var(--color-ink-soft);
+		opacity: 0.7;
+	}
+
+	.gallery__listening-hint a {
+		color: inherit;
 	}
 </style>

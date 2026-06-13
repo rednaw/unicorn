@@ -1,14 +1,15 @@
-# Unicorn — Artist Prototype, Two Variants
+# Unicorn — V. Solenne
 
-A SvelteKit prototype presenting one (fictional) artist's drawings, piano recordings,
-and poetry through **two contrasting design languages**. The same content runs through
-each variant so the design directions can be compared apples-to-apples.
+A SvelteKit site for one artist's drawings, piano recordings, and poetry.
+The **gallery** is the default experience; the **atelier** is an optional immersive
+studio view where works are scattered on a pannable canvas with proximity-based audio.
 
 | Route          | Idea                                                        |
 | -------------- | ----------------------------------------------------------- |
-| `/`            | Landing — artist intro and the two variant cards            |
-| `/museum/`     | Quiet white-walls gallery with detail pages                 |
-| `/atelier/`    | Pannable + zoomable canvas with proximity-based audio       |
+| `/`            | Gallery — grid of works and listening room                  |
+| `/werk/[slug]/`| Work detail — one drawing, paired poem, prev/next navigation  |
+| `/atelier/`    | Studio — pannable canvas with proximity-based audio         |
+| `/museum/`     | Redirects to `/` or `/werk/[slug]/` (legacy URLs)           |
 
 ## Prerequisites
 
@@ -34,19 +35,6 @@ pnpm build        # production build → build/
 `node_modules/` lives in the project folder (installed by the container's pnpm) so
 the editor gets full TypeScript and Svelte IntelliSense.
 
-### Git push
-
-The devcontainer mounts your host `~/.ssh` (read-only) so `git push` works with
-SSH remotes like `git@github.com:…`. Commit inside the container, then:
-
-```sh
-git push
-```
-
-If your SSH key has a passphrase or lives only in the macOS Keychain agent (not in
-`~/.ssh`), run `git push` from a **host** terminal in this same folder instead — commits
-are already on disk via the bind mount.
-
 ## Deployment (GitHub Pages)
 
 Push to `main` — GitHub Actions builds and publishes automatically.
@@ -61,9 +49,9 @@ the workflow.
 
 ## Content & assets
 
-The prototype currently uses a curated public-domain-inspired set:
+The site currently uses a curated public-domain-inspired set:
 
-- `/static/drawings/*.svg` — six drawing placeholders used across all variants
+- `/static/drawings/*.svg` — six drawing placeholders
 - `/static/audio/*.ogg` — three one-minute solo piano fragments
 - Poetry — Dutch public-domain excerpts in `src/lib/content.ts`
 
@@ -83,7 +71,7 @@ Docker (`docker run` for yt-dlp) — only needed if you want to re-fetch audio f
 1. Drop new files into `/static/drawings/`, `/static/audio/`, etc.
 2. Edit `src/lib/content.ts` — update the `drawings`, `tracks`, and `poems`
    arrays to point at the new paths and metadata.
-3. That's it. Both variants automatically pick up the new content.
+3. That's it. Both gallery and atelier automatically pick up the new content.
 
 The shape is:
 
@@ -93,31 +81,31 @@ type Track   = { id; title; composer; src; pos? }
 type Poem    = { id; title; author; lines; pairsWith?; pos?; rotation? }
 ```
 
-`pos` and `rotation` only matter for `/atelier`. `pairsWith` (a drawing id) is
-used by `/museum` detail pages to associate a poem with a drawing.
+`pos` and `rotation` define placement on the atelier canvas. `pairsWith` (a drawing id)
+associates a poem with a work on detail pages.
 
 ## Architecture
 
 ```
 src/
-  app.html              # <head>, Google Fonts
+  app.html
   routes/
-    +layout.ts          # prerender + trailingSlash: 'always'
-    +layout.svelte      # global head (favicon, CSS)
-    layout.css          # Tailwind + theme tokens (fonts, colours)
-    +page.svelte        # landing
-    museum/
-      +layout.svelte    # museum chrome + docked AudioPlayer
-      +page.svelte      # grid
-      [slug]/+page.ts   # entries() + load()
-      [slug]/+page.svelte
-      museum-state.svelte.ts  # shared $state for current track
-    atelier/+page.svelte
+    +layout.svelte          # global head (favicon, CSS)
+    +layout.ts              # prerender + trailingSlash: 'always'
+    layout.css              # Tailwind + theme tokens
+    (site)/
+      +layout.svelte        # gallery chrome + docked AudioPlayer
+      +page.svelte          # gallery grid
+      werk/[slug]/          # work detail pages
+    atelier/+page.svelte    # fullscreen studio canvas
+    museum/                 # legacy redirects
   lib/
-    content.ts          # single source of truth
+    content.ts              # single source of truth
+    site-state.svelte.ts    # shared audio player state
     components/
-      AudioPlayer.svelte  # variants: inline | docked | minimal
+      AudioPlayer.svelte
       PoemBlock.svelte
+      BackLink.svelte
 static/
   drawings/, audio/, .nojekyll, CREDITS.md
 scripts/
@@ -130,12 +118,12 @@ scripts/
 
 - **SvelteKit 2 + Svelte 5** (runes mode)
 - **Tailwind CSS 4** with `@tailwindcss/typography`
-- **Web Audio + native `<audio>`** for the `/atelier` proximity gain
+- **Web Audio + native `<audio>`** for atelier proximity gain
 - **@sveltejs/adapter-static** with `404.html` SPA fallback
 - Dev tooling in `.devcontainer/` — GitHub Actions for production builds
 
 ## Out of scope
 
 - A CMS — content lives in one TS file
-- Mobile-perfect interactions for `/atelier`
-- Analytics / A-B comparison instrumentation
+- Mobile-perfect atelier gestures
+- Analytics

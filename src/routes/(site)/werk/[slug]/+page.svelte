@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { base } from '$app/paths';
-	import { drawings, poems } from '$lib/content';
+	import { artist, drawings, poems } from '$lib/content';
 	import PoemBlock from '$lib/components/PoemBlock.svelte';
 
 	let { data } = $props();
@@ -14,12 +14,12 @@
 </script>
 
 <svelte:head>
-	<title>{drawing.title} — V. Solenne</title>
+	<title>{drawing.title} — {artist.name}</title>
 </svelte:head>
 
 <article class="detail">
 	<div class="detail__back">
-		<a href="{base}/museum/">← Alle werken</a>
+		<a href="{base}/">← Alle werken</a>
 	</div>
 
 	<div class="detail__plate">
@@ -38,15 +38,19 @@
 		</div>
 	{/if}
 
+	<p class="detail__atelier">
+		<a href="{base}/atelier/?focus={drawing.id}">Bekijk op de werktafel →</a>
+	</p>
+
 	<nav class="detail__pager">
-		<a href="{base}/museum/{prev.id}/">
+		<a href="{base}/werk/{prev.id}/">
 			<span class="detail__pager-arrow">←</span>
 			<span class="detail__pager-meta">
 				<span class="detail__pager-eyebrow">Vorige</span>
 				<span class="detail__pager-title">{prev.title}</span>
 			</span>
 		</a>
-		<a href="{base}/museum/{next.id}/" class="detail__pager-next">
+		<a href="{base}/werk/{next.id}/" class="detail__pager-next">
 			<span class="detail__pager-meta">
 				<span class="detail__pager-eyebrow">Volgende</span>
 				<span class="detail__pager-title">{next.title}</span>
@@ -140,6 +144,25 @@
 		color: var(--color-ink-soft);
 		opacity: 0.6;
 		margin: 0 0 1.5rem;
+	}
+
+	.detail__atelier {
+		text-align: center;
+		margin: 3rem 0 0;
+		font-family: var(--font-sans);
+		font-size: 0.78rem;
+		letter-spacing: 0.08em;
+	}
+
+	.detail__atelier a {
+		color: var(--color-ink-soft);
+		text-decoration: none;
+		opacity: 0.75;
+		transition: opacity 200ms ease;
+	}
+
+	.detail__atelier a:hover {
+		opacity: 1;
 	}
 
 	.detail__pager {

@@ -1,5 +1,4 @@
-// Single source of truth for the prototype's content.
-// Both variants (/museum, /atelier) import from here.
+// Single source of truth for the site's content.
 // User-facing strings are in Dutch (the site language); code and types stay English.
 
 import { base } from '$app/paths';
@@ -11,11 +10,11 @@ export type Drawing = {
 	medium: string;
 	src: string;
 	alt: string;
-	/** Atelier-only: rotation in degrees */
+	/** Rotation in degrees — used on the atelier canvas */
 	rotation?: number;
-	/** Atelier-only: absolute position on the infinite canvas */
+	/** Position on the atelier canvas */
 	pos?: { x: number; y: number };
-	/** Atelier-only: render width in canvas px */
+	/** Render width on the atelier canvas (px) */
 	width?: number;
 };
 
@@ -24,7 +23,7 @@ export type Track = {
 	title: string;
 	composer: string;
 	src: string;
-	/** Atelier-only: position of the "speaker" on the canvas */
+	/** Position of the speaker on the atelier canvas */
 	pos?: { x: number; y: number };
 };
 
@@ -33,9 +32,9 @@ export type Poem = {
 	title: string;
 	author: string;
 	lines: string[];
-	/** Drawing id this poem is paired with on museum detail pages */
+	/** Drawing id this poem is paired with on work detail pages */
 	pairsWith?: string;
-	/** Atelier-only: position of the torn-paper card */
+	/** Position of the torn-paper card on the atelier canvas */
 	pos?: { x: number; y: number };
 	rotation?: number;
 };
@@ -46,9 +45,9 @@ const asset = (path: string) => `${base}${path}`;
 export const artist = {
 	name: 'V. Solenne',
 	tagline: 'potloodtekeningen, pianoschetsen, fragmenten van poëzie',
-	bio: `Een fictieve kunstenaar die werkt in grafiet, geluid en vers. De voorbeelden
-hier zijn allemaal uit het publieke domein. Samen staan ze in voor een echt oeuvre
-— dit prototype laat twee ontwerpstijlen zien om dat werk te presenteren.`
+	bio: `Werkt in grafiet, geluid en vers. De tekeningen, pianofragmenten en gedichten
+op deze site vormen samen een oeuvre — soms rustig tentoongesteld in de galerij,
+soms verspreid over de werktafel.`
 };
 
 export const drawings: Drawing[] = [
@@ -220,19 +219,3 @@ export const poems: Poem[] = [
 		rotation: -6
 	}
 ];
-
-/** Variants metadata for the landing page. */
-export const variants = [
-	{
-		slug: 'museum',
-		title: 'Museum',
-		tagline: 'Stille witte-muren-galerij',
-		rationale: 'Royale witruimte, schreefletter, één werk tegelijk.'
-	},
-	{
-		slug: 'atelier',
-		title: 'Atelier',
-		tagline: 'Een oneindige werktafel',
-		rationale: 'Pannen en zoomen over verspreide werken — geluid stijgt naarmate je nadert.'
-	}
-] as const;

@@ -1,5 +1,8 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
+	import { base } from '$app/paths';
+	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
 	import { drawings, poems, tracks, artist } from '$lib/content';
 	import BackLink from '$lib/components/BackLink.svelte';
 
@@ -318,8 +321,25 @@
 		for (const g of gainNodes) g.gain.value = 0;
 	}
 
+	function leave() {
+		stop();
+		goto(`${base}/`);
+	}
+
+	async function enterWithFocus(focusId: string) {
+		const drawing = drawings.find((d) => d.id === focusId);
+		if (!drawing) return;
+		await start();
+		await tick();
+		focusDrawing(drawing);
+	}
+
 	onMount(() => {
 		resetView();
+		const focusId = page.url.searchParams.get('focus');
+		if (focusId) {
+			void enterWithFocus(focusId);
+		}
 		const onResize = () => {
 			// Keep the user's current framing after they have started navigating;
 			// only recenter when still in the initial untouched state.
@@ -349,15 +369,15 @@
 </script>
 
 <svelte:head>
-	<title>Atelier — V. Solenne</title>
+	<title>De werktafel — {artist.name}</title>
 </svelte:head>
 
 <div class="atelier">
-	<BackLink theme="light" />
+	<BackLink theme="light" label="Galerij" />
 
 	{#if !started}
 		<div class="atelier__overlay" role="dialog" aria-modal="true">
-			<p class="atelier__eyebrow">Een oneindige werktafel</p>
+			<p class="atelier__eyebrow">De werktafel</p>
 			<h1 class="atelier__title">{artist.name}</h1>
 			<p class="atelier__hint">
 				Sleep om te verplaatsen, scrol of knijp om te zoomen, tik op een tekening om die te
@@ -366,7 +386,9 @@
 			<button type="button" class="atelier__begin" onclick={start}>Binnen</button>
 		</div>
 	{:else}
-		<button type="button" class="atelier__close" onclick={stop} aria-label="Sluiten">×</button>
+		<button type="button" class="atelier__close" onclick={leave} aria-label="Terug naar galerij">
+			×
+		</button>
 	{/if}
 
 	<div class="atelier__audio" aria-hidden="true">
@@ -540,7 +562,7 @@
 	}
 
 	.atelier__title {
-		font-family: var(--font-display);
+		font-family: var(--font-museum);
 		font-size: clamp(3rem, 8vw, 5rem);
 		font-weight: 400;
 		line-height: 1;

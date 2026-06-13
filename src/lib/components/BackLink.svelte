@@ -14,7 +14,7 @@
 	class="back back--{theme}"
 	class:back--fixed={fixed}
 	href="{base}/"
-	aria-label="Terug naar het overzicht"
+	aria-label="Terug naar de galerij"
 >
 	<span class="back__arrow" aria-hidden="true">←</span>
 	<span class="back__label">{label}</span>
