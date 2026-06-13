@@ -34,6 +34,19 @@ pnpm build        # production build → build/
 `node_modules/` lives in the project folder (installed by the container's pnpm) so
 the editor gets full TypeScript and Svelte IntelliSense.
 
+### Git push
+
+The devcontainer mounts your host `~/.ssh` (read-only) so `git push` works with
+SSH remotes like `git@github.com:…`. Commit inside the container, then:
+
+```sh
+git push
+```
+
+If your SSH key has a passphrase or lives only in the macOS Keychain agent (not in
+`~/.ssh`), run `git push` from a **host** terminal in this same folder instead — commits
+are already on disk via the bind mount.
+
 ## Deployment (GitHub Pages)
 
 Push to `main` — GitHub Actions builds and publishes automatically.
