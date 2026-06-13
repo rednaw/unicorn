@@ -10,24 +10,13 @@
 </svelte:head>
 
 <section class="gallery">
-	<div class="gallery__intro">
-		<p class="gallery__statement">
-			Zes studies in grafiet. De werken worden in omgekeerde chronologische volgorde getoond — de
-			meest recente eerst.
-		</p>
-		<p class="gallery__atelier">
-			<a href="{base}/atelier/">Of bekijk alles verspreid op de werktafel →</a>
-		</p>
-	</div>
-
-	<div class="gallery__listening" aria-label="Luister mee">
-		<p class="gallery__listening-label">Luister mee</p>
+	<div class="gallery__listening" aria-label="Luisteren">
 		<div class="gallery__listening-row">
 			<button
 				type="button"
 				class="gallery__play"
 				onclick={toggleHeroPlayback}
-				aria-label={site.isPlaying ? 'Pauzeer' : 'Begin met luisteren'}
+				aria-label={site.isPlaying ? 'Pauzeer' : 'Speel'}
 			>
 				{#if site.isPlaying}
 					<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
@@ -60,13 +49,9 @@
 	<ul class="gallery__grid">
 		{#each drawings as drawing (drawing.id)}
 			<li class="gallery__item">
-				<a class="plate" href="{base}/werk/{drawing.id}/">
+				<a class="plate" href="{base}/werk/{drawing.id}/" aria-label={drawing.title}>
 					<div class="plate__frame">
 						<img src={drawing.src} alt={drawing.alt} loading="lazy" />
-					</div>
-					<div class="plate__meta">
-						<h2 class="plate__title">{drawing.title}</h2>
-						<p class="plate__sub">{drawing.year} · {drawing.medium}</p>
 					</div>
 				</a>
 			</li>
@@ -76,58 +61,15 @@
 
 <style>
 	.gallery {
-		padding: clamp(2rem, 6vw, 5rem) clamp(1.5rem, 5vw, 3.5rem) 0;
+		padding: clamp(1.5rem, 4vw, 3rem) clamp(1.5rem, 5vw, 3.5rem) 0;
 		max-width: 80rem;
 		margin: 0 auto;
 	}
 
-	.gallery__intro {
-		max-width: 32rem;
-		margin: 0 auto 2rem;
-		text-align: center;
-	}
-
-	.gallery__statement {
-		font-family: var(--font-museum);
-		font-style: italic;
-		font-size: 1.15rem;
-		line-height: 1.55;
-		color: var(--color-ink-soft);
-		margin: 0;
-	}
-
-	.gallery__atelier {
-		margin: 1.25rem 0 0;
-		font-family: var(--font-sans);
-		font-size: 0.78rem;
-		letter-spacing: 0.08em;
-	}
-
-	.gallery__atelier a {
-		color: var(--color-ink-soft);
-		text-decoration: none;
-		opacity: 0.75;
-		transition: opacity 200ms ease;
-	}
-
-	.gallery__atelier a:hover {
-		opacity: 1;
-	}
-
 	.gallery__listening {
 		max-width: 42rem;
-		margin: 0 auto 3rem;
+		margin: 0 auto 2.5rem;
 		text-align: center;
-	}
-
-	.gallery__listening-label {
-		font-family: var(--font-sans);
-		font-size: 0.68rem;
-		letter-spacing: 0.22em;
-		text-transform: uppercase;
-		color: var(--color-ink-soft);
-		opacity: 0.55;
-		margin: 0 0 0.65rem;
 	}
 
 	.gallery__listening-row {
@@ -233,28 +175,5 @@
 		max-width: 100%;
 		max-height: 100%;
 		object-fit: contain;
-	}
-
-	.plate__meta {
-		margin-top: 1rem;
-		text-align: center;
-	}
-
-	.plate__title {
-		font-family: var(--font-museum);
-		font-style: italic;
-		font-weight: 400;
-		font-size: 1.1rem;
-		margin: 0;
-	}
-
-	.plate__sub {
-		font-family: var(--font-sans);
-		font-size: 0.72rem;
-		letter-spacing: 0.14em;
-		text-transform: uppercase;
-		color: var(--color-ink-soft);
-		opacity: 0.7;
-		margin: 0.4rem 0 0;
 	}
 </style>

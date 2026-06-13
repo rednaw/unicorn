@@ -27,27 +27,12 @@ export type Track = {
 	pos?: { x: number; y: number };
 };
 
-export type Poem = {
-	id: string;
-	title: string;
-	author: string;
-	lines: string[];
-	/** Drawing id this poem is paired with on work detail pages */
-	pairsWith?: string;
-	/** Position of the torn-paper card on the atelier canvas */
-	pos?: { x: number; y: number };
-	rotation?: number;
-};
-
 /** Resolve a /static path to one that respects the BASE_PATH GitHub Pages prefix. */
 const asset = (path: string) => `${base}${path}`;
 
 export const artist = {
 	name: 'V. Solenne',
-	tagline: 'potloodtekeningen, pianoschetsen, fragmenten van poëzie',
-	bio: `Werkt in grafiet, geluid en vers. De tekeningen, pianofragmenten en gedichten
-op deze site vormen samen een oeuvre — soms rustig tentoongesteld in de galerij,
-soms verspreid over de werktafel.`
+	tagline: 'tekeningen en geluid'
 };
 
 export const drawings: Drawing[] = [
@@ -140,82 +125,5 @@ export const tracks: Track[] = [
 		composer: 'Frédéric Chopin',
 		src: asset('/audio/chopin-polonaise.ogg'),
 		pos: { x: 1620, y: 980 }
-	}
-];
-
-export const poems: Poem[] = [
-	{
-		id: 'mei',
-		title: 'Mei (opening)',
-		author: 'Herman Gorter',
-		lines: [
-			'Een nieuwe lente en een nieuw geluid:',
-			'ik wil dat dit lied klinkt als het gefluit,',
-			'dat ik vaak hoorde voor een zomernacht',
-			'in een oud stadje, langs de watergracht —'
-		],
-		pairsWith: 'figure-study',
-		pos: { x: 480, y: 240 },
-		rotation: 5
-	},
-	{
-		id: 'schrijverke',
-		title: 'Het schrijverke',
-		author: 'Guido Gezelle',
-		lines: [
-			'O Krinklende winklende waterding',
-			"met 't zwarte kapoteken aan,",
-			'wat zien ik toch geren uw kopke flink',
-			"al schrijven op 't watervlak gaan!"
-		],
-		pairsWith: 'hare',
-		pos: { x: 820, y: 520 },
-		rotation: 4
-	},
-	{
-		id: 'holland',
-		title: 'Herinnering aan Holland',
-		author: 'Hendrik Marsman',
-		lines: [
-			'Denkend aan Holland',
-			'zie ik breede rivieren',
-			'traag door oneindig',
-			'laagland gaan,',
-			'rijen ondenkbaar',
-			'ijle populieren',
-			'als hooge pluimen',
-			'aan den einder staan;'
-		],
-		pairsWith: 'horse',
-		pos: { x: 1360, y: 540 },
-		rotation: -2
-	},
-	{
-		id: 'woonhuis',
-		title: 'Om mijn oud woonhuis',
-		author: 'J. H. Leopold',
-		lines: [
-			'Om mijn oud woonhuis peppels staan,',
-			"'mijn lief, mijn lief, o waar gebleven',",
-			'een smalle laan',
-			'van natte blaren, het vallen komt.'
-		],
-		pairsWith: 'concert',
-		pos: { x: 1100, y: 340 },
-		rotation: 3
-	},
-	{
-		id: 'zachte-krachten',
-		title: 'De zachte krachten',
-		author: 'Henriette Roland Holst',
-		lines: [
-			'De zachte krachten zullen zeker winnen',
-			"in 't eind — dit hoor ik als een innig fluistren",
-			'in mij: zoo \u2019t zweeg zou alle licht verduistren',
-			'alle warmte zou verstarren van binnen.'
-		],
-		pairsWith: 'self-portrait',
-		pos: { x: 260, y: 460 },
-		rotation: -6
 	}
 ];

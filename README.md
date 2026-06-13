@@ -1,13 +1,13 @@
 # Unicorn — V. Solenne
 
-A SvelteKit site for one artist's drawings, piano recordings, and poetry.
+A SvelteKit site for one artist's drawings and piano recordings.
 The **gallery** is the default experience; the **atelier** is an optional immersive
 studio view where works are scattered on a pannable canvas with proximity-based audio.
 
 | Route          | Idea                                                        |
 | -------------- | ----------------------------------------------------------- |
-| `/`            | Gallery — grid of works and listening room                  |
-| `/werk/[slug]/`| Work detail — one drawing, paired poem, prev/next navigation  |
+| `/`            | Gallery — grid of works and listening controls              |
+| `/werk/[slug]/`| Work detail — one drawing, prev/next navigation              |
 | `/atelier/`    | Studio — pannable canvas with proximity-based audio         |
 | `/museum/`     | Redirects to `/` or `/werk/[slug]/` (legacy URLs)           |
 
@@ -53,7 +53,6 @@ The site currently uses a curated public-domain-inspired set:
 
 - `/static/drawings/*.svg` — six drawing placeholders
 - `/static/audio/*.ogg` — three one-minute solo piano fragments
-- Poetry — Dutch public-domain excerpts in `src/lib/content.ts`
 
 See `static/CREDITS.md` for sources and licensing.
 
@@ -69,8 +68,8 @@ Docker (`docker run` for yt-dlp) — only needed if you want to re-fetch audio f
 ### Swap in real assets
 
 1. Drop new files into `/static/drawings/`, `/static/audio/`, etc.
-2. Edit `src/lib/content.ts` — update the `drawings`, `tracks`, and `poems`
-   arrays to point at the new paths and metadata.
+2. Edit `src/lib/content.ts` — update the `drawings` and `tracks` arrays
+   to point at the new paths and metadata.
 3. That's it. Both gallery and atelier automatically pick up the new content.
 
 The shape is:
@@ -78,11 +77,9 @@ The shape is:
 ```ts
 type Drawing = { id; title; year; medium; src; alt; rotation?; pos?; width? }
 type Track   = { id; title; composer; src; pos? }
-type Poem    = { id; title; author; lines; pairsWith?; pos?; rotation? }
 ```
 
-`pos` and `rotation` define placement on the atelier canvas. `pairsWith` (a drawing id)
-associates a poem with a work on detail pages.
+`pos` and `rotation` define placement on the atelier canvas.
 
 ## Architecture
 
@@ -104,7 +101,6 @@ src/
     site-state.svelte.ts    # shared audio player state
     components/
       AudioPlayer.svelte
-      PoemBlock.svelte
       BackLink.svelte
 static/
   drawings/, audio/, .nojekyll, CREDITS.md

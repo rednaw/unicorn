@@ -20,7 +20,6 @@
 			<BackLink theme="light" fixed={false} label="Galerij" />
 		{/if}
 		<div class="site__brand">
-			<p class="site__brand-eyebrow">Tekeningen & geluid</p>
 			<h1 class="site__brand-title">
 				<a href="{base}/">{artist.name}</a>
 			</h1>
@@ -72,22 +71,12 @@
 		text-align: center;
 	}
 
-	.site__brand-eyebrow {
-		font-family: var(--font-sans);
-		font-size: 0.7rem;
-		letter-spacing: 0.22em;
-		text-transform: uppercase;
-		color: var(--color-ink-soft);
-		opacity: 0.6;
-		margin: 0;
-	}
-
 	.site__brand-title {
 		font-family: var(--font-museum);
 		font-size: 1.5rem;
 		font-weight: 400;
 		font-style: italic;
-		margin: 0.15rem 0 0;
+		margin: 0;
 	}
 
 	.site__brand-title a {

@@ -3,7 +3,7 @@
 	import { base } from '$app/paths';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import { drawings, poems, tracks, artist } from '$lib/content';
+	import { drawings, tracks, artist } from '$lib/content';
 	import BackLink from '$lib/components/BackLink.svelte';
 
 	// Canvas dimensions — large worktable that the viewer pans/zooms over.
@@ -16,7 +16,6 @@
 	let started = $state(false);
 	let viewport = $state<HTMLDivElement>();
 	let audioEls = $state<HTMLAudioElement[]>([]);
-	let poemEls = $state<HTMLElement[]>([]);
 
 	// Web Audio plumbing — iOS Safari ignores HTMLAudioElement.volume,
 	// so proximity gain must route through GainNodes.
@@ -249,18 +248,6 @@
 		zoomTo(cx, cy, target);
 	}
 
-	function focusPoem(poem: (typeof poems)[number], idx: number) {
-		const el = poemEls[idx];
-		const width = el?.offsetWidth ?? 352; // fallback for 22rem at 16px root
-		const height = el?.offsetHeight ?? 220;
-		const cx = (poem.pos?.x ?? 0) + width / 2;
-		const cy = (poem.pos?.y ?? 0) + height / 2;
-		const fitTarget = focusTargetZoom(width, height, 0.72);
-		const steppedTarget = Math.min(MAX_ZOOM, zoom + 0.22);
-		const target = Math.max(fitTarget, steppedTarget);
-		zoomTo(cx, cy, target);
-	}
-
 	function resetView() {
 		if (!viewport) return;
 		const vw = viewport.clientWidth;
@@ -377,13 +364,9 @@
 
 	{#if !started}
 		<div class="atelier__overlay" role="dialog" aria-modal="true">
-			<p class="atelier__eyebrow">De werktafel</p>
 			<h1 class="atelier__title">{artist.name}</h1>
-			<p class="atelier__hint">
-				Sleep om te verplaatsen, scrol of knijp om te zoomen, tik op een tekening om die te
-				focussen. Het geluid stijgt naarmate je een luidspreker nadert.
-			</p>
-			<button type="button" class="atelier__begin" onclick={start}>Binnen</button>
+			<p class="atelier__hint">Sleep, zoom, luister.</p>
+			<button type="button" class="atelier__begin" onclick={start}>→</button>
 		</div>
 	{:else}
 		<button type="button" class="atelier__close" onclick={leave} aria-label="Terug naar galerij">
@@ -426,32 +409,6 @@
 					aria-label={drawing.title}
 				>
 					<img src={drawing.src} alt={drawing.alt} />
-					<span class="piece__label">{drawing.title}</span>
-				</button>
-			{/each}
-
-			{#each poems as poem, pi (poem.id)}
-				<button
-					type="button"
-					class="piece piece--poem"
-					style:left="{poem.pos?.x ?? 0}px"
-					style:top="{poem.pos?.y ?? 0}px"
-					style:--rot="{poem.rotation ?? 0}deg"
-					bind:this={poemEls[pi]}
-					onclick={() => focusPoem(poem, pi)}
-					aria-label={poem.title}
-				>
-					<div class="piece__poem">
-						<h3>{poem.title}</h3>
-						{#each poem.lines as line, li (li)}
-							{#if line === ''}
-								<div class="piece__break"></div>
-							{:else}
-								<p>{line}</p>
-							{/if}
-						{/each}
-						<p class="piece__author">— {poem.author}</p>
-					</div>
 				</button>
 			{/each}
 
@@ -474,14 +431,13 @@
 							d="M3 9v6h4l5 4V5L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"
 						/>
 					</svg>
-					<span class="speaker__label">{track.title}<br /><em>{track.composer}</em></span>
 				</button>
 			{/each}
 		</div>
 	</div>
 
 	<button type="button" class="atelier__reset" onclick={resetView} aria-label="Beeld herstellen">
-		Passen
+		↺
 	</button>
 
 	{#if started}
@@ -550,15 +506,6 @@
 		text-align: center;
 		z-index: 100;
 		padding: 2rem;
-	}
-
-	.atelier__eyebrow {
-		font-family: var(--font-sans);
-		font-size: 0.72rem;
-		letter-spacing: 0.22em;
-		text-transform: uppercase;
-		opacity: 0.7;
-		margin: 0;
 	}
 
 	.atelier__title {
@@ -650,70 +597,6 @@
 		pointer-events: none;
 	}
 
-	.piece__label {
-		display: block;
-		text-align: center;
-		font-family: var(--font-museum);
-		font-style: italic;
-		font-size: 1rem;
-		margin-top: 0.5rem;
-		color: var(--color-ink-soft);
-	}
-
-	.piece--poem {
-		appearance: none;
-		border: none;
-		padding: 0;
-		margin: 0;
-		background: none;
-		text-align: left;
-		cursor: zoom-in;
-		width: 22rem;
-		max-width: 22rem;
-	}
-
-	.piece__poem {
-		background: #fefaee;
-		padding: 1.25rem 1.5rem 1.5rem;
-		box-shadow: 0 12px 32px -18px rgba(0, 0, 0, 0.3);
-		font-family: var(--font-serif);
-		color: var(--color-ink);
-		/* Torn-paper edges */
-		--edge: radial-gradient(circle at 50% 100%, #fefaee 99%, transparent 100%);
-		mask-image: linear-gradient(180deg, #000 0%, #000 calc(100% - 12px), transparent calc(100% - 6px)),
-			radial-gradient(circle at 8px 0, transparent 5px, #000 6px),
-			radial-gradient(circle at 24px 0, transparent 5px, #000 6px),
-			radial-gradient(circle at 40px 0, transparent 4px, #000 5px);
-	}
-
-	.piece__poem h3 {
-		font-family: var(--font-display);
-		font-style: italic;
-		font-weight: 400;
-		font-size: 1.1rem;
-		margin: 0 0 0.5rem;
-	}
-
-	.piece__poem p {
-		margin: 0;
-		font-size: 0.92rem;
-		line-height: 1.45;
-	}
-
-	.piece__break {
-		height: 0.6em;
-	}
-
-	.piece__author {
-		margin-top: 0.6rem !important;
-		font-family: var(--font-sans);
-		font-size: 0.68rem;
-		letter-spacing: 0.16em;
-		text-transform: uppercase;
-		color: var(--color-ink-soft);
-		opacity: 0.7;
-	}
-
 	.speaker {
 		appearance: none;
 		background: var(--color-ink);
@@ -745,25 +628,6 @@
 			transform: scale(1.8);
 			opacity: 0;
 		}
-	}
-
-	.speaker__label {
-		position: absolute;
-		top: 100%;
-		left: 50%;
-		transform: translate(-50%, 6px);
-		white-space: nowrap;
-		font-family: var(--font-sans);
-		font-size: 0.7rem;
-		letter-spacing: 0.06em;
-		color: var(--color-ink);
-		text-align: center;
-		line-height: 1.4;
-	}
-
-	.speaker__label em {
-		font-style: italic;
-		opacity: 0.6;
 	}
 
 	.atelier__reset {
