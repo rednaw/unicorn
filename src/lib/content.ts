@@ -110,20 +110,20 @@ export const tracks: Track[] = [
 		title: 'Prelude in cis klein, op. 3 nr. 2',
 		composer: 'Sergej Rachmaninov',
 		src: asset('/audio/rachmaninov-prelude.ogg'),
-		pos: { x: 320, y: 980 }
+		pos: { x: 480, y: 420 }
 	},
 	{
 		id: 'liszt-liebestraum',
 		title: 'Liebestraum nr. 3',
 		composer: 'Franz Liszt',
 		src: asset('/audio/liszt-liebestraum.ogg'),
-		pos: { x: 1020, y: 980 }
+		pos: { x: 1300, y: 520 }
 	},
 	{
 		id: 'chopin-polonaise',
 		title: 'Polonaise in As, op. 53 ("Heroïque")',
 		composer: 'Frédéric Chopin',
 		src: asset('/audio/chopin-polonaise.ogg'),
-		pos: { x: 1620, y: 980 }
+		pos: { x: 820, y: 1060 }
 	}
 ];
