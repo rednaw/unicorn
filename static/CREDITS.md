@@ -24,38 +24,13 @@ high-resolution scans if you want to replace these placeholders with the real th
 
 ## Audio (`/static/audio/`)
 
-Three ~60-second excerpts sourced via `yt-dlp` from the **first YouTube search
-result** for each piece, then trimmed with a 2-second fade-in / fade-out and
-re-encoded to OGG Vorbis.
-
 | File | Piece |
 |---|---|
-| `rachmaninov-prelude.ogg` | Sergei Rachmaninoff, *Prelude in C-sharp minor, Op. 3 No. 2* |
-| `liszt-liebestraum.ogg`   | Franz Liszt, *Liebesträume No. 3 in A-flat major, S. 541* (middle section) |
-| `chopin-polonaise.ogg`    | Frédéric Chopin, *Polonaise in A-flat major "Heroic", Op. 53* |
+| `chopin-ballade-opus-52-no-4.m4a`  | Frédéric Chopin, *Ballade No. 4 in F minor, Op. 52* |
+| `chopin-mazurka-opus-50-no-2.m4a`  | Frédéric Chopin, *Mazurka in A-flat major, Op. 50 No. 2* |
+| `chopin-polonaise.ogg`             | Frédéric Chopin, *Polonaise in A-flat major "Heroic", Op. 53* |
 
-The **compositions** are in the public domain (Liszt died 1886, Chopin 1849,
-Rachmaninoff 1943 — all PD in the EU under life + 70 years). The
-**performance recordings** behind these excerpts are not chosen for licensing
-clearance — they are temporary placeholders so the prototype can demonstrate
-audio behaviour. For anything beyond a prototype, replace them with recordings
+The **compositions** are in the public domain (Chopin died 1849 — PD in the EU
+under life + 70 years). Make sure any **performance recording** you ship is one
 you have rights to (e.g. CC0 recordings from [Musopen](https://musopen.org) or
 licensed performances).
-
-To regenerate: `./scripts/fetch-assets.sh` (uses `jauderho/yt-dlp` and
-`jrottenberg/ffmpeg` Docker images; idempotent).
-
-## Poetry (`src/lib/content.ts`)
-
-Inlined excerpts of **public-domain Dutch-language verse**:
-
-| Author | Poem |
-|---|---|
-| Herman Gorter | *Mei* (opening, 1889) |
-| Guido Gezelle | *Het schrijverke* (first stanza) |
-| Hendrik Marsman | *Herinnering aan Holland* (first stanza, 1936) |
-| J. H. Leopold | *Om mijn oud woonhuis peppels staan* (excerpt) |
-| Henriette Roland Holst | *De zachte krachten zullen zeker winnen* (first quatrain, 1909) |
-
-All authors died before 1955; their works are in the public domain in the EU
-(life + 70 years) and elsewhere.

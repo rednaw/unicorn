@@ -106,17 +106,17 @@ export const drawings: Drawing[] = [
 
 export const tracks: Track[] = [
 	{
-		id: 'rachmaninov-prelude',
-		title: 'Prelude in cis klein, op. 3 nr. 2',
-		composer: 'Sergej Rachmaninov',
-		src: asset('/audio/rachmaninov-prelude.ogg'),
+		id: 'chopin-ballade-4',
+		title: 'Ballade nr. 4 in f klein, op. 52',
+		composer: 'Frédéric Chopin',
+		src: asset('/audio/chopin-ballade-opus-52-no-4.m4a'),
 		pos: { x: 480, y: 420 }
 	},
 	{
-		id: 'liszt-liebestraum',
-		title: 'Liebestraum nr. 3',
-		composer: 'Franz Liszt',
-		src: asset('/audio/liszt-liebestraum.ogg'),
+		id: 'chopin-mazurka-op50-2',
+		title: 'Mazurka in As, op. 50 nr. 2',
+		composer: 'Frédéric Chopin',
+		src: asset('/audio/chopin-mazurka-opus-50-no-2.m4a'),
 		pos: { x: 1300, y: 520 }
 	},
 	{
