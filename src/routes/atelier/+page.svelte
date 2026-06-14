@@ -17,7 +17,6 @@
 	const ZOOM_GATE_LOW = 0.65;
 	const ZOOM_GATE_HIGH = 0.95;
 
-	let started = $state(false);
 	let viewport = $state<HTMLDivElement>();
 	let audioEls = $state<HTMLAudioElement[]>([]);
 	// Speaker ring elements, used to reflect live loudness without reactive churn.
@@ -132,6 +131,7 @@
 
 	function onPointerDown(e: PointerEvent) {
 		if (e.button !== 0) return;
+		unlockAudio();
 		// Any interaction ends the intro drift / momentum and hands over control.
 		cancelAutoMotion();
 		// Drawings allow drag-or-tap (the browser auto-suppresses click after
@@ -139,7 +139,7 @@
 		// so their own click handlers always win.
 		if (pointers.size === 0) {
 			const target = e.target as HTMLElement;
-			if (target.closest('.speaker, .atelier__reset, .atelier__close, .minimap, .back'))
+			if (target.closest('.speaker, .atelier__reset, .back'))
 				return;
 		}
 		pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
@@ -250,6 +250,7 @@
 
 	function onWheel(e: WheelEvent) {
 		if (!viewport) return;
+		unlockAudio();
 		cancelAutoMotion();
 		e.preventDefault();
 		const rect = viewport.getBoundingClientRect();
@@ -454,7 +455,7 @@
 
 	// --- Keyboard navigation (desktop) ---
 	function onKeyDown(e: KeyboardEvent) {
-		if (!started) return;
+		unlockAudio();
 		const PAN = 90;
 		const ZOOM_IN = 1.15;
 		const vw = viewport?.clientWidth ?? 0;
@@ -509,7 +510,7 @@
 	}
 
 	// --- Double-click / double-tap to zoom ---
-	const NON_CANVAS = '.piece, .speaker, .minimap, .atelier__reset, .atelier__close, .back';
+	const NON_CANVAS = '.piece, .speaker, .atelier__reset, .back';
 
 	function onDblClick(e: MouseEvent) {
 		if (!viewport) return;
@@ -583,34 +584,32 @@
 		raf = requestAnimationFrame(updateAudio);
 	}
 
-	async function start() {
-		started = true;
-		setupAudioGraph();
-		try {
-			await audioCtx?.resume();
-		} catch {}
-		// Unlock playback within the user gesture, then leave every track paused
-		// at the start. Tracks only sound when the viewer zooms in close to a
-		// speaker, and never loop.
+	// The experience runs immediately on load. Browser autoplay policy means
+	// audio can't sound until a user gesture, so it is unlocked on the first
+	// interaction; the proximity loop then decides when each track sounds.
+	let audioUnlocked = false;
+
+	function unlockAudio() {
+		if (audioUnlocked || !audioCtx) return;
+		audioUnlocked = true;
+		audioCtx.resume().catch(() => {});
 		for (const a of audioEls) {
 			a.loop = false;
-			try {
-				await a.play();
-				a.pause();
-				a.currentTime = 0;
-			} catch {}
+			a.play()
+				.then(() => {
+					a.pause();
+					a.currentTime = 0;
+				})
+				.catch(() => {});
 		}
-		raf = requestAnimationFrame(updateAudio);
 	}
 
 	function stop() {
-		started = false;
 		cancelAutoMotion();
 		cancelAnimationFrame(raf);
 		raf = 0;
 		for (const a of audioEls) a.pause();
-		// Cancel any scheduled ramps and silence all gain nodes so a subsequent
-		// start() begins from quiet.
+		// Cancel any scheduled ramps and silence all gain nodes.
 		const now = audioCtx?.currentTime ?? 0;
 		for (const g of gainNodes) {
 			g.gain.cancelScheduledValues(now);
@@ -623,27 +622,19 @@
 		goto(`${base}/`);
 	}
 
-	// Normal entry from the overlay: start audio, then run the intro drift.
-	async function begin() {
-		await start();
-		await tick();
-		runIntroTour();
-	}
-
-	async function enterWithFocus(focusId: string) {
-		const drawing = drawings.find((d) => d.id === focusId);
-		if (!drawing) return;
-		await start();
-		await tick();
-		focusDrawing(drawing);
-	}
-
 	onMount(() => {
 		resetView();
+		setupAudioGraph();
+		raf = requestAnimationFrame(updateAudio);
+
 		const focusId = page.url.searchParams.get('focus');
 		if (focusId) {
-			void enterWithFocus(focusId);
+			const drawing = drawings.find((d) => d.id === focusId);
+			if (drawing) void tick().then(() => focusDrawing(drawing));
+		} else {
+			runIntroTour();
 		}
+
 		const onResize = () => {
 			// Keep the user's current framing after they have started navigating;
 			// only recenter when still in the initial untouched state.
@@ -665,22 +656,6 @@
 		};
 	});
 
-	function onMinimapClick(e: MouseEvent) {
-		cancelAutoMotion();
-		const rect = (e.currentTarget as SVGElement).getBoundingClientRect();
-		const cx = ((e.clientX - rect.left) / rect.width) * CANVAS_W;
-		const cy = ((e.clientY - rect.top) / rect.height) * CANVAS_H;
-		zoomTo(cx, cy, zoom);
-	}
-
-	const minimapScale = 200 / CANVAS_W;
-	const minimapH = $derived(CANVAS_H * minimapScale);
-	const viewBox = $derived({
-		x: -tx / zoom,
-		y: -ty / zoom,
-		w: viewport ? viewport.clientWidth / zoom : 0,
-		h: viewport ? viewport.clientHeight / zoom : 0
-	});
 </script>
 
 <svelte:head>
@@ -689,18 +664,6 @@
 
 <div class="atelier">
 	<BackLink theme="light" label="Galerij" />
-
-	{#if !started}
-		<div class="atelier__overlay" role="dialog" aria-modal="true">
-			<h1 class="atelier__title">{artist.name}</h1>
-			<p class="atelier__hint">Sleep, zoom, luister.</p>
-			<button type="button" class="atelier__begin" onclick={begin}>→</button>
-		</div>
-	{:else}
-		<button type="button" class="atelier__close" onclick={leave} aria-label="Terug naar galerij">
-			×
-		</button>
-	{/if}
 
 	<div class="atelier__audio" aria-hidden="true">
 		{#each tracks as track, i (track.id)}
@@ -764,48 +727,6 @@
 	<button type="button" class="atelier__reset" onclick={resetView} aria-label="Beeld herstellen">
 		↺
 	</button>
-
-	{#if started}
-		<aside class="minimap" aria-label="Minikaart">
-			<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-			<svg
-				viewBox="0 0 {CANVAS_W * minimapScale} {minimapH}"
-				width="200"
-				height={minimapH}
-				aria-label="Spring naar plek op de werktafel"
-				onclick={onMinimapClick}
-			>
-				<rect width={CANVAS_W * minimapScale} height={minimapH} fill="#efe9da" opacity="0.5" />
-				{#each drawings as d (d.id)}
-					<rect
-						x={(d.pos?.x ?? 0) * minimapScale}
-						y={(d.pos?.y ?? 0) * minimapScale}
-						width={(d.width ?? 320) * minimapScale}
-						height={(d.width ?? 320) * 1.25 * minimapScale}
-						fill="#3a2e22"
-						opacity="0.5"
-					/>
-				{/each}
-				{#each tracks as t (t.id)}
-					<circle
-						cx={(t.pos?.x ?? 0) * minimapScale}
-						cy={(t.pos?.y ?? 0) * minimapScale}
-						r="3"
-						fill="#3a2e22"
-					/>
-				{/each}
-				<rect
-					x={viewBox.x * minimapScale}
-					y={viewBox.y * minimapScale}
-					width={viewBox.w * minimapScale}
-					height={viewBox.h * minimapScale}
-					fill="none"
-					stroke="#0e0c08"
-					stroke-width="1.5"
-				/>
-			</svg>
-		</aside>
-	{/if}
 </div>
 
 <style>
@@ -825,55 +746,6 @@
 		/* Prevent the browser from intercepting touch gestures we handle ourselves. */
 		touch-action: none;
 		overscroll-behavior: none;
-	}
-
-	.atelier__overlay {
-		position: absolute;
-		inset: 0;
-		background: rgba(201, 192, 168, 0.96);
-		display: grid;
-		place-items: center;
-		align-content: center;
-		gap: 1rem;
-		text-align: center;
-		z-index: 100;
-		padding: 2rem;
-	}
-
-	.atelier__title {
-		font-family: var(--font-museum);
-		font-size: clamp(3rem, 8vw, 5rem);
-		font-weight: 400;
-		line-height: 1;
-		margin: 0.5rem 0;
-		letter-spacing: -0.01em;
-	}
-
-	.atelier__hint {
-		max-width: 26rem;
-		font-style: italic;
-		opacity: 0.75;
-		margin: 0 0 1.5rem;
-		line-height: 1.55;
-	}
-
-	.atelier__begin {
-		appearance: none;
-		background: var(--color-ink);
-		border: none;
-		color: var(--color-paper);
-		padding: 1.1rem 2.75rem;
-		min-height: 48px; /* iOS HIG: comfortable tap target */
-		font-family: var(--font-sans);
-		font-size: 0.78rem;
-		letter-spacing: 0.24em;
-		text-transform: uppercase;
-		cursor: pointer;
-		transition: transform 200ms ease;
-	}
-
-	.atelier__begin:hover {
-		transform: translateY(-1px);
 	}
 
 	.atelier__audio {
@@ -990,46 +862,4 @@
 		z-index: 20;
 	}
 
-	.atelier__close {
-		position: absolute;
-		top: 0.5rem;
-		right: 0.75rem;
-		z-index: 30;
-		appearance: none;
-		background: rgba(255, 255, 255, 0.55);
-		border: 1px solid rgba(0, 0, 0, 0.15);
-		width: 2.5rem;
-		height: 2.5rem;
-		border-radius: 9999px;
-		font-size: 1.6rem;
-		line-height: 1;
-		color: var(--color-ink);
-		cursor: pointer;
-		backdrop-filter: blur(8px);
-		-webkit-backdrop-filter: blur(8px);
-		opacity: 0.7;
-		transition: opacity 200ms ease;
-	}
-
-	.atelier__close:hover {
-		opacity: 1;
-	}
-
-	.minimap svg {
-		cursor: pointer;
-		display: block;
-	}
-
-	.minimap {
-		position: absolute;
-		bottom: 1rem;
-		right: 1rem;
-		background: rgba(255, 255, 255, 0.55);
-		padding: 4px;
-		border: 1px solid rgba(0, 0, 0, 0.15);
-		backdrop-filter: blur(6px);
-		-webkit-backdrop-filter: blur(6px);
-		z-index: 20;
-		line-height: 0;
-	}
 </style>
