@@ -24,6 +24,7 @@
 				"svelte.svelte-vscode",
 				"bradlc.vscode-tailwindcss"
 			]
-		}
+		},
+    "remote.containers.autoReopen": true
 	}
 }
