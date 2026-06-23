@@ -112,7 +112,7 @@
 	function onPointerDown(e: PointerEvent) {
 		if (e.button !== 0) return;
 		unlockAudio();
-		// Any interaction ends the intro drift / momentum and hands over control.
+		// Any interaction ends momentum and hands over control.
 		cancelAutoMotion();
 		// Drawings allow drag-or-tap (the browser auto-suppresses click after
 		// movement). Only UI chrome and the audio speaker toggles are exempt,
@@ -313,85 +313,6 @@
 		hasUserNavigatedView = false;
 	}
 
-	// Intro "drift": on first entry the view glides past each speaker on its own
-	// so the proximity sound audibly swells, pans, and fades — teaching the
-	// spatial concept without text. Any user input hands control straight back.
-	let tourRaf = 0;
-	let touring = false;
-
-	function cancelTour() {
-		if (!touring && !tourRaf) return;
-		if (tourRaf) cancelAnimationFrame(tourRaf);
-		tourRaf = 0;
-		touring = false;
-	}
-
-	function prefersReducedMotion() {
-		return (
-			typeof window !== 'undefined' &&
-			window.matchMedia('(prefers-reduced-motion: reduce)').matches
-		);
-	}
-
-	function runIntroTour() {
-		if (!viewport || prefersReducedMotion()) return;
-		const vw = viewport.clientWidth;
-		const vh = viewport.clientHeight;
-		const fitZoom = zoom;
-		const tourZoom = Math.max(fitZoom, Math.min(MAX_ZOOM, 0.9));
-		// easeInOutQuad for a calm, hand-of-the-curator glide.
-		const ease = (u: number) => (u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2);
-
-		type Waypoint = { cx: number; cy: number; z: number };
-		const startPoint: Waypoint = {
-			cx: (vw / 2 - tx) / zoom,
-			cy: (vh / 2 - ty) / zoom,
-			z: zoom
-		};
-		const speakerStops: Waypoint[] = tracks
-			.filter((t) => t.pos)
-			.map((t) => ({ cx: t.pos!.x, cy: t.pos!.y, z: tourZoom }));
-		const waypoints: Waypoint[] = [
-			startPoint,
-			...speakerStops,
-			{ cx: CANVAS_W / 2, cy: CANVAS_H / 2, z: fitZoom }
-		];
-
-		const SEG_MS = 1900;
-		let seg = 0;
-		let segStart = performance.now();
-		touring = true;
-
-		const frame = (now: number) => {
-			if (!touring || !viewport) return;
-			const a = waypoints[seg];
-			const b = waypoints[seg + 1];
-			if (!b) {
-				cancelTour();
-				return;
-			}
-			const u = Math.min(1, (now - segStart) / SEG_MS);
-			const e = ease(u);
-			const cx = a.cx + (b.cx - a.cx) * e;
-			const cy = a.cy + (b.cy - a.cy) * e;
-			const z = a.z + (b.z - a.z) * e;
-			zoom = z;
-			tx = viewport.clientWidth / 2 - cx * z;
-			ty = viewport.clientHeight / 2 - cy * z;
-			clamp();
-			if (u >= 1) {
-				seg += 1;
-				segStart = now;
-				if (seg >= waypoints.length - 1) {
-					cancelTour();
-					return;
-				}
-			}
-			tourRaf = requestAnimationFrame(frame);
-		};
-		tourRaf = requestAnimationFrame(frame);
-	}
-
 	// --- Momentum panning (inertia) ---
 	let inertiaRaf = 0;
 	let vx = 0; // px per ms
@@ -401,6 +322,13 @@
 	function stopInertia() {
 		if (inertiaRaf) cancelAnimationFrame(inertiaRaf);
 		inertiaRaf = 0;
+	}
+
+	function prefersReducedMotion() {
+		return (
+			typeof window !== 'undefined' &&
+			window.matchMedia('(prefers-reduced-motion: reduce)').matches
+		);
 	}
 
 	function startInertia() {
@@ -428,9 +356,8 @@
 		inertiaRaf = requestAnimationFrame(step);
 	}
 
-	// Any deliberate user input cancels both the intro drift and momentum.
+	// Any deliberate user input cancels momentum panning.
 	function cancelAutoMotion() {
-		cancelTour();
 		stopInertia();
 	}
 
@@ -583,8 +510,6 @@
 		if (focusedId) {
 			const drawing = drawings.find((d) => d.id === focusedId);
 			if (drawing) void tick().then(() => focusDrawing(drawing));
-		} else {
-			runIntroTour();
 		}
 
 		const onResize = () => {

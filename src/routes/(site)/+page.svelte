@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { base } from '$app/paths';
 	import { artist, drawings } from '$lib/content';
-	import { trackForDrawing, trackIndexForDrawing } from '$lib/pairings';
-	import { playTrack, site } from '$lib/site-state.svelte';
 </script>
 
 <svelte:head>
@@ -13,47 +11,21 @@
 <section class="gallery">
 	<ul class="gallery__grid">
 		{#each drawings as drawing (drawing.id)}
-			{@const pairedTrack = trackForDrawing(drawing.id)}
-			{@const pairedIndex = trackIndexForDrawing(drawing.id)}
 			<li class="gallery__item">
-				<div class="plate">
-					<a
-						class="plate__link"
-						href="{base}/atelier/?focus={drawing.id}"
-						aria-label="{drawing.title} — werktafel"
-					>
-						<div class="plate__frame">
-							<img
-								src={drawing.src}
-								alt={drawing.alt}
-								loading="lazy"
-								style:view-transition-name="piece-{drawing.id}"
-							/>
-						</div>
-					</a>
-					{#if pairedTrack && pairedIndex !== undefined}
-						<button
-							type="button"
-							class="plate__play"
-							class:plate__play--active={site.index === pairedIndex && site.isPlaying}
-							onclick={() => playTrack(pairedIndex)}
-							aria-label="{site.index === pairedIndex && site.isPlaying
-								? 'Pauzeer'
-								: 'Speel'} {pairedTrack.title}"
-						>
-							{#if site.index === pairedIndex && site.isPlaying}
-								<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" aria-hidden="true">
-									<rect x="6" y="5" width="4" height="14" />
-									<rect x="14" y="5" width="4" height="14" />
-								</svg>
-							{:else}
-								<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" aria-hidden="true">
-									<path d="M7 5v14l12-7z" />
-								</svg>
-							{/if}
-						</button>
-					{/if}
-				</div>
+				<a
+					class="plate"
+					href="{base}/atelier/?focus={drawing.id}"
+					aria-label="{drawing.title} — werktafel"
+				>
+					<div class="plate__frame">
+						<img
+							src={drawing.src}
+							alt={drawing.alt}
+							loading="lazy"
+							style:view-transition-name="piece-{drawing.id}"
+						/>
+					</div>
+				</a>
 			</li>
 		{/each}
 	</ul>
@@ -83,12 +55,8 @@
 	}
 
 	.plate {
-		position: relative;
-		width: 100%;
-	}
-
-	.plate__link {
 		display: block;
+		width: 100%;
 		color: inherit;
 		text-decoration: none;
 	}
@@ -113,32 +81,5 @@
 		max-width: 100%;
 		max-height: 100%;
 		object-fit: contain;
-	}
-
-	.plate__play {
-		position: absolute;
-		bottom: 0.65rem;
-		right: 0.65rem;
-		left: auto;
-		z-index: 2;
-		width: 1.75rem;
-		height: 1.75rem;
-		border-radius: 9999px;
-		border: none;
-		background: var(--color-ink);
-		color: var(--color-paper);
-		display: grid;
-		place-items: center;
-		cursor: pointer;
-		box-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.35);
-		transition: transform 150ms ease, opacity 150ms ease;
-	}
-
-	.plate__play:hover {
-		transform: scale(1.06);
-	}
-
-	.plate__play--active {
-		opacity: 0.9;
 	}
 </style>
