@@ -16,6 +16,10 @@ view where works sit on a pannable canvas with proximity-based audio.
 - Docker
 - VS Code or Cursor with the **Dev Containers** extension
 
+Drawing and audio files in `static/` are tracked with **Git LFS**. The dev
+container installs LFS automatically; on the host, install [Git LFS](https://git-lfs.com/)
+and run `git lfs install` once before cloning or pulling.
+
 ## Development
 
 1. Open this folder in VS Code or Cursor.
@@ -57,6 +61,7 @@ See `static/CREDITS.md` for sources and licensing.
 ### Add or replace assets
 
 1. Drop new files into `/static/drawings/`, `/static/audio/`, etc.
+   (they are stored via Git LFS — patterns live in `.gitattributes`).
 2. Edit `src/lib/content.ts` — update the `drawings` and `tracks` arrays
    (paths, titles, metadata, and atelier placement).
 3. Optionally add or remove rows in the `pairings` array in the same file.

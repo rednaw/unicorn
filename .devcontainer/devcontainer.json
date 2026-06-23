@@ -9,7 +9,7 @@
 	"mounts": [
 		"source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind,readonly,consistency=cached"
 	],
-	"postCreateCommand": "pnpm install",
+	"postCreateCommand": "git lfs install && git lfs pull && pnpm install",
 	"postStartCommand": "pnpm dev --host 0.0.0.0",
 	"forwardPorts": [5173],
 	"portsAttributes": {
