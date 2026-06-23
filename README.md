@@ -120,5 +120,4 @@ morph on the focused drawing (`view-transition-name: piece-<id>`).
 ## Out of scope
 
 - A CMS — content lives in one TS file
-- Mobile-perfect atelier gestures
 - Analytics

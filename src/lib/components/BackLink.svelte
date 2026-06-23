@@ -9,8 +9,8 @@
 <style>
 	.back {
 		position: fixed;
-		top: 1rem;
-		left: 1rem;
+		top: max(1rem, env(safe-area-inset-top, 0px));
+		left: max(1rem, env(safe-area-inset-left, 0px));
 		z-index: 110;
 		display: grid;
 		place-items: center;
