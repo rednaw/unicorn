@@ -1,28 +1,42 @@
-# Asset credits
+# Credits & rights
 
-Drawings are original work by V. Solenne. Audio is curated for the site.
-See the project README for how to add or replace files.
+**V. Solenne** is a working name (pseudonym) and may change. The author of the
+drawings and of the original recordings listed below is the same person.
 
-## Drawings (`/static/drawings/`)
+This is a **personal site** for public viewing. It is not a stock library and not intended for sharing or reuse of its files.
 
-| File | Work |
-|---|---|
-| `image001.jpg` | *Studie I* — pre-scan (low resolution; final scan pending) |
-| `image002.jpg` | *Buste in profiel* — pre-scan (low resolution; final scan pending) |
-| `image003.jpg` | *Maskers* — pre-scan (low resolution; final scan pending) |
+## Rights
 
-Original work by V. Solenne. Pre-scans only — final high-resolution scans will
-replace these files later; update `src` in `src/lib/content.ts` when they arrive.
+© 2023–2026 the artist. All rights reserved.
 
-## Audio (`/static/audio/`)
+Drawings and audio recordings on this site may **not** be copied, downloaded for
+redistribution, republished, or used in other works without prior written
+permission. Viewing here does not grant any licence.
 
-| File | Piece |
-|---|---|
-| `chopin-ballade-opus-52-no-4.m4a`  | Frédéric Chopin, *Ballade No. 4 in F minor, Op. 52* |
-| `chopin-mazurka-opus-50-no-2.m4a`  | Frédéric Chopin, *Mazurka in A-flat major, Op. 50 No. 2* |
-| `chopin-polonaise.ogg`             | Frédéric Chopin, *Polonaise in A-flat major "Heroic", Op. 53* |
+The site is **work in progress**. Some assets are placeholders and will be
+replaced.
 
-The **compositions** are in the public domain (Chopin died 1849 — PD in the EU
-under life + 70 years). Make sure any **performance recording** you ship is one
-you have rights to (e.g. CC0 recordings from [Musopen](https://musopen.org) or
-licensed performances).
+## Drawings
+
+Original work by the artist. Pre-scans only (low resolution; final scans pending).
+
+
+| Work               | Year | Medium            |
+| ------------------ | ---- | ----------------- |
+| *Studie I*         | 2023 | potlood op papier |
+| *Buste in profiel* | 2023 | potlood op papier |
+| *Maskers*          | 2023 | potlood op papier |
+
+
+## Audio
+
+Chopin compositions are in the public domain. **Recordings** are separate works.
+
+
+| Piece                                  | Recording                                                                                         |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| *Ballade nr. 4 in f klein, op. 52*     | Original performance by the artist                                                                |
+| *Mazurka in As, op. 50 nr. 2*          | Original performance by the artist                                                                |
+| *Polonaise in As, op. 53 ("Heroïque")* | **Placeholder** — excerpt from YouTube; temporary, to be replaced by an original artist recording |
+
+
