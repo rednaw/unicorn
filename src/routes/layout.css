@@ -20,3 +20,19 @@ html {
 	-webkit-font-smoothing: antialiased;
 	text-rendering: optimizeLegibility;
 }
+
+/* Cross-view transitions (progressive enhancement; see (site)/+layout.svelte).
+   The default UA crossfades the root and morphs matched view-transition-name
+   pairs (a focused piece flying between the wall and the table). */
+::view-transition-old(root),
+::view-transition-new(root) {
+	animation-duration: 320ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	::view-transition-group(*),
+	::view-transition-old(*),
+	::view-transition-new(*) {
+		animation: none !important;
+	}
+}

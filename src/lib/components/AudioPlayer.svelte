@@ -1,68 +1,21 @@
 <script lang="ts">
-	import type { Track } from '$lib/content';
-	import { site } from '$lib/site-state.svelte';
-	import { claim, release } from './audio-bus';
+	import { tracks } from '$lib/content';
+	import { engine } from '$lib/audio-engine.svelte';
+	import { next, prev, seek, toggleHeroPlayback } from '$lib/audio-engine.svelte';
 
 	type Variant = 'inline' | 'docked' | 'minimal';
 
 	let {
-		track,
 		variant = 'inline',
-		autoplay = false,
-		playToken,
-		pauseToken,
-		onnext,
-		onprev,
 		class: className = ''
 	}: {
-		track: Track;
 		variant?: Variant;
-		autoplay?: boolean;
-		playToken?: number;
-		pauseToken?: number;
-		onnext?: () => void;
-		onprev?: () => void;
 		class?: string;
 	} = $props();
 
-	let audio = $state<HTMLAudioElement>();
-	let playing = $state(false);
-	let current = $state(0);
-	let duration = $state(0);
-
-	const progress = $derived(duration > 0 ? (current / duration) * 100 : 0);
-	const showTransport = $derived(variant !== 'minimal' && (onnext || onprev));
-
-	function syncPlaying(value: boolean) {
-		if (playToken !== undefined) site.isPlaying = value;
-	}
-
-	$effect(() => {
-		return () => {
-			if (audio) {
-				audio.pause();
-				release(audio);
-			}
-		};
-	});
-
-	$effect(() => {
-		if (playToken === undefined || playToken === 0) return;
-		track.src;
-		const el = audio;
-		if (!el) return;
-		void el.play().catch(() => {});
-	});
-
-	$effect(() => {
-		if (pauseToken === undefined || pauseToken === 0) return;
-		audio?.pause();
-	});
-
-	function toggle() {
-		if (!audio) return;
-		audio.paused ? audio.play() : audio.pause();
-	}
+	const track = $derived(tracks[engine.index]);
+	const progress = $derived(engine.duration > 0 ? (engine.currentTime / engine.duration) * 100 : 0);
+	const showTransport = $derived(variant !== 'minimal');
 
 	function format(t: number): string {
 		if (!isFinite(t) || t < 0) return '0:00';
@@ -73,47 +26,15 @@
 		return `${m}:${s}`;
 	}
 
-	function seek(e: MouseEvent) {
-		if (!audio || !duration) return;
+	function onSeek(e: MouseEvent) {
 		const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-		const ratio = (e.clientX - rect.left) / rect.width;
-		audio.currentTime = Math.max(0, Math.min(duration, ratio * duration));
+		seek((e.clientX - rect.left) / rect.width);
 	}
 </script>
 
 <div class="player player--{variant} {className}">
-	<audio
-		bind:this={audio}
-		src={track.src}
-		{autoplay}
-		preload="metadata"
-		onplay={() => {
-			playing = true;
-			syncPlaying(true);
-			if (audio) claim(audio);
-		}}
-		onpause={() => {
-			playing = false;
-			syncPlaying(false);
-			if (audio) release(audio);
-		}}
-		ontimeupdate={() => (current = audio?.currentTime ?? 0)}
-		onloadedmetadata={() => (duration = audio?.duration ?? 0)}
-		onended={() => {
-			playing = false;
-			syncPlaying(false);
-			if (audio) release(audio);
-			onnext?.();
-		}}
-	></audio>
-
-	{#if showTransport && onprev}
-		<button
-			type="button"
-			class="player__nav"
-			onclick={onprev}
-			aria-label="Vorig stuk"
-		>
+	{#if showTransport}
+		<button type="button" class="player__nav" onclick={prev} aria-label="Vorig stuk">
 			<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
 				<path d="M6 6h2v12H6V6zm3.5 6 8.5 6V6l-8.5 6z" />
 			</svg>
@@ -123,10 +44,10 @@
 	<button
 		type="button"
 		class="player__btn"
-		onclick={toggle}
-		aria-label={playing ? `Pauzeer ${track.title}` : `Speel ${track.title}`}
+		onclick={toggleHeroPlayback}
+		aria-label={engine.isPlaying ? `Pauzeer ${track.title}` : `Speel ${track.title}`}
 	>
-		{#if playing}
+		{#if engine.isPlaying}
 			<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
 				<rect x="6" y="5" width="4" height="14" />
 				<rect x="14" y="5" width="4" height="14" />
@@ -138,13 +59,8 @@
 		{/if}
 	</button>
 
-	{#if showTransport && onnext}
-		<button
-			type="button"
-			class="player__nav"
-			onclick={onnext}
-			aria-label="Volgend stuk"
-		>
+	{#if showTransport}
+		<button type="button" class="player__nav" onclick={next} aria-label="Volgend stuk">
 			<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
 				<path d="M16 18h2V6h-2v12zM6 18l8.5-6L6 6v12z" />
 			</svg>
@@ -160,13 +76,13 @@
 		<button
 			type="button"
 			class="player__progress"
-			onclick={seek}
-			aria-label="Spoel naar: {format(current)} van {format(duration)}"
+			onclick={onSeek}
+			aria-label="Spoel naar: {format(engine.currentTime)} van {format(engine.duration)}"
 		>
 			<span class="player__bar" style:width="{progress}%"></span>
 		</button>
 
-		<span class="player__time">{format(current)} / {format(duration)}</span>
+		<span class="player__time">{format(engine.currentTime)} / {format(engine.duration)}</span>
 	{/if}
 </div>
 

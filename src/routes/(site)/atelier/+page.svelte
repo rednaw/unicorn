@@ -1,10 +1,29 @@
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
 	import { base } from '$app/paths';
+	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { drawings, tracks, artist } from '$lib/content';
 	import BackLink from '$lib/components/BackLink.svelte';
+	import {
+		enterSpatial,
+		applySpatial,
+		setNear,
+		leaveSpatial,
+		unlock
+	} from '$lib/audio-engine.svelte';
+
+	// The currently focused piece. Seeded from the deep link (?focus=<id>) coming
+	// from a drawing's detail page, then updated whenever the viewer focuses a
+	// drawing here. It drives (a) the auto-focus on entry, (b) the shared-element
+	// view transition name, and (c) the "open detail" affordance — completing the
+	// werk ↔ werktafel round trip. Guard with `browser`: searchParams is
+	// inaccessible during prerender.
+	let focusedId = $state<string | null>(browser ? page.url.searchParams.get('focus') : null);
+	const focusedDrawing = $derived(
+		focusedId ? drawings.find((d) => d.id === focusedId) : undefined
+	);
 
 	// Canvas dimensions — large worktable that the viewer pans/zooms over.
 	const CANVAS_W = 2200;
@@ -18,45 +37,12 @@
 	const ZOOM_GATE_HIGH = 0.95;
 
 	let viewport = $state<HTMLDivElement>();
-	let audioEls = $state<HTMLAudioElement[]>([]);
 	// Speaker ring elements, used to reflect live loudness without reactive churn.
 	let speakerRings = $state<HTMLSpanElement[]>([]);
-
-	// Web Audio plumbing — iOS Safari ignores HTMLAudioElement.volume,
-	// so proximity gain must route through GainNodes. A StereoPannerNode after
-	// each gain places the source left/right based on its on-screen position.
-	let audioCtx: AudioContext | undefined;
-	let gainNodes: GainNode[] = [];
-	let pannerNodes: (StereoPannerNode | undefined)[] = [];
-	let audioGraphReady = false;
 
 	// Cap pan so a track never collapses fully into one channel — keeps single
 	// earbud listening usable and is gentler on phone speakers.
 	const PAN_CAP = 0.8;
-
-	function setupAudioGraph() {
-		if (audioGraphReady) return;
-		const Ctx: typeof AudioContext =
-			window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-		audioCtx = new Ctx();
-		const canPan = typeof audioCtx.createStereoPanner === 'function';
-		audioEls.forEach((a, i) => {
-			const source = audioCtx!.createMediaElementSource(a);
-			const gain = audioCtx!.createGain();
-			gain.gain.value = 0;
-			gainNodes[i] = gain;
-			if (canPan) {
-				const panner = audioCtx!.createStereoPanner();
-				source.connect(gain).connect(panner).connect(audioCtx!.destination);
-				pannerNodes[i] = panner;
-			} else {
-				// Older browsers: route straight through, no panning.
-				source.connect(gain).connect(audioCtx!.destination);
-				pannerNodes[i] = undefined;
-			}
-		});
-		audioGraphReady = true;
-	}
 
 	let zoom = $state(0.7);
 	let tx = $state(0);
@@ -301,6 +287,7 @@
 	}
 
 	function focusDrawing(d: (typeof drawings)[number]) {
+		focusedId = d.id;
 		const itemW = d.width ?? 320;
 		const itemH = itemW * 1.25;
 		const cx = (d.pos?.x ?? 0) + itemW / 2;
@@ -528,10 +515,9 @@
 	// viewport centre and pans it by its on-screen horizontal offset.
 	let raf = 0;
 	function updateAudio() {
-		if (!viewport || !audioCtx) return;
+		if (!viewport) return;
 		const vw = viewport.clientWidth;
 		const vh = viewport.clientHeight;
-		const now = audioCtx.currentTime;
 		// Centre of viewport in canvas coordinates:
 		const centreCanvasX = (vw / 2 - tx) / zoom;
 		const centreCanvasY = (vh / 2 - ty) / zoom;
@@ -541,10 +527,10 @@
 			Math.min(1, (zoom - ZOOM_GATE_LOW) / (ZOOM_GATE_HIGH - ZOOM_GATE_LOW))
 		);
 		const zoomGate = zg * zg * (3 - 2 * zg);
+		let nearIndex = -1;
+		let nearLevel = 0;
 		tracks.forEach((track, i) => {
 			if (!track.pos) return;
-			const gain = gainNodes[i];
-			if (!gain) return;
 			const dx = track.pos.x - centreCanvasX;
 			const dy = track.pos.y - centreCanvasY;
 			const dist = Math.hypot(dx, dy);
@@ -552,69 +538,42 @@
 			const t = Math.max(0, 1 - dist / PROX_RADIUS);
 			const prox = t * t * (3 - 2 * t);
 			const vol = prox * zoomGate;
-			// Schedule rather than assign so transitions are click-free.
-			gain.gain.setTargetAtTime(vol, now, 0.08);
 
-			const panner = pannerNodes[i];
-			if (panner) {
-				const screenX = tx + track.pos.x * zoom;
-				const pan = Math.max(-1, Math.min(1, (screenX - vw / 2) / (vw / 2))) * PAN_CAP;
-				panner.pan.setTargetAtTime(pan, now, 0.08);
-			}
+			const screenX = tx + track.pos.x * zoom;
+			const pan = Math.max(-1, Math.min(1, (screenX - vw / 2) / (vw / 2))) * PAN_CAP;
+
+			// The shared engine owns the nodes/elements: it schedules click-free
+			// gain/pan ramps and play/pauses each track as it becomes audible.
+			applySpatial(i, vol, pan);
 
 			// Reflect loudness on the speaker ring without triggering reactivity.
 			const ring = speakerRings[i];
 			if (ring) ring.style.setProperty('--level', vol.toFixed(3));
 
-			// Only let a track advance while it is audible. No looping: a finished
-			// track stays silent until the viewer approaches again. Hysteresis
-			// avoids rapid play/pause flapping near the threshold.
-			const a = audioEls[i];
-			if (a) {
-				if (vol > 0.05) {
-					if (a.paused) {
-						if (a.ended) a.currentTime = 0;
-						void a.play().catch(() => {});
-					}
-				} else if (vol < 0.01 && !a.paused) {
-					a.pause();
-				}
+			if (vol > nearLevel) {
+				nearLevel = vol;
+				nearIndex = i;
 			}
 		});
+		// Drive the immersive "now near" cue with the loudest track.
+		setNear(nearLevel > 0.05 ? nearIndex : -1, nearLevel);
 		raf = requestAnimationFrame(updateAudio);
 	}
 
 	// The experience runs immediately on load. Browser autoplay policy means
-	// audio can't sound until a user gesture, so it is unlocked on the first
-	// interaction; the proximity loop then decides when each track sounds.
-	let audioUnlocked = false;
-
+	// audio can't sound until a user gesture, so it is unlocked (via the shared
+	// engine) on the first interaction; the proximity loop then decides when
+	// each track sounds.
 	function unlockAudio() {
-		if (audioUnlocked || !audioCtx) return;
-		audioUnlocked = true;
-		audioCtx.resume().catch(() => {});
-		for (const a of audioEls) {
-			a.loop = false;
-			a.play()
-				.then(() => {
-					a.pause();
-					a.currentTime = 0;
-				})
-				.catch(() => {});
-		}
+		unlock();
 	}
 
 	function stop() {
 		cancelAutoMotion();
 		cancelAnimationFrame(raf);
 		raf = 0;
-		for (const a of audioEls) a.pause();
-		// Cancel any scheduled ramps and silence all gain nodes.
-		const now = audioCtx?.currentTime ?? 0;
-		for (const g of gainNodes) {
-			g.gain.cancelScheduledValues(now);
-			g.gain.setValueAtTime(0, now);
-		}
+		// Silence spatial tracks and hand the engine back to playlist mode.
+		leaveSpatial();
 	}
 
 	function leave() {
@@ -624,12 +583,11 @@
 
 	onMount(() => {
 		resetView();
-		setupAudioGraph();
+		enterSpatial();
 		raf = requestAnimationFrame(updateAudio);
 
-		const focusId = page.url.searchParams.get('focus');
-		if (focusId) {
-			const drawing = drawings.find((d) => d.id === focusId);
+		if (focusedId) {
+			const drawing = drawings.find((d) => d.id === focusedId);
 			if (drawing) void tick().then(() => focusDrawing(drawing));
 		} else {
 			runIntroTour();
@@ -651,8 +609,9 @@
 			window.removeEventListener('keydown', onKeyDown);
 			cancelAutoMotion();
 			cancelAnimationFrame(raf);
-			for (const a of audioEls) a.pause();
-			audioCtx?.close().catch(() => {});
+			// Leave the shared engine intact (it persists across views); just
+			// silence spatial playback and restore playlist mode.
+			leaveSpatial();
 		};
 	});
 
@@ -664,12 +623,6 @@
 
 <div class="atelier">
 	<BackLink theme="light" label="Galerij" />
-
-	<div class="atelier__audio" aria-hidden="true">
-		{#each tracks as track, i (track.id)}
-			<audio bind:this={audioEls[i]} src={track.src} preload="auto"></audio>
-		{/each}
-	</div>
 
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
@@ -700,7 +653,13 @@
 					onclick={() => focusDrawing(drawing)}
 					aria-label={drawing.title}
 				>
-					<img src={drawing.src} alt={drawing.alt} />
+					<img
+						src={drawing.src}
+						alt={drawing.alt}
+						style:view-transition-name={drawing.id === focusedId
+							? `piece-${drawing.id}`
+							: undefined}
+					/>
 				</button>
 			{/each}
 
@@ -727,6 +686,13 @@
 	<button type="button" class="atelier__reset" onclick={resetView} aria-label="Beeld herstellen">
 		↺
 	</button>
+
+	{#if focusedDrawing}
+		<a class="atelier__open" href="{base}/werk/{focusedDrawing.id}/">
+			<span class="atelier__open-title">{focusedDrawing.title}</span>
+			<span class="atelier__open-cta" aria-hidden="true">bekijk ↗</span>
+		</a>
+	{/if}
 </div>
 
 <style>
@@ -746,13 +712,6 @@
 		/* Prevent the browser from intercepting touch gestures we handle ourselves. */
 		touch-action: none;
 		overscroll-behavior: none;
-	}
-
-	.atelier__audio {
-		position: absolute;
-		width: 0;
-		height: 0;
-		overflow: hidden;
 	}
 
 	.atelier__viewport {
@@ -862,4 +821,46 @@
 		z-index: 20;
 	}
 
+	/* Open the focused drawing's detail page — the atelier → werk return trip. */
+	.atelier__open {
+		position: absolute;
+		top: 1rem;
+		left: 50%;
+		transform: translateX(-50%);
+		display: flex;
+		align-items: baseline;
+		gap: 0.6rem;
+		max-width: calc(100vw - 2rem);
+		padding: 0.45rem 1rem;
+		border-radius: 9999px;
+		background: rgba(20, 18, 14, 0.55);
+		color: #efe9da;
+		text-decoration: none;
+		backdrop-filter: blur(8px);
+		-webkit-backdrop-filter: blur(8px);
+		z-index: 25;
+		transition: background 200ms ease;
+	}
+
+	.atelier__open:hover {
+		background: rgba(20, 18, 14, 0.72);
+	}
+
+	.atelier__open-title {
+		font-family: var(--font-museum);
+		font-style: italic;
+		font-size: 0.95rem;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.atelier__open-cta {
+		font-family: var(--font-sans);
+		font-size: 0.6rem;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+		opacity: 0.75;
+		flex: none;
+	}
 </style>

@@ -20,7 +20,7 @@
 	</div>
 
 	<div class="detail__plate">
-		<img src={drawing.src} alt={drawing.alt} />
+		<img src={drawing.src} alt={drawing.alt} style:view-transition-name="piece-{drawing.id}" />
 	</div>
 
 	<header class="detail__meta">
