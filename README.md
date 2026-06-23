@@ -8,7 +8,6 @@ view where works sit on a pannable canvas with proximity-based audio.
 | ----------- | ---------------------------------------------------------- |
 | `/`         | Gallery — grid of drawings; click a work to open the atelier |
 | `/atelier/` | Studio — pan/zoom canvas, spatial audio near each speaker  |
-| `/museum/`  | Legacy redirects → `/` or `/atelier/?focus=<id>`           |
 
 ## Prerequisites
 
@@ -89,7 +88,6 @@ src/
       +layout.svelte        # mode-aware shell (gallery vs immersive atelier)
       +page.svelte          # gallery grid
       atelier/+page.svelte  # fullscreen studio canvas
-    museum/                 # legacy redirects
   lib/
     content.ts              # drawings, tracks, pairings, lookups
     audio-engine.svelte.ts  # spatial Web Audio (atelier only)
