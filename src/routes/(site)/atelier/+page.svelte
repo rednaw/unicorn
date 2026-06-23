@@ -33,10 +33,20 @@
 	let interactionMode = $state<InteractionMode>('idle');
 	let primaryPointerId = $state<number | null>(null);
 	let primaryPointerType = $state<string>('mouse');
+	let startedOnPiece = false;
+
+	const PAN_THRESHOLD_MOUSE = 6;
+	const PAN_THRESHOLD_TOUCH = 8;
+	const PAN_THRESHOLD_PIECE = 18;
 
 	const pointers = new Map<number, { x: number; y: number }>();
 	type Pinch = { midX: number; midY: number; dist: number };
 	let pinch: Pinch | undefined;
+
+	function panThreshold() {
+		if (primaryPointerType !== 'touch') return PAN_THRESHOLD_MOUSE;
+		return startedOnPiece ? PAN_THRESHOLD_PIECE : PAN_THRESHOLD_TOUCH;
+	}
 
 	function clamp() {
 		if (!viewport) return;
@@ -93,6 +103,7 @@
 		stopInertia();
 		if (pointers.size === 0) {
 			const target = e.target as HTMLElement;
+			startedOnPiece = !!target.closest('.piece--drawing');
 			if (target.closest('.speaker, .back')) return;
 		}
 		pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
@@ -128,8 +139,7 @@
 
 		if (interactionMode === 'pending-pan' && e.pointerId === primaryPointerId) {
 			const moved = Math.hypot(e.clientX - dragStart.x, e.clientY - dragStart.y);
-			const threshold = primaryPointerType === 'touch' ? 10 : 6;
-			if (moved >= threshold) {
+			if (moved >= panThreshold()) {
 				interactionMode = 'panning';
 				dragging = true;
 			}
@@ -179,7 +189,7 @@
 					Math.hypot(e.clientX - lastTapX, e.clientY - lastTapY) < 36
 				) {
 					const rect = viewport.getBoundingClientRect();
-					applyZoomAt(e.clientX - rect.left, e.clientY - rect.top, zoom * 1.7);
+					zoomAtViewport(e.clientX - rect.left, e.clientY - rect.top, 1.7);
 					lastTapTime = 0;
 				} else {
 					lastTapTime = now;
@@ -224,14 +234,20 @@
 		}
 	}
 
-	function zoomTo(centreX: number, centreY: number, target = 1.6) {
+	function zoomTo(centreX: number, centreY: number, target = 1.6, animate = false) {
 		if (!viewport) return;
 		const vw = viewport.clientWidth;
 		const vh = viewport.clientHeight;
-		zoom = target;
-		tx = vw / 2 - centreX * target;
-		ty = vh / 2 - centreY * target;
-		clamp();
+		const nextTx = vw / 2 - centreX * target;
+		const nextTy = vh / 2 - centreY * target;
+		if (animate && !prefersReducedMotion()) {
+			animateView(nextTx, nextTy, target);
+		} else {
+			zoom = target;
+			tx = nextTx;
+			ty = nextTy;
+			clamp();
+		}
 		hasUserNavigatedView = true;
 	}
 
@@ -253,13 +269,13 @@
 		const fitTarget = focusTargetZoom(itemW, itemH, 0.76);
 		const steppedTarget = Math.min(MAX_ZOOM, zoom + 0.22);
 		const target = Math.max(fitTarget, steppedTarget);
-		zoomTo(cx, cy, target);
+		zoomTo(cx, cy, target, true);
 	}
 
 	function focusSpeaker(track: (typeof tracks)[number]) {
 		if (!track.pos) return;
 		stopInertia();
-		zoomTo(track.pos.x, track.pos.y, Math.max(zoom, ZOOM_GATE_HIGH + 0.15));
+		zoomTo(track.pos.x, track.pos.y, Math.max(zoom, ZOOM_GATE_HIGH + 0.15), true);
 	}
 
 	function resetView() {
@@ -275,13 +291,37 @@
 	}
 
 	let inertiaRaf = 0;
+	let viewAnimRaf = 0;
 	let vx = 0;
 	let vy = 0;
 	let lastMove: { x: number; y: number; t: number } | null = null;
 
+	function stopViewAnim() {
+		if (viewAnimRaf) cancelAnimationFrame(viewAnimRaf);
+		viewAnimRaf = 0;
+	}
+
+	function animateView(targetTx: number, targetTy: number, targetZoom: number, duration = 380) {
+		stopViewAnim();
+		const from = { tx, ty, zoom };
+		const t0 = performance.now();
+		const step = (now: number) => {
+			const t = Math.min(1, (now - t0) / duration);
+			const e = t * t * (3 - 2 * t);
+			tx = from.tx + (targetTx - from.tx) * e;
+			ty = from.ty + (targetTy - from.ty) * e;
+			zoom = from.zoom + (targetZoom - from.zoom) * e;
+			clamp();
+			if (t < 1) viewAnimRaf = requestAnimationFrame(step);
+			else viewAnimRaf = 0;
+		};
+		viewAnimRaf = requestAnimationFrame(step);
+	}
+
 	function stopInertia() {
 		if (inertiaRaf) cancelAnimationFrame(inertiaRaf);
 		inertiaRaf = 0;
+		stopViewAnim();
 	}
 
 	function prefersReducedMotion() {
@@ -380,6 +420,20 @@
 		applyZoomAt(e.clientX - rect.left, e.clientY - rect.top, zoom * 1.7);
 	}
 
+	function zoomAtViewport(viewportX: number, viewportY: number, factor: number) {
+		if (!viewport) return;
+		const nextZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom * factor));
+		const nextTx = viewportX - ((viewportX - tx) * nextZoom) / zoom;
+		const nextTy = viewportY - ((viewportY - ty) * nextZoom) / zoom;
+		if (prefersReducedMotion()) {
+			applyZoomAt(viewportX, viewportY, nextZoom);
+		} else {
+			stopInertia();
+			animateView(nextTx, nextTy, nextZoom);
+			hasUserNavigatedView = true;
+		}
+	}
+
 	let lastTapTime = 0;
 	let lastTapX = 0;
 	let lastTapY = 0;
@@ -429,13 +483,25 @@
 			if (drawing) void tick().then(() => focusDrawing(drawing));
 		}
 
+		const onTouchMove = (e: TouchEvent) => {
+			if (pointers.size > 0) e.preventDefault();
+		};
+
 		const onResize = () => {
 			if (hasUserNavigatedView) clamp();
 			else resetView();
 		};
+
+		void tick().then(() => {
+			viewport?.addEventListener('wheel', onWheel, { passive: false });
+			viewport?.addEventListener('touchmove', onTouchMove, { passive: false });
+		});
+
 		window.addEventListener('resize', onResize);
 		window.addEventListener('keydown', onKeyDown);
 		return () => {
+			viewport?.removeEventListener('wheel', onWheel);
+			viewport?.removeEventListener('touchmove', onTouchMove);
 			window.removeEventListener('resize', onResize);
 			window.removeEventListener('keydown', onKeyDown);
 			stopInertia();
@@ -461,7 +527,6 @@
 		onpointermove={onPointerMove}
 		onpointerup={onPointerUp}
 		onpointercancel={onPointerUp}
-		onwheel={onWheel}
 		ondblclick={onDblClick}
 		class:atelier__viewport--dragging={dragging}
 	>
@@ -540,6 +605,9 @@
 		inset: 0;
 		touch-action: none;
 		cursor: grab;
+		user-select: none;
+		-webkit-user-select: none;
+		-webkit-touch-callout: none;
 	}
 
 	.atelier__viewport--dragging {
@@ -566,6 +634,7 @@
 		cursor: zoom-in;
 		display: block;
 		transition: transform 250ms ease, box-shadow 250ms ease;
+		touch-action: manipulation;
 	}
 
 	.piece--drawing:hover {
@@ -588,12 +657,15 @@
 		border: none;
 		width: 3rem;
 		height: 3rem;
+		min-width: 44px;
+		min-height: 44px;
 		border-radius: 9999px;
 		display: grid;
 		place-items: center;
 		cursor: pointer;
 		box-shadow: 0 14px 30px -16px rgba(0, 0, 0, 0.6);
 		transform: translate(-50%, -50%);
+		touch-action: manipulation;
 	}
 
 	.speaker__ring {
