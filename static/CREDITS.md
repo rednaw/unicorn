@@ -6,21 +6,14 @@ This prototype uses **placeholder assets** generated and sourced automatically b
 
 ## Drawings (`/static/drawings/`)
 
-Six **procedurally generated SVG line drawings** with paper-textured backgrounds,
-themed to suggest famous public-domain works. The lines are simple schematic
-illustrations — not reproductions of the originals.
-
-| File | Suggests |
+| File | Work |
 |---|---|
-| `praying-hands.svg` | Albrecht Dürer, *Praying Hands* (1508) |
-| `foetus-study.svg`  | Leonardo da Vinci, *Studies of the foetus in the womb* (c. 1511) |
-| `seurat-concert.svg`| Georges Seurat, *Au Concert Européen* (1887) |
-| `young-hare.svg`    | Albrecht Dürer, *Young Hare* (1502) |
-| `horse-study.svg`   | Leonardo da Vinci, horse studies (c. 1490) |
-| `kollwitz-self.svg` | Käthe Kollwitz, *Self-Portrait* (1934) |
+| `image001.jpg` | *Studie I* — pre-scan (low resolution; final scan pending) |
+| `image002.jpg` | *Buste in profiel* — pre-scan (low resolution; final scan pending) |
+| `image003.jpg` | *Maskers* — pre-scan (low resolution; final scan pending) |
 
-The original works are **in the public domain worldwide**. Wikimedia Commons hosts
-high-resolution scans if you want to replace these placeholders with the real thing.
+Original work by V. Solenne. Pre-scans only — final high-resolution scans will
+replace these files later; update `src` in `src/lib/content.ts` when they arrive.
 
 ## Audio (`/static/audio/`)
 

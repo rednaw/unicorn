@@ -37,70 +37,37 @@ export const artist = {
 
 export const drawings: Drawing[] = [
 	{
-		id: 'figure-study',
-		title: 'Figuurstudie, naar Dürer',
-		year: '1508',
-		medium: 'potlood op getint papier',
-		src: asset('/drawings/praying-hands.svg'),
-		alt: 'Gedetailleerde potloodstudie van twee gevouwen handen',
-		rotation: -3,
-		pos: { x: 200, y: 180 },
-		width: 320
+		id: 'studie-i',
+		title: 'Studie I',
+		year: '2023',
+		medium: 'potlood op papier',
+		src: asset('/drawings/image001.jpg'),
+		alt: 'Abstracte potloodstudie met horizontale banden en een verticale vorm',
+		rotation: -2,
+		pos: { x: 240, y: 200 },
+		width: 280
 	},
 	{
-		id: 'anatomy-foetus',
-		title: 'Anatomische studie, naar da Vinci',
-		year: '1511',
-		medium: 'pen, inkt en wassing',
-		src: asset('/drawings/foetus-study.svg'),
-		alt: 'Anatomische tekening van een foetus in de baarmoeder',
-		rotation: 5,
-		pos: { x: 720, y: 120 },
-		width: 380
-	},
-	{
-		id: 'concert',
-		title: 'Op het concert',
-		year: '1887',
-		medium: 'conté-krijt',
-		src: asset('/drawings/seurat-concert.svg'),
-		alt: 'Conté-krijttekening van toeschouwers in een concertzaal',
-		rotation: -1,
-		pos: { x: 1240, y: 260 },
-		width: 360
-	},
-	{
-		id: 'hare',
-		title: 'Haas in een veld',
-		year: '1502',
-		medium: 'aquarel en gouache op papier',
-		src: asset('/drawings/young-hare.svg'),
-		alt: 'Een nauwkeurig geobserveerde haas in profiel',
-		rotation: 2,
-		pos: { x: 420, y: 640 },
-		width: 320
-	},
-	{
-		id: 'horse',
-		title: 'Paardenstudie',
-		year: '1490',
-		medium: 'zilverstift op geprepareerd papier',
-		src: asset('/drawings/horse-study.svg'),
-		alt: 'Een studie van een steigerend paard',
-		rotation: -4,
-		pos: { x: 940, y: 700 },
-		width: 340
-	},
-	{
-		id: 'self-portrait',
-		title: 'Zelfportret',
-		year: '1934',
-		medium: 'litho',
-		src: asset('/drawings/kollwitz-self.svg'),
-		alt: 'Een lithografisch zelfportret van een oudere vrouw met gebogen hoofd',
+		id: 'buste-profiel',
+		title: 'Buste in profiel',
+		year: '2023',
+		medium: 'potlood op papier',
+		src: asset('/drawings/image002.jpg'),
+		alt: 'Potloodstudie van een klassieke buste in profiel',
 		rotation: 3,
-		pos: { x: 1480, y: 760 },
+		pos: { x: 880, y: 260 },
 		width: 300
+	},
+	{
+		id: 'maskers',
+		title: 'Maskers',
+		year: '2023',
+		medium: 'potlood op papier',
+		src: asset('/drawings/image003.jpg'),
+		alt: 'Vier Venetiaanse maskers, getekend in potlood',
+		rotation: -4,
+		pos: { x: 1520, y: 180 },
+		width: 280
 	}
 ];
 
@@ -110,20 +77,20 @@ export const tracks: Track[] = [
 		title: 'Ballade nr. 4 in f klein, op. 52',
 		composer: 'Frédéric Chopin',
 		src: asset('/audio/chopin-ballade-opus-52-no-4.m4a'),
-		pos: { x: 480, y: 420 }
+		pos: { x: 450, y: 580 }
 	},
 	{
 		id: 'chopin-mazurka-op50-2',
 		title: 'Mazurka in As, op. 50 nr. 2',
 		composer: 'Frédéric Chopin',
 		src: asset('/audio/chopin-mazurka-opus-50-no-2.m4a'),
-		pos: { x: 1300, y: 520 }
+		pos: { x: 1100, y: 620 }
 	},
 	{
 		id: 'chopin-polonaise',
 		title: 'Polonaise in As, op. 53 ("Heroïque")',
 		composer: 'Frédéric Chopin',
 		src: asset('/audio/chopin-polonaise.ogg'),
-		pos: { x: 820, y: 1060 }
+		pos: { x: 1720, y: 530 }
 	}
 ];

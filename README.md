@@ -49,23 +49,14 @@ the workflow.
 
 ## Content & assets
 
-The site currently uses a curated public-domain-inspired set:
+The site uses the artist's own drawings and curated audio:
 
-- `/static/drawings/*.svg` — six drawing placeholders
-- `/static/audio/*.ogg` — three one-minute solo piano fragments
+- `/static/drawings/*.jpg` — drawing pre-scans (final scans TBD)
+- `/static/audio/` — Chopin performances (m4a / ogg)
 
 See `static/CREDITS.md` for sources and licensing.
 
-### Regenerate drawing placeholders
-
-```sh
-./scripts/fetch-assets.sh
-```
-
-Generates SVG placeholders (idempotent). The audio step in that script uses host
-Docker (`docker run` for yt-dlp) — only needed if you want to re-fetch audio files.
-
-### Swap in real assets
+### Add or replace assets
 
 1. Drop new files into `/static/drawings/`, `/static/audio/`, etc.
 2. Edit `src/lib/content.ts` — update the `drawings` and `tracks` arrays

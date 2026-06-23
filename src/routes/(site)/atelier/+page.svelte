@@ -772,6 +772,8 @@
 		place-items: center;
 		cursor: pointer;
 		box-shadow: 0 14px 30px -16px rgba(0, 0, 0, 0.6);
+		/* pos is the acoustic centre (proximity + pan); anchor the icon there. */
+		transform: translate(-50%, -50%);
 	}
 
 	.speaker__ring {
