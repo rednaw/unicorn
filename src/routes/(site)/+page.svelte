@@ -17,9 +17,18 @@
 			{@const pairedIndex = trackIndexForDrawing(drawing.id)}
 			<li class="gallery__item">
 				<div class="plate">
-					<a class="plate__link" href="{base}/werk/{drawing.id}/" aria-label={drawing.title}>
+					<a
+						class="plate__link"
+						href="{base}/atelier/?focus={drawing.id}"
+						aria-label="{drawing.title} — werktafel"
+					>
 						<div class="plate__frame">
-							<img src={drawing.src} alt={drawing.alt} loading="lazy" />
+							<img
+								src={drawing.src}
+								alt={drawing.alt}
+								loading="lazy"
+								style:view-transition-name="piece-{drawing.id}"
+							/>
 						</div>
 					</a>
 					{#if pairedTrack && pairedIndex !== undefined}

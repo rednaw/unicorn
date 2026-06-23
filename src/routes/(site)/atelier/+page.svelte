@@ -15,16 +15,9 @@
 		unlock
 	} from '$lib/audio-engine.svelte';
 
-	// The currently focused piece. Seeded from the deep link (?focus=<id>) coming
-	// from a drawing's detail page, then updated whenever the viewer focuses a
-	// drawing here. It drives (a) the auto-focus on entry, (b) the shared-element
-	// view transition name, and (c) the "open detail" affordance — completing the
-	// werk ↔ werktafel round trip. Guard with `browser`: searchParams is
-	// inaccessible during prerender.
+	// The currently focused piece. Seeded from ?focus=<id> when entering from the
+	// gallery, then updated when the viewer focuses a drawing on the table.
 	let focusedId = $state<string | null>(browser ? page.url.searchParams.get('focus') : null);
-	const focusedDrawing = $derived(
-		focusedId ? drawings.find((d) => d.id === focusedId) : undefined
-	);
 
 	// Canvas dimensions — large worktable that the viewer pans/zooms over.
 	const CANVAS_W = 2200;
@@ -126,7 +119,7 @@
 		// so their own click handlers always win.
 		if (pointers.size === 0) {
 			const target = e.target as HTMLElement;
-			if (target.closest('.speaker, .atelier__reset, .back'))
+			if (target.closest('.speaker, .back'))
 				return;
 		}
 		pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
@@ -498,7 +491,7 @@
 	}
 
 	// --- Double-click / double-tap to zoom ---
-	const NON_CANVAS = '.piece, .speaker, .atelier__reset, .back';
+	const NON_CANVAS = '.piece, .speaker, .back';
 
 	function onDblClick(e: MouseEvent) {
 		if (!viewport) return;
@@ -623,7 +616,7 @@
 </svelte:head>
 
 <div class="atelier">
-	<BackLink theme="light" label="Galerij" />
+	<BackLink theme="light" compact />
 
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
@@ -689,17 +682,6 @@
 			{/each}
 		</div>
 	</div>
-
-	<button type="button" class="atelier__reset" onclick={resetView} aria-label="Beeld herstellen">
-		↺
-	</button>
-
-	{#if focusedDrawing}
-		<a class="atelier__open" href="{base}/werk/{focusedDrawing.id}/">
-			<span class="atelier__open-title">{focusedDrawing.title}</span>
-			<span class="atelier__open-cta" aria-hidden="true">bekijk ↗</span>
-		</a>
-	{/if}
 </div>
 
 <style>
@@ -812,64 +794,4 @@
 		}
 	}
 
-	.atelier__reset {
-		position: absolute;
-		top: 1rem;
-		right: 4rem;
-		appearance: none;
-		background: rgba(255, 255, 255, 0.6);
-		border: 1px solid rgba(0, 0, 0, 0.2);
-		padding: 0.5rem 1rem;
-		font-family: var(--font-sans);
-		font-size: 0.7rem;
-		letter-spacing: 0.16em;
-		text-transform: uppercase;
-		cursor: pointer;
-		backdrop-filter: blur(8px);
-		-webkit-backdrop-filter: blur(8px);
-		z-index: 20;
-	}
-
-	/* Open the focused drawing's detail page — the atelier → werk return trip. */
-	.atelier__open {
-		position: absolute;
-		top: 1rem;
-		left: 50%;
-		transform: translateX(-50%);
-		display: flex;
-		align-items: baseline;
-		gap: 0.6rem;
-		max-width: calc(100vw - 2rem);
-		padding: 0.45rem 1rem;
-		border-radius: 9999px;
-		background: rgba(20, 18, 14, 0.55);
-		color: #efe9da;
-		text-decoration: none;
-		backdrop-filter: blur(8px);
-		-webkit-backdrop-filter: blur(8px);
-		z-index: 25;
-		transition: background 200ms ease;
-	}
-
-	.atelier__open:hover {
-		background: rgba(20, 18, 14, 0.72);
-	}
-
-	.atelier__open-title {
-		font-family: var(--font-museum);
-		font-style: italic;
-		font-size: 0.95rem;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	.atelier__open-cta {
-		font-family: var(--font-sans);
-		font-size: 0.6rem;
-		letter-spacing: 0.16em;
-		text-transform: uppercase;
-		opacity: 0.75;
-		flex: none;
-	}
 </style>

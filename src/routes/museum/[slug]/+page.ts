@@ -8,5 +8,5 @@ export const prerender = true;
 export const entries: EntryGenerator = () => drawings.map((d) => ({ slug: d.id }));
 
 export const load: PageLoad = ({ params }) => {
-	redirect(308, `${base}/werk/${params.slug}/`);
+	redirect(308, `${base}/atelier/?focus=${params.slug}`);
 };

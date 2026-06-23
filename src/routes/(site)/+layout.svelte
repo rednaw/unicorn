@@ -3,7 +3,6 @@
 	import { base } from '$app/paths';
 	import { onNavigate } from '$app/navigation';
 	import { page } from '$app/state';
-	import AudioPlayer from '$lib/components/AudioPlayer.svelte';
 	import { artist, tracks } from '$lib/content';
 	import { engine, initAudio } from '$lib/audio-engine.svelte';
 
@@ -46,17 +45,9 @@
 		</header>
 	{/if}
 
-	<main
-		class="site__main"
-		class:site__main--player={!isAtelier}
-		class:site__main--immersive={isAtelier}
-	>
+	<main class="site__main" class:site__main--immersive={isAtelier}>
 		{@render children()}
 	</main>
-
-	{#if !isAtelier}
-		<AudioPlayer variant="docked" />
-	{/if}
 
 	{#if isAtelier && nearTrack}
 		<div
@@ -120,10 +111,6 @@
 
 	.site__main {
 		padding-bottom: clamp(2.5rem, 6vw, 4rem);
-	}
-
-	.site__main--player {
-		padding-bottom: clamp(4.5rem, 10vw, 6rem);
 	}
 
 	.site__main--immersive {
