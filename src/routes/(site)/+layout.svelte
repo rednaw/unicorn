@@ -3,7 +3,6 @@
 	import { onNavigate } from '$app/navigation';
 	import { page } from '$app/state';
 	import AudioPlayer from '$lib/components/AudioPlayer.svelte';
-	import BackLink from '$lib/components/BackLink.svelte';
 	import { artist, tracks } from '$lib/content';
 	import { engine } from '$lib/audio-engine.svelte';
 
@@ -34,12 +33,8 @@
 
 <div class="site" class:site--immersive={isAtelier}>
 	{#if !isAtelier}
-		<header class="site__header" class:site__header--home={isHome}>
-			{#if isHome}
-				<div class="site__header-spacer" aria-hidden="true"></div>
-			{:else}
-				<BackLink theme="light" fixed={false} label="Galerij" />
-			{/if}
+		<header class="site__header">
+			<div class="site__header-start" aria-hidden="true"></div>
 			<div class="site__brand">
 				<h1 class="site__brand-title">
 					<a href="{base}/">{artist.name}</a>
@@ -94,23 +89,25 @@
 
 	.site__header {
 		display: grid;
-		grid-template-columns: auto minmax(0, 1fr) auto;
+		grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
 		align-items: center;
-		gap: 1rem 1.5rem;
-		padding: 1.25rem clamp(1.25rem, 4vw, 3.5rem);
-		padding-inline: max(1.25rem, env(safe-area-inset-left, 0px))
-			max(1.25rem, env(safe-area-inset-right, 0px));
+		column-gap: 0.75rem;
+		padding: 1rem clamp(1rem, 3vw, 3.5rem);
+		padding-inline: max(1rem, env(safe-area-inset-left, 0px))
+			max(1rem, env(safe-area-inset-right, 0px));
 		border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 	}
 
-	.site__header-spacer {
-		width: 7rem;
-		flex-shrink: 0;
+	.site__header-start {
+		justify-self: start;
+		min-width: 0;
 	}
 
 	.site__brand {
+		justify-self: center;
 		text-align: center;
 		min-width: 0;
+		max-width: 100%;
 	}
 
 	.site__brand-title {
@@ -130,13 +127,15 @@
 	}
 
 	.site__nav {
+		justify-self: end;
 		display: flex;
-		gap: 1.25rem;
+		gap: clamp(0.75rem, 3vw, 1.25rem);
 		font-family: var(--font-sans);
-		font-size: 0.72rem;
-		letter-spacing: 0.14em;
+		font-size: clamp(0.62rem, 2.5vw, 0.72rem);
+		letter-spacing: 0.12em;
 		text-transform: uppercase;
 		flex-shrink: 0;
+		white-space: nowrap;
 	}
 
 	.site__nav a {
@@ -144,6 +143,7 @@
 		text-decoration: none;
 		opacity: 0.7;
 		transition: opacity 200ms ease, color 200ms ease;
+		padding: 0.35rem 0;
 	}
 
 	.site__nav a:hover,
@@ -158,37 +158,6 @@
 
 	.site__main--player {
 		padding-bottom: clamp(4.5rem, 10vw, 6rem);
-	}
-
-	@media (max-width: 640px) {
-		.site__header {
-			display: flex;
-			flex-wrap: wrap;
-			justify-content: space-between;
-			align-items: center;
-			gap: 0.85rem;
-			padding-block: 1rem;
-		}
-
-		.site__header-spacer {
-			display: none;
-		}
-
-		.site__brand {
-			width: 100%;
-			text-align: center;
-		}
-
-		.site__nav {
-			margin-left: auto;
-		}
-
-		.site__header--home .site__nav {
-			width: 100%;
-			margin-left: 0;
-			justify-content: center;
-			gap: 1.5rem;
-		}
 	}
 
 	.site__main--immersive {

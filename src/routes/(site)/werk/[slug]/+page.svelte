@@ -15,31 +15,36 @@
 </svelte:head>
 
 <article class="detail">
-	<div class="detail__back">
-		<a href="{base}/">←</a>
-	</div>
+	<nav class="detail__stage" aria-label="Werken">
+		<a
+			class="detail__nav detail__nav--prev"
+			href="{base}/werk/{prev.id}/"
+			aria-label="Vorig werk: {prev.title}"
+		>
+			<span class="detail__nav-arrow" aria-hidden="true">←</span>
+		</a>
 
-	<div class="detail__plate">
-		<img src={drawing.src} alt={drawing.alt} style:view-transition-name="piece-{drawing.id}" />
-	</div>
+		<a
+			class="detail__plate"
+			href="{base}/atelier/?focus={drawing.id}"
+			aria-label="Bekijk op de werktafel: {drawing.title}"
+		>
+			<img src={drawing.src} alt={drawing.alt} style:view-transition-name="piece-{drawing.id}" />
+		</a>
+
+		<a
+			class="detail__nav detail__nav--next"
+			href="{base}/werk/{next.id}/"
+			aria-label="Volgend werk: {next.title}"
+		>
+			<span class="detail__nav-arrow" aria-hidden="true">→</span>
+		</a>
+	</nav>
 
 	<header class="detail__meta">
 		<h2 class="detail__title">{drawing.title}</h2>
 		<p class="detail__sub">{drawing.year} · {drawing.medium}</p>
 	</header>
-
-	<p class="detail__links">
-		<a href="{base}/atelier/?focus={drawing.id}">Werktafel</a>
-	</p>
-
-	<nav class="detail__pager" aria-label="Werken">
-		<a href="{base}/werk/{prev.id}/" aria-label="Vorig werk: {prev.title}">
-			<span class="detail__pager-arrow">←</span>
-		</a>
-		<a href="{base}/werk/{next.id}/" aria-label="Volgend werk: {next.title}">
-			<span class="detail__pager-arrow">→</span>
-		</a>
-	</nav>
 </article>
 
 <style>
@@ -51,21 +56,8 @@
 			max(1.25rem, env(safe-area-inset-right, 0px));
 	}
 
-	.detail__back {
-		font-family: var(--font-sans);
-		font-size: 1.1rem;
-		margin-bottom: clamp(1.5rem, 4vw, 2.5rem);
-	}
-
-	.detail__back a {
-		color: var(--color-ink-soft);
-		text-decoration: none;
-		opacity: 0.7;
-		transition: opacity 200ms ease;
-	}
-
-	.detail__back a:hover {
-		opacity: 1;
+	.detail__stage {
+		position: relative;
 	}
 
 	.detail__plate {
@@ -74,13 +66,25 @@
 		display: grid;
 		place-items: center;
 		max-height: min(75vh, 52rem);
-		margin-bottom: 0;
+		width: 100%;
+		color: inherit;
+		text-decoration: none;
+		cursor: pointer;
+		transition: box-shadow 300ms ease, transform 300ms ease;
+	}
+
+	.detail__plate:hover,
+	.detail__plate:focus-visible {
+		box-shadow: 0 18px 40px -20px rgba(0, 0, 0, 0.2);
+		transform: translateY(-2px);
+		outline: none;
 	}
 
 	.detail__plate img {
 		max-width: 100%;
 		max-height: 75vh;
 		object-fit: contain;
+		pointer-events: none;
 	}
 
 	.detail__meta {
@@ -113,49 +117,73 @@
 		margin: 0.85rem 0 0;
 	}
 
-	.detail__links {
-		text-align: center;
-		margin: clamp(2rem, 4vw, 2.75rem) 0 0;
-		font-family: var(--font-sans);
-		font-size: 0.72rem;
-		letter-spacing: 0.14em;
-		text-transform: uppercase;
-	}
-
-	.detail__links a {
-		color: var(--color-ink-soft);
-		text-decoration: none;
-		opacity: 0.7;
-		transition: opacity 200ms ease;
-	}
-
-	.detail__links a:hover {
-		opacity: 1;
-	}
-
-	.detail__pager {
-		display: flex;
-		justify-content: space-between;
-		margin-top: clamp(3rem, 6vw, 4.5rem);
-		padding-top: clamp(1.5rem, 3vw, 2rem);
-		border-top: 1px solid rgba(0, 0, 0, 0.08);
-	}
-
-	.detail__pager a {
+	.detail__nav {
+		position: absolute;
+		top: 50%;
+		z-index: 2;
 		display: grid;
 		place-items: center;
-		width: 2.5rem;
-		height: 2.5rem;
+		width: clamp(2.25rem, 6vw, 2.75rem);
+		height: clamp(2.25rem, 6vw, 2.75rem);
 		color: var(--color-ink-soft);
 		text-decoration: none;
-		transition: color 200ms ease;
+		border-radius: 9999px;
+		background: rgba(251, 250, 246, 0.88);
+		border: 1px solid rgba(0, 0, 0, 0.08);
+		backdrop-filter: blur(6px);
+		-webkit-backdrop-filter: blur(6px);
+		box-shadow: 0 4px 16px -8px rgba(0, 0, 0, 0.2);
+		transition: color 200ms ease, background 200ms ease, transform 200ms ease;
 	}
 
-	.detail__pager a:hover {
+	.detail__nav--prev {
+		left: 0;
+		transform: translate(-40%, -50%);
+	}
+
+	.detail__nav--next {
+		right: 0;
+		transform: translate(40%, -50%);
+	}
+
+	.detail__nav:hover,
+	.detail__nav:focus-visible {
 		color: var(--color-ink);
+		background: rgba(255, 255, 255, 0.96);
+		outline: none;
 	}
 
-	.detail__pager-arrow {
-		font-size: 1.25rem;
+	.detail__nav--prev:hover,
+	.detail__nav--prev:focus-visible {
+		transform: translate(-40%, -50%) scale(1.05);
+	}
+
+	.detail__nav--next:hover,
+	.detail__nav--next:focus-visible {
+		transform: translate(40%, -50%) scale(1.05);
+	}
+
+	@media (max-width: 480px) {
+		.detail__nav--prev {
+			left: 0.35rem;
+			transform: translateY(-50%);
+		}
+
+		.detail__nav--next {
+			right: 0.35rem;
+			transform: translateY(-50%);
+		}
+
+		.detail__nav--prev:hover,
+		.detail__nav--prev:focus-visible,
+		.detail__nav--next:hover,
+		.detail__nav--next:focus-visible {
+			transform: translateY(-50%) scale(1.05);
+		}
+	}
+
+	.detail__nav-arrow {
+		font-size: clamp(1.1rem, 3vw, 1.35rem);
+		line-height: 1;
 	}
 </style>

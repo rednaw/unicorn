@@ -6,18 +6,22 @@
 	let {
 		theme = 'light' as Theme,
 		label = 'Overzicht',
-		fixed = true
-	}: { theme?: Theme; label?: string; fixed?: boolean } = $props();
+		fixed = true,
+		compact = false
+	}: { theme?: Theme; label?: string; fixed?: boolean; compact?: boolean } = $props();
 </script>
 
 <a
 	class="back back--{theme}"
 	class:back--fixed={fixed}
+	class:back--compact={compact}
 	href="{base}/"
 	aria-label="Terug naar de galerij"
 >
 	<span class="back__arrow" aria-hidden="true">←</span>
-	<span class="back__label">{label}</span>
+	{#if !compact}
+		<span class="back__label">{label}</span>
+	{/if}
 </a>
 
 <style>
@@ -75,6 +79,11 @@
 	.back--dark:hover,
 	.back--dark:focus-visible {
 		background: rgba(20, 18, 14, 0.85);
+	}
+
+	.back--compact {
+		padding: 0.45rem 0.55rem;
+		gap: 0;
 	}
 
 	.back__arrow {
