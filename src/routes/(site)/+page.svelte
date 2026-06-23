@@ -61,14 +61,17 @@
 
 <style>
 	.gallery {
-		padding: clamp(1.5rem, 4vw, 3rem) clamp(1.5rem, 5vw, 3.5rem) 0;
+		padding-top: clamp(1.25rem, 4vw, 3rem);
+		padding-bottom: 0;
+		padding-inline: max(1.25rem, env(safe-area-inset-left, 0px))
+			max(1.25rem, env(safe-area-inset-right, 0px));
 		max-width: 80rem;
 		margin: 0 auto;
 	}
 
 	.gallery__listening {
 		max-width: 42rem;
-		margin: 0 auto 2.5rem;
+		margin: 0 auto clamp(2rem, 5vw, 3rem);
 		text-align: center;
 	}
 
@@ -141,8 +144,8 @@
 		padding: 0;
 		margin: 0;
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
-		gap: clamp(2rem, 5vw, 4rem) clamp(1.5rem, 4vw, 3rem);
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+		gap: clamp(2.5rem, 6vw, 4.5rem) clamp(1.25rem, 4vw, 3rem);
 	}
 
 	.gallery__item {

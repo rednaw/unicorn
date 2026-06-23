@@ -34,7 +34,7 @@
 
 <div class="site" class:site--immersive={isAtelier}>
 	{#if !isAtelier}
-		<header class="site__header">
+		<header class="site__header" class:site__header--home={isHome}>
 			{#if isHome}
 				<div class="site__header-spacer" aria-hidden="true"></div>
 			{:else}
@@ -94,27 +94,34 @@
 
 	.site__header {
 		display: grid;
-		grid-template-columns: auto 1fr auto;
+		grid-template-columns: auto minmax(0, 1fr) auto;
 		align-items: center;
-		gap: 1.5rem;
-		padding: 1.5rem clamp(1.5rem, 5vw, 3.5rem);
+		gap: 1rem 1.5rem;
+		padding: 1.25rem clamp(1.25rem, 4vw, 3.5rem);
+		padding-inline: max(1.25rem, env(safe-area-inset-left, 0px))
+			max(1.25rem, env(safe-area-inset-right, 0px));
 		border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 	}
 
 	.site__header-spacer {
 		width: 7rem;
+		flex-shrink: 0;
 	}
 
 	.site__brand {
 		text-align: center;
+		min-width: 0;
 	}
 
 	.site__brand-title {
 		font-family: var(--font-museum);
-		font-size: 1.5rem;
+		font-size: clamp(1.2rem, 3.5vw, 1.5rem);
 		font-weight: 400;
 		font-style: italic;
 		margin: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	.site__brand-title a {
@@ -126,9 +133,10 @@
 		display: flex;
 		gap: 1.25rem;
 		font-family: var(--font-sans);
-		font-size: 0.78rem;
-		letter-spacing: 0.16em;
+		font-size: 0.72rem;
+		letter-spacing: 0.14em;
 		text-transform: uppercase;
+		flex-shrink: 0;
 	}
 
 	.site__nav a {
@@ -145,11 +153,42 @@
 	}
 
 	.site__main {
-		padding-bottom: 3rem;
+		padding-bottom: clamp(2.5rem, 6vw, 4rem);
 	}
 
 	.site__main--player {
-		padding-bottom: 5.5rem;
+		padding-bottom: clamp(4.5rem, 10vw, 6rem);
+	}
+
+	@media (max-width: 640px) {
+		.site__header {
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: space-between;
+			align-items: center;
+			gap: 0.85rem;
+			padding-block: 1rem;
+		}
+
+		.site__header-spacer {
+			display: none;
+		}
+
+		.site__brand {
+			width: 100%;
+			text-align: center;
+		}
+
+		.site__nav {
+			margin-left: auto;
+		}
+
+		.site__header--home .site__nav {
+			width: 100%;
+			margin-left: 0;
+			justify-content: center;
+			gap: 1.5rem;
+		}
 	}
 
 	.site__main--immersive {

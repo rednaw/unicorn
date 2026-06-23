@@ -46,13 +46,15 @@
 	.detail {
 		max-width: 56rem;
 		margin: 0 auto;
-		padding: clamp(2rem, 6vw, 4rem) clamp(1.5rem, 5vw, 3.5rem) 0;
+		padding: clamp(2rem, 6vw, 4.5rem) clamp(1.25rem, 4vw, 3.5rem) 0;
+		padding-inline: max(1.25rem, env(safe-area-inset-left, 0px))
+			max(1.25rem, env(safe-area-inset-right, 0px));
 	}
 
 	.detail__back {
 		font-family: var(--font-sans);
 		font-size: 1.1rem;
-		margin-bottom: 2rem;
+		margin-bottom: clamp(1.5rem, 4vw, 2.5rem);
 	}
 
 	.detail__back a {
@@ -68,10 +70,11 @@
 
 	.detail__plate {
 		background: var(--color-paper);
-		padding: clamp(1.5rem, 4vw, 3rem);
+		padding: clamp(1.75rem, 5vw, 3.5rem);
 		display: grid;
 		place-items: center;
-		max-height: 75vh;
+		max-height: min(75vh, 52rem);
+		margin-bottom: 0;
 	}
 
 	.detail__plate img {
@@ -82,7 +85,13 @@
 
 	.detail__meta {
 		text-align: center;
-		margin-top: 1.5rem;
+		margin-top: 2.5rem;
+	}
+
+	@media (min-width: 640px) {
+		.detail__meta {
+			margin-top: clamp(4.5rem, 7vw, 7rem);
+		}
 	}
 
 	.detail__title {
@@ -101,12 +110,12 @@
 		text-transform: uppercase;
 		color: var(--color-ink-soft);
 		opacity: 0.65;
-		margin: 0.5rem 0 0;
+		margin: 0.85rem 0 0;
 	}
 
 	.detail__links {
 		text-align: center;
-		margin: 1.5rem 0 0;
+		margin: clamp(2rem, 4vw, 2.75rem) 0 0;
 		font-family: var(--font-sans);
 		font-size: 0.72rem;
 		letter-spacing: 0.14em;
@@ -127,8 +136,8 @@
 	.detail__pager {
 		display: flex;
 		justify-content: space-between;
-		margin-top: 3rem;
-		padding-top: 1.5rem;
+		margin-top: clamp(3rem, 6vw, 4.5rem);
+		padding-top: clamp(1.5rem, 3vw, 2rem);
 		border-top: 1px solid rgba(0, 0, 0, 0.08);
 	}
 
