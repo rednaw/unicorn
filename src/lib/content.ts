@@ -1,6 +1,3 @@
-// Single source of truth for the site's content.
-// User-facing strings are in Dutch (the site language); code and types stay English.
-
 import { base } from '$app/paths';
 
 export type Drawing = {
@@ -10,11 +7,8 @@ export type Drawing = {
 	medium: string;
 	src: string;
 	alt: string;
-	/** Rotation in degrees — used on the atelier canvas */
 	rotation?: number;
-	/** Position on the atelier canvas */
 	pos?: { x: number; y: number };
-	/** Render width on the atelier canvas (px) */
 	width?: number;
 };
 
@@ -23,11 +17,9 @@ export type Track = {
 	title: string;
 	composer: string;
 	src: string;
-	/** Position of the speaker on the atelier canvas */
 	pos?: { x: number; y: number };
 };
 
-/** Resolve a /static path to one that respects the BASE_PATH GitHub Pages prefix. */
 const asset = (path: string) => `${base}${path}`;
 
 export const artist = {
@@ -94,3 +86,24 @@ export const tracks: Track[] = [
 		pos: { x: 1720, y: 530 }
 	}
 ];
+
+// Optional drawing ↔ track links. Add or remove rows as assets arrive at uneven
+// pace. At most one track per drawing and one drawing per track.
+const pairings: { drawingId: string; trackId: string }[] = [
+	{ drawingId: 'studie-i', trackId: 'chopin-ballade-4' },
+	{ drawingId: 'buste-profiel', trackId: 'chopin-mazurka-op50-2' },
+	{ drawingId: 'maskers', trackId: 'chopin-polonaise' }
+];
+
+const trackIdByDrawing = new Map(pairings.map((p) => [p.drawingId, p.trackId]));
+const drawingIdByTrack = new Map(pairings.map((p) => [p.trackId, p.drawingId]));
+
+export function trackForDrawing(drawingId: string): Track | undefined {
+	const id = trackIdByDrawing.get(drawingId);
+	return id ? tracks.find((t) => t.id === id) : undefined;
+}
+
+export function drawingForTrack(trackId: string): Drawing | undefined {
+	const id = drawingIdByTrack.get(trackId);
+	return id ? drawings.find((d) => d.id === id) : undefined;
+}

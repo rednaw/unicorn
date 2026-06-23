@@ -1,8 +1,7 @@
-# Placeholder content credits
+# Asset credits
 
-This prototype uses **placeholder assets** generated and sourced automatically by
-`scripts/fetch-assets.sh`. Swap them for real artist work when ready
-(see the project README).
+Drawings are original work by V. Solenne. Audio is curated for the site.
+See the project README for how to add or replace files.
 
 ## Drawings (`/static/drawings/`)
 

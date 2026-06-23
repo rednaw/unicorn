@@ -1,19 +1,12 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { base } from '$app/paths';
 	import { onNavigate } from '$app/navigation';
 	import { page } from '$app/state';
 	import { artist, tracks } from '$lib/content';
-	import { engine, initAudio } from '$lib/audio-engine.svelte';
+	import { engine } from '$lib/audio-engine.svelte';
 
 	let { children } = $props();
 
-	onMount(() => {
-		if (!page.url.pathname.startsWith(`${base}/atelier`)) initAudio();
-	});
-
-	// Animate navigations between views with the View Transitions API.
-	// Progressive enhancement: unsupported browsers / reduced-motion just swap.
 	onNavigate((navigation) => {
 		if (typeof document === 'undefined' || !document.startViewTransition) return;
 		if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -25,12 +18,7 @@
 		});
 	});
 
-	// Shell mode is derived state (not a hard route split) so a future
-	// single-canvas view can reuse the same shell. The atelier renders immersive
-	// (no header/padding, full-bleed); everything else renders paged.
 	const isAtelier = $derived(page.url.pathname.startsWith(`${base}/atelier`));
-
-	// Immersive "now near" cue: name the most-audible track, fading with its level.
 	const nearTrack = $derived(engine.near.index >= 0 ? tracks[engine.near.index] : undefined);
 </script>
 
@@ -69,7 +57,6 @@
 		font-family: var(--font-museum);
 	}
 
-	/* Immersive (atelier): the page owns the full viewport; no paged chrome. */
 	.site--immersive {
 		min-height: 0;
 		height: 100svh;
@@ -118,8 +105,6 @@
 		height: 100%;
 	}
 
-	/* Immersive "now near" cue — minimal, auto-fades with proximity (opacity is
-	   bound to the audible level, so it disappears when you move away). */
 	.site__nearcue {
 		position: fixed;
 		left: 50%;

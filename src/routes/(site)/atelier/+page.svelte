@@ -4,38 +4,21 @@
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import { drawings, tracks, artist } from '$lib/content';
-	import { drawingForTrack, trackForDrawing } from '$lib/pairings';
+	import { drawings, tracks, artist, trackForDrawing, drawingForTrack } from '$lib/content';
 	import BackLink from '$lib/components/BackLink.svelte';
-	import {
-		enterSpatial,
-		applySpatial,
-		setNear,
-		leaveSpatial,
-		unlock
-	} from '$lib/audio-engine.svelte';
+	import { enterSpatial, applySpatial, setNear, leaveSpatial, unlock } from '$lib/audio-engine.svelte';
 
-	// The currently focused piece. Seeded from ?focus=<id> when entering from the
-	// gallery, then updated when the viewer focuses a drawing on the table.
 	let focusedId = $state<string | null>(browser ? page.url.searchParams.get('focus') : null);
-
-	// Canvas dimensions — large worktable that the viewer pans/zooms over.
 	const CANVAS_W = 2200;
 	const CANVAS_H = 1400;
 	const MIN_ZOOM = 0.25;
 	const MAX_ZOOM = 2.5;
-	const PROX_RADIUS = 760; // canvas-px distance over which a track is audible
-	// Zoom gate: tracks are silent when zoomed out and only sound once the
-	// viewer has zoomed in close. Below LOW = silent, at/above HIGH = full.
+	const PROX_RADIUS = 760;
 	const ZOOM_GATE_LOW = 0.65;
 	const ZOOM_GATE_HIGH = 0.95;
 
 	let viewport = $state<HTMLDivElement>();
-	// Speaker ring elements, used to reflect live loudness without reactive churn.
 	let speakerRings = $state<HTMLSpanElement[]>([]);
-
-	// Cap pan so a track never collapses fully into one channel — keeps single
-	// earbud listening usable and is gentler on phone speakers.
 	const PAN_CAP = 0.8;
 
 	let zoom = $state(0.7);
@@ -51,12 +34,10 @@
 	let primaryPointerId = $state<number | null>(null);
 	let primaryPointerType = $state<string>('mouse');
 
-	// Multi-pointer tracking for pinch-zoom on touch.
 	const pointers = new Map<number, { x: number; y: number }>();
 	type Pinch = { midX: number; midY: number; dist: number };
 	let pinch: Pinch | undefined;
 
-	// Clamp the pan so we never lose the canvas off-screen.
 	function clamp() {
 		if (!viewport) return;
 		const vw = viewport.clientWidth;
@@ -73,7 +54,6 @@
 
 	function applyZoomAt(viewportX: number, viewportY: number, nextZoom: number) {
 		const clamped = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, nextZoom));
-		// Keep the point under (viewportX, viewportY) stationary.
 		tx = viewportX - ((viewportX - tx) * clamped) / zoom;
 		ty = viewportY - ((viewportY - ty) * clamped) / zoom;
 		zoom = clamped;
@@ -100,10 +80,8 @@
 		const midY = (a.y + b.y) / 2 - rect.top;
 		const dist = Math.hypot(b.x - a.x, b.y - a.y);
 
-		// 1. Pan by midpoint translation.
 		tx += midX - pinch.midX;
 		ty += midY - pinch.midY;
-		// 2. Zoom around the current midpoint by the distance change.
 		applyZoomAt(midX, midY, zoom * (dist / pinch.dist));
 
 		pinch = { midX, midY, dist };
@@ -111,16 +89,11 @@
 
 	function onPointerDown(e: PointerEvent) {
 		if (e.button !== 0) return;
-		unlockAudio();
-		// Any interaction ends momentum and hands over control.
-		cancelAutoMotion();
-		// Drawings allow drag-or-tap (the browser auto-suppresses click after
-		// movement). Only UI chrome and the audio speaker toggles are exempt,
-		// so their own click handlers always win.
+		unlock();
+		stopInertia();
 		if (pointers.size === 0) {
 			const target = e.target as HTMLElement;
-			if (target.closest('.speaker, .back'))
-				return;
+			if (target.closest('.speaker, .back')) return;
 		}
 		pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 		try {
@@ -167,7 +140,6 @@
 			ty = dragStart.ty + (e.clientY - dragStart.y);
 			clamp();
 			hasUserNavigatedView = true;
-			// Track a smoothed pointer velocity for momentum on release.
 			const now = performance.now();
 			if (lastMove) {
 				const dt = now - lastMove.t;
@@ -201,7 +173,6 @@
 				viewport &&
 				!(e.target as HTMLElement).closest(NON_CANVAS)
 			) {
-				// Double-tap to zoom on touch (empty table only).
 				const now = performance.now();
 				if (
 					now - lastTapTime < 300 &&
@@ -217,7 +188,6 @@
 				}
 			}
 		} else if (pointers.size === 1) {
-			// Lift one finger of a pinch — continue as a drag with the survivor.
 			const [p] = pointers.values();
 			dragStart = { x: p.x, y: p.y, tx, ty };
 			const [id] = pointers.keys();
@@ -230,13 +200,12 @@
 
 	function onWheel(e: WheelEvent) {
 		if (!viewport) return;
-		unlockAudio();
-		cancelAutoMotion();
+		unlock();
+		stopInertia();
 		e.preventDefault();
 		const rect = viewport.getBoundingClientRect();
 		const cx = e.clientX - rect.left;
 		const cy = e.clientY - rect.top;
-		// Normalize wheel deltas so behavior is consistent across browsers/devices.
 		const deltaUnit =
 			e.deltaMode === WheelEvent.DOM_DELTA_LINE
 				? 16
@@ -245,8 +214,6 @@
 					: 1;
 		const dx = e.deltaX * deltaUnit;
 		const dy = e.deltaY * deltaUnit;
-		// macOS trackpad pinch fires wheel events with ctrlKey set; treat that
-		// (and a real Ctrl+wheel) as zoom. Plain wheel = pan.
 		if (e.ctrlKey || e.metaKey) {
 			applyZoomAt(cx, cy, zoom * Math.exp(-dy * 0.0018));
 		} else {
@@ -257,7 +224,6 @@
 		}
 	}
 
-	// Zoom-to-fit a drawing centered.
 	function zoomTo(centreX: number, centreY: number, target = 1.6) {
 		if (!viewport) return;
 		const vw = viewport.clientWidth;
@@ -273,8 +239,6 @@
 		if (!viewport) return zoom;
 		const vw = viewport.clientWidth;
 		const vh = viewport.clientHeight;
-		// Pick the zoom where the item occupies ~fill of the viewport while
-		// still fitting both dimensions.
 		const byWidth = (vw * fill) / Math.max(1, itemW);
 		const byHeight = (vh * fill) / Math.max(1, itemH);
 		return Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, Math.min(byWidth, byHeight)));
@@ -292,10 +256,9 @@
 		zoomTo(cx, cy, target);
 	}
 
-	// Clicking a speaker brings the viewer close enough that it starts to sound.
 	function focusSpeaker(track: (typeof tracks)[number]) {
 		if (!track.pos) return;
-		cancelAutoMotion();
+		stopInertia();
 		zoomTo(track.pos.x, track.pos.y, Math.max(zoom, ZOOM_GATE_HIGH + 0.15));
 	}
 
@@ -303,8 +266,6 @@
 		if (!viewport) return;
 		const vw = viewport.clientWidth;
 		const vh = viewport.clientHeight;
-		// Fit the canvas to the viewport, but never below MIN_ZOOM —
-		// on small phone screens "fit" would render the pieces unreadably small.
 		const fit = Math.min(vw / CANVAS_W, vh / CANVAS_H) * 0.95;
 		zoom = Math.max(MIN_ZOOM, fit);
 		tx = (vw - CANVAS_W * zoom) / 2;
@@ -313,9 +274,8 @@
 		hasUserNavigatedView = false;
 	}
 
-	// --- Momentum panning (inertia) ---
 	let inertiaRaf = 0;
-	let vx = 0; // px per ms
+	let vx = 0;
 	let vy = 0;
 	let lastMove: { x: number; y: number; t: number } | null = null;
 
@@ -333,7 +293,6 @@
 
 	function startInertia() {
 		if (prefersReducedMotion()) return;
-		// Ignore a release that followed a pause (no real flick).
 		if (lastMove && performance.now() - lastMove.t > 90) return;
 		if (Math.hypot(vx, vy) < 0.08) return;
 		let last = performance.now();
@@ -356,14 +315,8 @@
 		inertiaRaf = requestAnimationFrame(step);
 	}
 
-	// Any deliberate user input cancels momentum panning.
-	function cancelAutoMotion() {
-		stopInertia();
-	}
-
-	// --- Keyboard navigation (desktop) ---
 	function onKeyDown(e: KeyboardEvent) {
-		unlockAudio();
+		unlock();
 		const PAN = 90;
 		const ZOOM_IN = 1.15;
 		const vw = viewport?.clientWidth ?? 0;
@@ -404,26 +357,25 @@
 				resetView();
 				break;
 			case 'Escape':
-				leave();
+				goto(`${base}/`);
 				break;
 			default:
 				handled = false;
 		}
 		if (handled) {
 			e.preventDefault();
-			cancelAutoMotion();
+			stopInertia();
 			clamp();
 			hasUserNavigatedView = true;
 		}
 	}
 
-	// --- Double-click / double-tap to zoom ---
 	const NON_CANVAS = '.piece, .speaker, .back';
 
 	function onDblClick(e: MouseEvent) {
 		if (!viewport) return;
 		if ((e.target as HTMLElement).closest(NON_CANVAS)) return;
-		cancelAutoMotion();
+		stopInertia();
 		const rect = viewport.getBoundingClientRect();
 		applyZoomAt(e.clientX - rect.left, e.clientY - rect.top, zoom * 1.7);
 	}
@@ -432,17 +384,13 @@
 	let lastTapX = 0;
 	let lastTapY = 0;
 
-	// Proximity audio. RAF loop computes each track's gain from distance to the
-	// viewport centre and pans it by its on-screen horizontal offset.
 	let raf = 0;
 	function updateAudio() {
 		if (!viewport) return;
 		const vw = viewport.clientWidth;
 		const vh = viewport.clientHeight;
-		// Centre of viewport in canvas coordinates:
 		const centreCanvasX = (vw / 2 - tx) / zoom;
 		const centreCanvasY = (vh / 2 - ty) / zoom;
-		// Smoothstep zoom gate — no music when zoomed out.
 		const zg = Math.max(
 			0,
 			Math.min(1, (zoom - ZOOM_GATE_LOW) / (ZOOM_GATE_HIGH - ZOOM_GATE_LOW))
@@ -455,51 +403,20 @@
 			const dx = track.pos.x - centreCanvasX;
 			const dy = track.pos.y - centreCanvasY;
 			const dist = Math.hypot(dx, dy);
-			// Proximity falloff, gated by zoom: audible only when close AND zoomed in.
 			const t = Math.max(0, 1 - dist / PROX_RADIUS);
-			const prox = t * t * (3 - 2 * t);
-			const vol = prox * zoomGate;
-
+			const vol = t * t * (3 - 2 * t) * zoomGate;
 			const screenX = tx + track.pos.x * zoom;
 			const pan = Math.max(-1, Math.min(1, (screenX - vw / 2) / (vw / 2))) * PAN_CAP;
-
-			// The shared engine owns the nodes/elements: it schedules click-free
-			// gain/pan ramps and play/pauses each track as it becomes audible.
 			applySpatial(i, vol, pan);
-
-			// Reflect loudness on the speaker ring without triggering reactivity.
 			const ring = speakerRings[i];
 			if (ring) ring.style.setProperty('--level', vol.toFixed(3));
-
 			if (vol > nearLevel) {
 				nearLevel = vol;
 				nearIndex = i;
 			}
 		});
-		// Drive the immersive "now near" cue with the loudest track.
 		setNear(nearLevel > 0.05 ? nearIndex : -1, nearLevel);
 		raf = requestAnimationFrame(updateAudio);
-	}
-
-	// The experience runs immediately on load. Browser autoplay policy means
-	// audio can't sound until a user gesture, so it is unlocked (via the shared
-	// engine) on the first interaction; the proximity loop then decides when
-	// each track sounds.
-	function unlockAudio() {
-		unlock();
-	}
-
-	function stop() {
-		cancelAutoMotion();
-		cancelAnimationFrame(raf);
-		raf = 0;
-		// Silence spatial tracks and hand the engine back to playlist mode.
-		leaveSpatial();
-	}
-
-	function leave() {
-		stop();
-		goto(`${base}/`);
 	}
 
 	onMount(() => {
@@ -513,23 +430,16 @@
 		}
 
 		const onResize = () => {
-			// Keep the user's current framing after they have started navigating;
-			// only recenter when still in the initial untouched state.
-			if (hasUserNavigatedView) {
-				clamp();
-			} else {
-				resetView();
-			}
+			if (hasUserNavigatedView) clamp();
+			else resetView();
 		};
 		window.addEventListener('resize', onResize);
 		window.addEventListener('keydown', onKeyDown);
 		return () => {
 			window.removeEventListener('resize', onResize);
 			window.removeEventListener('keydown', onKeyDown);
-			cancelAutoMotion();
+			stopInertia();
 			cancelAnimationFrame(raf);
-			// Leave the shared engine intact (it persists across views); just
-			// silence spatial playback and restore playlist mode.
 			leaveSpatial();
 		};
 	});
@@ -541,7 +451,7 @@
 </svelte:head>
 
 <div class="atelier">
-	<BackLink theme="light" compact />
+	<BackLink />
 
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
@@ -614,16 +524,13 @@
 		background: #c9c0a8;
 		color: #1a1814;
 		height: 100vh;
-		height: 100svh; /* iOS Safari: avoid jumping under the dynamic chrome */
+		height: 100svh;
 		overflow: hidden;
 		position: relative;
 		font-family: var(--font-serif);
 		background-image: radial-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px),
 			linear-gradient(180deg, #d4cbb3, #bfb59c);
-		background-size:
-			8px 8px,
-			100% 100%;
-		/* Prevent the browser from intercepting touch gestures we handle ourselves. */
+		background-size: 8px 8px, 100% 100%;
 		touch-action: none;
 		overscroll-behavior: none;
 	}
@@ -686,7 +593,6 @@
 		place-items: center;
 		cursor: pointer;
 		box-shadow: 0 14px 30px -16px rgba(0, 0, 0, 0.6);
-		/* pos is the acoustic centre (proximity + pan); anchor the icon there. */
 		transform: translate(-50%, -50%);
 	}
 
@@ -694,7 +600,6 @@
 		position: absolute;
 		inset: -8px;
 		border-radius: 9999px;
-		/* Live loudness from the RAF loop; silent speakers show no ring. */
 		opacity: var(--level, 0);
 		transition: opacity 140ms linear;
 	}

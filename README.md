@@ -1,15 +1,14 @@
 # Unicorn — V. Solenne
 
 A SvelteKit site for one artist's drawings and piano recordings.
-The **gallery** is the default experience; the **atelier** is an optional immersive
-studio view where works are scattered on a pannable canvas with proximity-based audio.
+The **gallery** is the default experience; the **atelier** is an immersive studio
+view where works sit on a pannable canvas with proximity-based audio.
 
-| Route          | Idea                                                        |
-| -------------- | ----------------------------------------------------------- |
-| `/`            | Gallery — grid of works and listening controls              |
-| `/werk/[slug]/`| Work detail — one drawing, prev/next navigation              |
-| `/atelier/`    | Studio — pannable canvas with proximity-based audio         |
-| `/museum/`     | Redirects to `/` or `/werk/[slug]/` (legacy URLs)           |
+| Route       | Idea                                                       |
+| ----------- | ---------------------------------------------------------- |
+| `/`         | Gallery — grid of drawings; click a work to open the atelier |
+| `/atelier/` | Studio — pan/zoom canvas, spatial audio near each speaker  |
+| `/museum/`  | Legacy redirects → `/` or `/atelier/?focus=<id>`           |
 
 ## Prerequisites
 
@@ -60,8 +59,8 @@ See `static/CREDITS.md` for sources and licensing.
 
 1. Drop new files into `/static/drawings/`, `/static/audio/`, etc.
 2. Edit `src/lib/content.ts` — update the `drawings` and `tracks` arrays
-   to point at the new paths and metadata.
-3. That's it. Both gallery and atelier automatically pick up the new content.
+   (paths, titles, metadata, and atelier placement).
+3. Optionally add or remove rows in the `pairings` array in the same file.
 
 The shape is:
 
@@ -70,11 +69,12 @@ type Drawing = { id; title; year; medium; src; alt; rotation?; pos?; width? }
 type Track   = { id; title; composer; src; pos? }
 ```
 
-Pairings between drawings and recordings live in `src/lib/pairings.ts`
-(`drawingId` ↔ `trackId`). Either side may be unpaired as assets are added
-at different times — add or remove rows in `pairings` only.
+**Pairings** link drawings to recordings (`drawingId` ↔ `trackId`). Either side
+may be unpaired as assets arrive at different times — add or remove pairing rows
+only; unpaired drawings still appear in the gallery and on the atelier table,
+unpaired tracks still appear as speakers.
 
-`pos` and `rotation` define placement on the atelier canvas.
+`pos`, `rotation`, and `width` define placement on the atelier canvas.
 
 ## Architecture
 
@@ -84,32 +84,33 @@ src/
   routes/
     +layout.svelte          # global head (favicon, CSS)
     +layout.ts              # prerender + trailingSlash: 'always'
-    layout.css              # Tailwind + theme tokens
+    layout.css              # Tailwind + theme tokens + view transitions
     (site)/
-      +layout.svelte        # gallery chrome + docked AudioPlayer
+      +layout.svelte        # mode-aware shell (gallery vs immersive atelier)
       +page.svelte          # gallery grid
-      werk/[slug]/          # work detail pages
-    atelier/+page.svelte    # fullscreen studio canvas
+      atelier/+page.svelte  # fullscreen studio canvas
     museum/                 # legacy redirects
   lib/
-    content.ts              # single source of truth
-    site-state.svelte.ts    # shared audio player state
+    content.ts              # drawings, tracks, pairings, lookups
+    audio-engine.svelte.ts  # spatial Web Audio (atelier only)
     components/
-      AudioPlayer.svelte
       BackLink.svelte
 static/
   drawings/, audio/, .nojekyll, CREDITS.md
 scripts/
-  fetch-assets.sh
+  fetch-assets.sh           # optional yt-dlp helper for audio
 .devcontainer/
   Dockerfile, devcontainer.json
 ```
+
+Gallery → atelier navigation uses the View Transitions API with a shared-element
+morph on the focused drawing (`view-transition-name: piece-<id>`).
 
 ## Stack
 
 - **SvelteKit 2 + Svelte 5** (runes mode)
 - **Tailwind CSS 4** with `@tailwindcss/typography`
-- **Web Audio + native `<audio>`** for atelier proximity gain
+- **Web Audio + native `<audio>`** for atelier proximity gain/pan
 - **@sveltejs/adapter-static** with `404.html` SPA fallback
 - Dev tooling in `.devcontainer/` — GitHub Actions for production builds
 
