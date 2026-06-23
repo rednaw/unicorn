@@ -37,6 +37,12 @@
 		{@render children()}
 	</main>
 
+	{#if !isAtelier}
+		<footer class="site__footer">
+			<a href="{base}/credits/">colofon</a>
+		</footer>
+	{/if}
+
 	{#if isAtelier && nearTrack}
 		<div
 			class="site__nearcue"
@@ -103,6 +109,27 @@
 	.site__main--immersive {
 		padding-bottom: 0;
 		height: 100%;
+	}
+
+	.site__footer {
+		display: flex;
+		justify-content: center;
+		padding: 0 1rem 1.5rem;
+		font-family: var(--font-sans);
+		font-size: 0.75rem;
+		letter-spacing: 0.12em;
+		text-transform: lowercase;
+	}
+
+	.site__footer a {
+		color: inherit;
+		text-decoration: none;
+		opacity: 0.45;
+		transition: opacity 200ms ease;
+	}
+
+	.site__footer a:hover {
+		opacity: 0.75;
 	}
 
 	.site__nearcue {

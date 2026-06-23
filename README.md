@@ -8,6 +8,7 @@ view where works sit on a pannable canvas with proximity-based audio.
 | ----------- | ---------------------------------------------------------- |
 | `/`         | Gallery — grid of drawings; click a work to open the atelier |
 | `/atelier/` | Studio — pan/zoom canvas, spatial audio near each speaker  |
+| `/credits/` | Colofon — rights and asset credits                         |
 
 ## Prerequisites
 
@@ -51,10 +52,11 @@ the workflow.
 
 ## Content & assets
 
-The site uses the artist's own drawings and curated audio:
+The site uses the artist's own drawings and piano recordings. A few assets are
+still placeholders (see `static/CREDITS.md`).
 
 - `/static/drawings/*.jpg` — drawing pre-scans (final scans TBD)
-- `/static/audio/` — Chopin performances (m4a / ogg)
+- `/static/audio/` — performances (m4a / ogg); one track still pending replacement
 
 See `static/CREDITS.md` for sources and licensing.
 
@@ -100,8 +102,6 @@ src/
       BackLink.svelte
 static/
   drawings/, audio/, .nojekyll, CREDITS.md
-scripts/
-  fetch-assets.sh           # optional yt-dlp helper for audio
 .devcontainer/
   Dockerfile, devcontainer.json
 ```
