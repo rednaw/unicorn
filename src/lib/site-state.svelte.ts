@@ -4,6 +4,7 @@
 export {
 	engine as site,
 	playTrack,
+	selectTrack,
 	toggleHeroPlayback,
 	next,
 	prev

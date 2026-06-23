@@ -5,6 +5,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { drawings, tracks, artist } from '$lib/content';
+	import { drawingForTrack, trackForDrawing } from '$lib/pairings';
 	import BackLink from '$lib/components/BackLink.svelte';
 	import {
 		enterSpatial,
@@ -643,6 +644,7 @@
 			style:height="{CANVAS_H}px"
 		>
 			{#each drawings as drawing (drawing.id)}
+				{@const pairedTrack = trackForDrawing(drawing.id)}
 				<button
 					type="button"
 					class="piece piece--drawing"
@@ -651,7 +653,9 @@
 					style:width="{drawing.width ?? 320}px"
 					style:--rot="{drawing.rotation ?? 0}deg"
 					onclick={() => focusDrawing(drawing)}
-					aria-label={drawing.title}
+					aria-label={pairedTrack
+						? `${drawing.title} — ${pairedTrack.title}`
+						: drawing.title}
 				>
 					<img
 						src={drawing.src}
@@ -664,13 +668,16 @@
 			{/each}
 
 			{#each tracks as track, i (track.id)}
+				{@const pairedDrawing = drawingForTrack(track.id)}
 				<button
 					type="button"
 					class="piece speaker"
 					style:left="{track.pos?.x ?? 0}px"
 					style:top="{track.pos?.y ?? 0}px"
 					onclick={() => focusSpeaker(track)}
-					aria-label="Ga naar {track.title} door {track.composer}"
+					aria-label={pairedDrawing
+						? `Ga naar {track.title} bij {pairedDrawing.title}`
+						: `Ga naar {track.title} door {track.composer}`}
 				>
 					<span class="speaker__ring" bind:this={speakerRings[i]}></span>
 					<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true">

@@ -1,13 +1,24 @@
 <script lang="ts">
 	import { base } from '$app/paths';
+	import { browser } from '$app/environment';
 	import { artist, drawings } from '$lib/content';
+	import { trackForDrawing, trackIndexForDrawing } from '$lib/pairings';
+	import { playTrack, selectTrack, site } from '$lib/site-state.svelte';
 
 	let { data } = $props();
 	const drawing = $derived(data.drawing);
+	const pairedTrack = $derived(trackForDrawing(drawing.id));
+	const pairedIndex = $derived(trackIndexForDrawing(drawing.id));
 
 	const currentIndex = $derived(drawings.findIndex((d) => d.id === drawing.id));
 	const prev = $derived(drawings[(currentIndex - 1 + drawings.length) % drawings.length]);
 	const next = $derived(drawings[(currentIndex + 1) % drawings.length]);
+
+	// Highlight the paired recording in the docked player when viewing this work.
+	$effect(() => {
+		if (!browser || pairedIndex === undefined) return;
+		selectTrack(pairedIndex);
+	});
 </script>
 
 <svelte:head>
@@ -44,6 +55,34 @@
 	<header class="detail__meta">
 		<h2 class="detail__title">{drawing.title}</h2>
 		<p class="detail__sub">{drawing.year} · {drawing.medium}</p>
+		{#if pairedTrack && pairedIndex !== undefined}
+			<div class="detail__pairing">
+				<button
+					type="button"
+					class="detail__pairing-play"
+					class:detail__pairing-play--active={site.index === pairedIndex && site.isPlaying}
+					onclick={() => playTrack(pairedIndex)}
+					aria-label="{site.index === pairedIndex && site.isPlaying
+						? 'Pauzeer'
+						: 'Speel'} {pairedTrack.title}"
+				>
+					{#if site.index === pairedIndex && site.isPlaying}
+						<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
+							<rect x="6" y="5" width="4" height="14" />
+							<rect x="14" y="5" width="4" height="14" />
+						</svg>
+					{:else}
+						<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
+							<path d="M7 5v14l12-7z" />
+						</svg>
+					{/if}
+				</button>
+				<span class="detail__pairing-label">
+					<span class="detail__pairing-composer">{pairedTrack.composer}</span>
+					<span class="detail__pairing-title">{pairedTrack.title}</span>
+				</span>
+			</div>
+		{/if}
 	</header>
 </article>
 
@@ -115,6 +154,57 @@
 		color: var(--color-ink-soft);
 		opacity: 0.65;
 		margin: 0.85rem 0 0;
+	}
+
+	.detail__pairing {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.65rem;
+		margin: clamp(1.25rem, 3vw, 1.75rem) auto 0;
+		max-width: 100%;
+	}
+
+	.detail__pairing-play {
+		flex: none;
+		width: 2rem;
+		height: 2rem;
+		border-radius: 9999px;
+		border: none;
+		background: var(--color-ink);
+		color: var(--color-paper);
+		display: grid;
+		place-items: center;
+		cursor: pointer;
+		transition: transform 150ms ease;
+	}
+
+	.detail__pairing-play:hover {
+		transform: scale(1.05);
+	}
+
+	.detail__pairing-label {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.15rem;
+		min-width: 0;
+		text-align: left;
+	}
+
+	.detail__pairing-composer {
+		font-family: var(--font-sans);
+		font-size: 0.62rem;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--color-ink-soft);
+		opacity: 0.65;
+	}
+
+	.detail__pairing-title {
+		font-family: var(--font-museum);
+		font-style: italic;
+		font-size: 0.95rem;
+		color: var(--color-ink-soft);
 	}
 
 	.detail__nav {

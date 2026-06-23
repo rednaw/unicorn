@@ -70,6 +70,10 @@ type Drawing = { id; title; year; medium; src; alt; rotation?; pos?; width? }
 type Track   = { id; title; composer; src; pos? }
 ```
 
+Pairings between drawings and recordings live in `src/lib/pairings.ts`
+(`drawingId` ↔ `trackId`). Either side may be unpaired as assets are added
+at different times — add or remove rows in `pairings` only.
+
 `pos` and `rotation` define placement on the atelier canvas.
 
 ## Architecture

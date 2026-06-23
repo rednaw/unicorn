@@ -23,7 +23,7 @@ type TrackNodes = {
 export const engine = $state({
 	ready: false,
 	unlocked: false,
-	/** True once the listener has started any playback (gates the docked player). */
+	/** True once the listener has started any playback at least once. */
 	started: false,
 	mode: 'playlist' as Mode,
 	index: 0,
@@ -120,6 +120,15 @@ export function playTrack(i: number): void {
 	if (!n) return;
 	n.el.loop = false;
 	void n.el.play().catch(() => {});
+}
+
+/** Select a playlist track without starting playback (e.g. when opening a paired work). */
+export function selectTrack(i: number): void {
+	initAudio();
+	engine.mode = 'playlist';
+	engine.index = i;
+	engine.duration = nodes[i]?.el.duration || 0;
+	applyPlaylistGains();
 }
 
 export function toggleHeroPlayback(): void {
