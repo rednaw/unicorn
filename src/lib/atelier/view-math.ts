@@ -10,18 +10,21 @@ export function clampZoom(zoom: number, minZoom: number, maxZoom: number): numbe
 export function clampView(
 	view: ViewTransform,
 	viewport: ViewportRect,
-	canvas = ATELIER_CANVAS
+	canvas = ATELIER_CANVAS,
+	/** Extra pan room (canvas px) so edge pieces clear mobile UI chrome. */
+	panSlack = 64
 ): ViewTransform {
 	const w = canvas.width * view.zoom;
 	const h = canvas.height * view.zoom;
-	const minX = Math.min(0, viewport.width - w);
-	const maxX = Math.max(0, viewport.width - w);
-	const minY = Math.min(0, viewport.height - h);
-	const maxY = Math.max(0, viewport.height - h);
+	const slack = panSlack * view.zoom;
+	const minX = Math.min(0, viewport.width - w) - slack;
+	const maxX = Math.max(0, viewport.width - w) + slack;
+	const minY = Math.min(0, viewport.height - h) - slack;
+	const maxY = Math.max(0, viewport.height - h) + slack;
 	return {
 		...view,
-		tx: Math.max(Math.min(view.tx, Math.max(maxX, minX)), Math.min(maxX, minX)),
-		ty: Math.max(Math.min(view.ty, Math.max(maxY, minY)), Math.min(maxY, minY))
+		tx: Math.max(Math.min(view.tx, maxX), minX),
+		ty: Math.max(Math.min(view.ty, maxY), minY)
 	};
 }
 

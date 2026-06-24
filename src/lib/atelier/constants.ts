@@ -1,5 +1,7 @@
-/** Virtual table size in canvas pixels. Scale up as more works are added. */
-export const ATELIER_CANVAS = { width: 1320, height: 780 } as const;
+import { computeAtelierCanvas } from './canvas-bounds';
+
+/** Virtual table size in canvas pixels — derived from piece layout. */
+export const ATELIER_CANVAS = computeAtelierCanvas();
 
 export const ATELIER_ZOOM = {
 	initial: 0.7,
