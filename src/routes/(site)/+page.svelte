@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { base } from '$app/paths';
 	import { artist, drawings } from '$lib/content';
-	import { cacheAsset } from '$lib/drawing-asset-cache';
-	import CachedDrawingImg from '$lib/components/CachedDrawingImg.svelte';
+	import { cacheAsset } from '$lib/drawing/asset-cache';
+	import CachedDrawingImg from '$lib/drawing/CachedDrawingImg.svelte';
 
 	function onPlatePointerDown(drawing: (typeof drawings)[number]) {
 		void cacheAsset(drawing.thumb);

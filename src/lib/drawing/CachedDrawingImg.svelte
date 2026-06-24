@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { cacheAsset, peekCachedAsset } from '$lib/drawing-asset-cache';
+	import { cacheAsset, peekCachedAsset } from '$lib/drawing/asset-cache';
 
 	let {
 		url,

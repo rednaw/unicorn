@@ -97,9 +97,13 @@ src/
       atelier/+page.svelte  # fullscreen studio canvas
   lib/
     content.ts              # drawings, tracks, pairings, lookups
-    audio-engine.svelte.ts  # spatial Web Audio (atelier only)
-    components/
-      BackLink.svelte
+    drawing/
+      asset-cache.ts        # session blob cache (gallery + atelier)
+      CachedDrawingImg.svelte
+    atelier/                # studio canvas, gestures, spatial audio
+      audio-engine.svelte.ts
+      view.svelte.ts, gestures.svelte.ts, …
+      Canvas.svelte, DrawingPiece.svelte, …
 static/
   drawings/, audio/, .nojekyll, CREDITS.md
 .devcontainer/

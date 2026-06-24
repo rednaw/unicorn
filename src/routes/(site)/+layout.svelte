@@ -4,7 +4,7 @@
 	import { onNavigate } from '$app/navigation';
 	import { page } from '$app/state';
 	import { artist, drawings } from '$lib/content';
-	import { cacheAsset } from '$lib/drawing-asset-cache';
+	import { cacheAsset } from '$lib/drawing/asset-cache';
 
 	let { children } = $props();
 

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { tracks } from '$lib/content';
-	import { engine } from '$lib/audio-engine.svelte';
+	import { engine } from './audio-engine.svelte';
 
 	const nearTrack = $derived(engine.near.index >= 0 ? tracks[engine.near.index] : undefined);
 </script>

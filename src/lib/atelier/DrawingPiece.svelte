@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Drawing } from '$lib/content';
 	import { trackForDrawing } from '$lib/content';
-	import AtelierDrawingImg from '$lib/components/AtelierDrawingImg.svelte';
+	import DrawingImg from './DrawingImg.svelte';
 
 	let {
 		drawing,
@@ -29,7 +29,7 @@
 	onclick={onfocus}
 	aria-label={pairedTrack ? `${drawing.title} — ${pairedTrack.title}` : drawing.title}
 >
-	<AtelierDrawingImg
+	<DrawingImg
 		{drawing}
 		{prefetch}
 		viewTransitionName={focused ? `piece-${drawing.id}` : undefined}

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Drawing } from '$lib/content';
-	import { cacheAsset, peekCachedAsset } from '$lib/drawing-asset-cache';
+	import { cacheAsset, peekCachedAsset } from '$lib/drawing/asset-cache';
 
 	let {
 		drawing,
