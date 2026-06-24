@@ -1,9 +1,8 @@
 import { drawingForTrack, type Drawing, type Track } from '$lib/content';
-import { DEFAULT_DRAWING_WIDTH, DRAWING_ASPECT } from './constants';
+import { pieceBounds } from './drawing-geometry';
 
 export function drawingSize(drawing: Drawing) {
-	const width = drawing.width ?? DEFAULT_DRAWING_WIDTH;
-	return { width, height: width * DRAWING_ASPECT };
+	return pieceBounds(drawing);
 }
 
 /** Where spatial volume is measured — centre of the mat (focus / zoom target). */
