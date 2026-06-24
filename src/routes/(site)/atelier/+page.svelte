@@ -4,15 +4,16 @@
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import { drawings, tracks, artist, trackForDrawing, drawingForTrack } from '$lib/content';
+	import { drawings, tracks, artist, trackForDrawing, drawingForTrack, atelierMaxZoom } from '$lib/content';
 	import BackLink from '$lib/components/BackLink.svelte';
+	import AtelierDrawingImg from '$lib/components/AtelierDrawingImg.svelte';
 	import { enterSpatial, applySpatial, setNear, leaveSpatial, unlock } from '$lib/audio-engine.svelte';
 
 	let focusedId = $state<string | null>(browser ? page.url.searchParams.get('focus') : null);
 	const CANVAS_W = 2200;
 	const CANVAS_H = 1400;
 	const MIN_ZOOM = 0.25;
-	const MAX_ZOOM = 2.5;
+	const MAX_ZOOM = atelierMaxZoom();
 	const PROX_RADIUS = 760;
 	const ZOOM_GATE_LOW = 0.65;
 	const ZOOM_GATE_HIGH = 0.95;
@@ -550,12 +551,10 @@
 						? `${drawing.title} — ${pairedTrack.title}`
 						: drawing.title}
 				>
-					<img
-						src={drawing.src}
-						alt={drawing.alt}
-						style:view-transition-name={drawing.id === focusedId
-							? `piece-${drawing.id}`
-							: undefined}
+					<AtelierDrawingImg
+						drawing={drawing}
+						eager={drawing.id === focusedId}
+						viewTransitionName={drawing.id === focusedId ? `piece-${drawing.id}` : undefined}
 					/>
 				</button>
 			{/each}
@@ -641,13 +640,6 @@
 		transform: rotate(var(--rot, 0deg)) translateY(-3px);
 		box-shadow: 0 28px 48px -22px rgba(0, 0, 0, 0.5), 0 3px 10px -2px rgba(0, 0, 0, 0.25);
 		z-index: 10;
-	}
-
-	.piece--drawing img {
-		display: block;
-		width: 100%;
-		height: auto;
-		pointer-events: none;
 	}
 
 	.speaker {
