@@ -10,20 +10,31 @@ export type Drawing = {
 	src: string;
 	/** Gallery + atelier placeholder — `{basename}-thumb.webp` */
 	thumb: string;
+	/** Pixel width of `src` JPEG (must match file in `static/drawings/`). */
+	srcWidth: number;
+	/** Pixel height of `src` JPEG. */
+	srcHeight: number;
 	rotation?: number;
 	pos?: { x: number; y: number };
 	width?: number;
 };
 
-/** Long edge of `-atelier` exports (matches original width). */
-export const DRAWING_FULL_LONG_EDGE = 4400;
+/** Horizontal mat padding on atelier pieces (14px × 2) — sync with `DrawingPiece.svelte`. */
+export const DRAWING_SLOT_PADDING_X = 28;
 /** Worst-case DPR for sharp zoom cap (phones). */
 export const SHARP_DPR = 3;
-/** UX cap — below every drawing's sharp limit @ SHARP_DPR. */
-export const ATELIER_ZOOM_CAP = 4.5;
 
-export function maxSharpZoom(slotWidthPx: number, longEdge = DRAWING_FULL_LONG_EDGE) {
-	return longEdge / (slotWidthPx * SHARP_DPR);
+/**
+ * Max zoom before the browser upscales past 1:1 device pixels on `src`.
+ * `width` is the piece slot; the image spans `width - DRAWING_SLOT_PADDING_X`.
+ */
+export function maxSharpZoomForDrawing(d: Drawing): number {
+	const inner = (d.width ?? 320) - DRAWING_SLOT_PADDING_X;
+	return d.srcWidth / (inner * SHARP_DPR);
+}
+
+export function atelierMaxZoom(): number {
+	return Math.min(...drawings.map(maxSharpZoomForDrawing));
 }
 
 export type Track = {
@@ -57,6 +68,8 @@ export const drawings: Drawing[] = [
 		medium: 'potlood op papier',
 		alt: 'Abstracte potloodstudie met horizontale banden en een verticale vorm',
 		...drawingPaths('studie-i', 'image001.jpg'),
+		srcWidth: 2999,
+		srcHeight: 4441,
 		rotation: -2,
 		pos: { x: 240, y: 200 },
 		width: 280
@@ -68,6 +81,8 @@ export const drawings: Drawing[] = [
 		medium: 'potlood op papier',
 		alt: 'Potloodstudie van een klassieke buste in profiel',
 		...drawingPaths('buste-profiel', 'image002.jpg'),
+		srcWidth: 3100,
+		srcHeight: 4471,
 		rotation: 3,
 		pos: { x: 880, y: 260 },
 		width: 300
@@ -79,16 +94,13 @@ export const drawings: Drawing[] = [
 		medium: 'potlood op papier',
 		alt: 'Vier Venetiaanse maskers, getekend in potlood',
 		...drawingPaths('maskers', 'image003.jpg'),
+		srcWidth: 2956,
+		srcHeight: 4398,
 		rotation: -4,
 		pos: { x: 1520, y: 180 },
 		width: 280
 	}
 ];
-
-export function atelierMaxZoom() {
-	const perDrawing = drawings.map((d) => maxSharpZoom(d.width ?? 320));
-	return Math.min(ATELIER_ZOOM_CAP, ...perDrawing);
-}
 
 export const tracks: Track[] = [
 	{
