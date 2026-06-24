@@ -26,6 +26,21 @@
 	let speakerRings = $state<HTMLSpanElement[]>([]);
 	const PAN_CAP = 0.8;
 
+	/** Cached layout; updated on resize only — avoids forced reflow during pan/zoom/audio RAF. */
+	let viewportW = 0;
+	let viewportH = 0;
+	let viewportLeft = 0;
+	let viewportTop = 0;
+
+	function syncViewportMetrics() {
+		if (!viewport) return;
+		viewportW = viewport.clientWidth;
+		viewportH = viewport.clientHeight;
+		const rect = viewport.getBoundingClientRect();
+		viewportLeft = rect.left;
+		viewportTop = rect.top;
+	}
+
 	let zoom = $state(0.7);
 	let tx = $state(0);
 	let ty = $state(0);
@@ -74,9 +89,9 @@
 	}
 
 	function clamp() {
-		if (!viewport) return;
-		const vw = viewport.clientWidth;
-		const vh = viewport.clientHeight;
+		if (!viewport || viewportW === 0) return;
+		const vw = viewportW;
+		const vh = viewportH;
 		const w = CANVAS_W * zoom;
 		const h = CANVAS_H * zoom;
 		const minX = Math.min(0, vw - w);
@@ -99,11 +114,11 @@
 
 	function startPinch() {
 		if (!viewport || pointers.size < 2) return;
+		syncViewportMetrics();
 		const [a, b] = Array.from(pointers.values()).slice(0, 2);
-		const rect = viewport.getBoundingClientRect();
 		pinch = {
-			midX: (a.x + b.x) / 2 - rect.left,
-			midY: (a.y + b.y) / 2 - rect.top,
+			midX: (a.x + b.x) / 2 - viewportLeft,
+			midY: (a.y + b.y) / 2 - viewportTop,
 			dist: Math.hypot(b.x - a.x, b.y - a.y)
 		};
 	}
@@ -111,9 +126,8 @@
 	function updatePinch() {
 		if (!viewport || !pinch || pointers.size < 2) return;
 		const [a, b] = Array.from(pointers.values()).slice(0, 2);
-		const rect = viewport.getBoundingClientRect();
-		const midX = (a.x + b.x) / 2 - rect.left;
-		const midY = (a.y + b.y) / 2 - rect.top;
+		const midX = (a.x + b.x) / 2 - viewportLeft;
+		const midY = (a.y + b.y) / 2 - viewportTop;
 		const dist = Math.hypot(b.x - a.x, b.y - a.y);
 
 		tx += midX - pinch.midX;
@@ -216,8 +230,7 @@
 					now - lastTapTime < 300 &&
 					Math.hypot(e.clientX - lastTapX, e.clientY - lastTapY) < 36
 				) {
-					const rect = viewport.getBoundingClientRect();
-					zoomAtViewport(e.clientX - rect.left, e.clientY - rect.top, 1.7);
+					zoomAtViewport(e.clientX - viewportLeft, e.clientY - viewportTop, 1.7);
 					lastTapTime = 0;
 				} else {
 					lastTapTime = now;
@@ -241,14 +254,13 @@
 		unlock();
 		stopInertia();
 		e.preventDefault();
-		const rect = viewport.getBoundingClientRect();
-		const cx = e.clientX - rect.left;
-		const cy = e.clientY - rect.top;
+		const cx = e.clientX - viewportLeft;
+		const cy = e.clientY - viewportTop;
 		const deltaUnit =
 			e.deltaMode === WheelEvent.DOM_DELTA_LINE
 				? 16
 				: e.deltaMode === WheelEvent.DOM_DELTA_PAGE
-					? viewport.clientHeight
+					? viewportH
 					: 1;
 		const dx = e.deltaX * deltaUnit;
 		const dy = e.deltaY * deltaUnit;
@@ -263,9 +275,9 @@
 	}
 
 	function zoomTo(centreX: number, centreY: number, target = 1.6, animate = false) {
-		if (!viewport) return;
-		const vw = viewport.clientWidth;
-		const vh = viewport.clientHeight;
+		if (!viewport || viewportW === 0) return;
+		const vw = viewportW;
+		const vh = viewportH;
 		const nextTx = vw / 2 - centreX * target;
 		const nextTy = vh / 2 - centreY * target;
 		if (animate && !prefersReducedMotion()) {
@@ -280,9 +292,9 @@
 	}
 
 	function focusTargetZoom(itemW: number, itemH: number, fill = 0.74) {
-		if (!viewport) return zoom;
-		const vw = viewport.clientWidth;
-		const vh = viewport.clientHeight;
+		if (!viewport || viewportW === 0) return zoom;
+		const vw = viewportW;
+		const vh = viewportH;
 		const byWidth = (vw * fill) / Math.max(1, itemW);
 		const byHeight = (vh * fill) / Math.max(1, itemH);
 		return Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, Math.min(byWidth, byHeight)));
@@ -308,9 +320,9 @@
 	}
 
 	function resetView() {
-		if (!viewport) return;
-		const vw = viewport.clientWidth;
-		const vh = viewport.clientHeight;
+		if (!viewport || viewportW === 0) return;
+		const vw = viewportW;
+		const vh = viewportH;
 		const fit = Math.min(vw / CANVAS_W, vh / CANVAS_H) * 0.95;
 		zoom = Math.max(MIN_ZOOM, fit);
 		tx = (vw - CANVAS_W * zoom) / 2;
@@ -388,8 +400,8 @@
 		unlock();
 		const PAN = 90;
 		const ZOOM_IN = 1.15;
-		const vw = viewport?.clientWidth ?? 0;
-		const vh = viewport?.clientHeight ?? 0;
+		const vw = viewportW;
+		const vh = viewportH;
 		let handled = true;
 		switch (e.key) {
 			case 'ArrowLeft':
@@ -445,8 +457,7 @@
 		if (!viewport) return;
 		if ((e.target as HTMLElement).closest(NON_CANVAS)) return;
 		stopInertia();
-		const rect = viewport.getBoundingClientRect();
-		applyZoomAt(e.clientX - rect.left, e.clientY - rect.top, zoom * 1.7);
+		applyZoomAt(e.clientX - viewportLeft, e.clientY - viewportTop, zoom * 1.7);
 	}
 
 	function zoomAtViewport(viewportX: number, viewportY: number, factor: number) {
@@ -469,9 +480,9 @@
 
 	let raf = 0;
 	function updateAudio() {
-		if (!viewport) return;
-		const vw = viewport.clientWidth;
-		const vh = viewport.clientHeight;
+		if (!viewport || viewportW === 0) return;
+		const vw = viewportW;
+		const vh = viewportH;
 		const centreCanvasX = (vw / 2 - tx) / zoom;
 		const centreCanvasY = (vh / 2 - ty) / zoom;
 		const zg = Math.max(
@@ -503,36 +514,45 @@
 	}
 
 	onMount(() => {
-		resetView();
 		enterSpatial();
-		raf = requestAnimationFrame(updateAudio);
 
-		if (focusedId) {
-			queuePrefetch(focusedId);
-			const drawing = drawings.find((d) => d.id === focusedId);
-			if (drawing) void tick().then(() => focusDrawing(drawing));
-		}
+		let ro: ResizeObserver | undefined;
+		let viewportEl: HTMLDivElement | undefined;
 
 		const onTouchMove = (e: TouchEvent) => {
 			if (pointers.size > 0) e.preventDefault();
 		};
 
-		const onResize = () => {
+		const onViewportResize = () => {
+			syncViewportMetrics();
 			if (hasUserNavigatedView) clamp();
 			else resetView();
 		};
 
 		void tick().then(() => {
-			viewport?.addEventListener('wheel', onWheel, { passive: false });
-			viewport?.addEventListener('touchmove', onTouchMove, { passive: false });
+			if (!viewport) return;
+			viewportEl = viewport;
+			syncViewportMetrics();
+			resetView();
+			raf = requestAnimationFrame(updateAudio);
+
+			if (focusedId) {
+				queuePrefetch(focusedId);
+				const drawing = drawings.find((d) => d.id === focusedId);
+				if (drawing) focusDrawing(drawing);
+			}
+
+			ro = new ResizeObserver(onViewportResize);
+			ro.observe(viewport);
+			viewport.addEventListener('wheel', onWheel, { passive: false });
+			viewport.addEventListener('touchmove', onTouchMove, { passive: false });
 		});
 
-		window.addEventListener('resize', onResize);
 		window.addEventListener('keydown', onKeyDown);
 		return () => {
-			viewport?.removeEventListener('wheel', onWheel);
-			viewport?.removeEventListener('touchmove', onTouchMove);
-			window.removeEventListener('resize', onResize);
+			ro?.disconnect();
+			viewportEl?.removeEventListener('wheel', onWheel);
+			viewportEl?.removeEventListener('touchmove', onTouchMove);
 			window.removeEventListener('keydown', onKeyDown);
 			stopInertia();
 			cancelAnimationFrame(raf);
