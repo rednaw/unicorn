@@ -1,13 +1,8 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { base } from '$app/paths';
 	import { artist, drawings } from '$lib/content';
 	import { cacheAsset } from '$lib/drawing-asset-cache';
 	import CachedDrawingImg from '$lib/components/CachedDrawingImg.svelte';
-
-	onMount(() => {
-		for (const d of drawings) void cacheAsset(d.thumb);
-	});
 
 	function onPlatePointerDown(drawing: (typeof drawings)[number]) {
 		void cacheAsset(drawing.thumb);

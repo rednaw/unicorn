@@ -7,6 +7,7 @@
 	import { drawings, tracks, artist, trackForDrawing, drawingForTrack, atelierMaxZoom } from '$lib/content';
 	import BackLink from '$lib/components/BackLink.svelte';
 	import AtelierDrawingImg from '$lib/components/AtelierDrawingImg.svelte';
+	import AtelierNearCue from '$lib/components/AtelierNearCue.svelte';
 	import { cacheAsset } from '$lib/drawing-asset-cache';
 	import { enterSpatial, applySpatial, setNear, leaveSpatial, unlock } from '$lib/audio-engine.svelte';
 
@@ -547,6 +548,7 @@
 
 <div class="atelier">
 	<BackLink />
+	<AtelierNearCue />
 
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
