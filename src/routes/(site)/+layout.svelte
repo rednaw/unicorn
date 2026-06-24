@@ -1,11 +1,17 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { base } from '$app/paths';
 	import { onNavigate } from '$app/navigation';
 	import { page } from '$app/state';
-	import { artist, tracks } from '$lib/content';
+	import { artist, drawings, tracks } from '$lib/content';
+	import { cacheAsset } from '$lib/drawing-asset-cache';
 	import { engine } from '$lib/audio-engine.svelte';
 
 	let { children } = $props();
+
+	onMount(() => {
+		for (const d of drawings) void cacheAsset(d.thumb);
+	});
 
 	onNavigate((navigation) => {
 		if (typeof document === 'undefined' || !document.startViewTransition) return;

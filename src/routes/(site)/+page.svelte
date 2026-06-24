@@ -1,6 +1,18 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { base } from '$app/paths';
 	import { artist, drawings } from '$lib/content';
+	import { cacheAsset } from '$lib/drawing-asset-cache';
+	import CachedDrawingImg from '$lib/components/CachedDrawingImg.svelte';
+
+	onMount(() => {
+		for (const d of drawings) void cacheAsset(d.thumb);
+	});
+
+	function onPlatePointerDown(drawing: (typeof drawings)[number]) {
+		void cacheAsset(drawing.thumb);
+		void cacheAsset(drawing.src);
+	}
 </script>
 
 <svelte:head>
@@ -16,18 +28,14 @@
 					class="plate"
 					href="{base}/atelier/?focus={drawing.id}"
 					aria-label="{drawing.title} — werktafel"
+					onpointerdown={() => onPlatePointerDown(drawing)}
 				>
 					<div class="plate__frame">
-						<img
-							src={drawing.thumb}
+						<CachedDrawingImg
+							url={drawing.thumb}
 							alt={drawing.alt}
 							loading="lazy"
-							decoding="async"
-							style:view-transition-name="piece-{drawing.id}"
-							onerror={(e) => {
-								const el = e.currentTarget as HTMLImageElement;
-								if (el.src !== drawing.src) el.src = drawing.src;
-							}}
+							viewTransitionName="piece-{drawing.id}"
 						/>
 					</div>
 				</a>
@@ -82,7 +90,7 @@
 		transform: translateY(-2px);
 	}
 
-	.plate__frame img {
+	.plate__frame :global(img) {
 		max-width: 100%;
 		max-height: 100%;
 		object-fit: contain;

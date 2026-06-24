@@ -7,9 +7,12 @@
 	import { drawings, tracks, artist, trackForDrawing, drawingForTrack, atelierMaxZoom } from '$lib/content';
 	import BackLink from '$lib/components/BackLink.svelte';
 	import AtelierDrawingImg from '$lib/components/AtelierDrawingImg.svelte';
+	import { cacheAsset } from '$lib/drawing-asset-cache';
 	import { enterSpatial, applySpatial, setNear, leaveSpatial, unlock } from '$lib/audio-engine.svelte';
 
 	let focusedId = $state<string | null>(browser ? page.url.searchParams.get('focus') : null);
+	let prefetchIds = $state(new Set<string>());
+
 	const CANVAS_W = 2200;
 	const CANVAS_H = 1400;
 	const MIN_ZOOM = 0.25;
@@ -49,6 +52,26 @@
 		return startedOnPiece ? PAN_THRESHOLD_PIECE : PAN_THRESHOLD_TOUCH;
 	}
 
+	function queuePrefetch(id: string | null) {
+		if (!id || prefetchIds.has(id)) return;
+		prefetchIds = new Set([...prefetchIds, id]);
+		const drawing = drawings.find((d) => d.id === id);
+		if (drawing) void cacheAsset(drawing.src);
+	}
+
+	function drawingAtViewport(viewportX: number, viewportY: number): string | null {
+		const cx = (viewportX - tx) / zoom;
+		const cy = (viewportY - ty) / zoom;
+		for (const d of drawings) {
+			const w = d.width ?? 320;
+			const h = w * 1.25;
+			const x = d.pos?.x ?? 0;
+			const y = d.pos?.y ?? 0;
+			if (cx >= x && cx <= x + w && cy >= y && cy <= y + h) return d.id;
+		}
+		return null;
+	}
+
 	function clamp() {
 		if (!viewport) return;
 		const vw = viewport.clientWidth;
@@ -70,6 +93,7 @@
 		zoom = clamped;
 		clamp();
 		hasUserNavigatedView = true;
+		queuePrefetch(drawingAtViewport(viewportX, viewportY));
 	}
 
 	function startPinch() {
@@ -105,6 +129,8 @@
 		if (pointers.size === 0) {
 			const target = e.target as HTMLElement;
 			startedOnPiece = !!target.closest('.piece--drawing');
+			const pieceId = target.closest('[data-drawing-id]')?.getAttribute('data-drawing-id');
+			if (pieceId) queuePrefetch(pieceId);
 			if (target.closest('.speaker, .back')) return;
 		}
 		pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
@@ -263,6 +289,7 @@
 
 	function focusDrawing(d: (typeof drawings)[number]) {
 		focusedId = d.id;
+		queuePrefetch(d.id);
 		const itemW = d.width ?? 320;
 		const itemH = itemW * 1.25;
 		const cx = (d.pos?.x ?? 0) + itemW / 2;
@@ -480,6 +507,7 @@
 		raf = requestAnimationFrame(updateAudio);
 
 		if (focusedId) {
+			queuePrefetch(focusedId);
 			const drawing = drawings.find((d) => d.id === focusedId);
 			if (drawing) void tick().then(() => focusDrawing(drawing));
 		}
@@ -542,6 +570,7 @@
 				<button
 					type="button"
 					class="piece piece--drawing"
+					data-drawing-id={drawing.id}
 					style:left="{drawing.pos?.x ?? 0}px"
 					style:top="{drawing.pos?.y ?? 0}px"
 					style:width="{drawing.width ?? 320}px"
@@ -553,7 +582,7 @@
 				>
 					<AtelierDrawingImg
 						drawing={drawing}
-						eager={drawing.id === focusedId}
+						prefetch={prefetchIds.has(drawing.id)}
 						viewTransitionName={drawing.id === focusedId ? `piece-${drawing.id}` : undefined}
 					/>
 				</button>
