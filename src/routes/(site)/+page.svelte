@@ -19,10 +19,15 @@
 				>
 					<div class="plate__frame">
 						<img
-							src={drawing.src}
+							src={drawing.thumb}
 							alt={drawing.alt}
 							loading="lazy"
+							decoding="async"
 							style:view-transition-name="piece-{drawing.id}"
+							onerror={(e) => {
+								const el = e.currentTarget as HTMLImageElement;
+								if (el.src !== drawing.src) el.src = drawing.src;
+							}}
 						/>
 					</div>
 				</a>

@@ -5,12 +5,26 @@ export type Drawing = {
 	title: string;
 	year: string;
 	medium: string;
-	src: string;
 	alt: string;
+	/** Original JPEG — atelier lazy-load (sharp zoom) */
+	src: string;
+	/** Gallery + atelier placeholder — `{basename}-thumb.webp` */
+	thumb: string;
 	rotation?: number;
 	pos?: { x: number; y: number };
 	width?: number;
 };
+
+/** Long edge of `-atelier` exports (matches original width). */
+export const DRAWING_FULL_LONG_EDGE = 4400;
+/** Worst-case DPR for sharp zoom cap (phones). */
+export const SHARP_DPR = 3;
+/** UX cap — below every drawing's sharp limit @ SHARP_DPR. */
+export const ATELIER_ZOOM_CAP = 4.5;
+
+export function maxSharpZoom(slotWidthPx: number, longEdge = DRAWING_FULL_LONG_EDGE) {
+	return longEdge / (slotWidthPx * SHARP_DPR);
+}
 
 export type Track = {
 	id: string;
@@ -21,6 +35,14 @@ export type Track = {
 };
 
 const asset = (path: string) => `${base}${path}`;
+
+const drawingPaths = (_id: string, file: string) => {
+	const base = file.replace(/\.[^.]+$/, '');
+	return {
+		src: asset(`/drawings/${file}`),
+		thumb: asset(`/drawings/${base}-thumb.webp`)
+	};
+};
 
 export const artist = {
 	name: 'V. Solenne',
@@ -33,8 +55,8 @@ export const drawings: Drawing[] = [
 		title: 'Studie I',
 		year: '2023',
 		medium: 'potlood op papier',
-		src: asset('/drawings/image001.jpg'),
 		alt: 'Abstracte potloodstudie met horizontale banden en een verticale vorm',
+		...drawingPaths('studie-i', 'image001.jpg'),
 		rotation: -2,
 		pos: { x: 240, y: 200 },
 		width: 280
@@ -44,8 +66,8 @@ export const drawings: Drawing[] = [
 		title: 'Buste in profiel',
 		year: '2023',
 		medium: 'potlood op papier',
-		src: asset('/drawings/image002.jpg'),
 		alt: 'Potloodstudie van een klassieke buste in profiel',
+		...drawingPaths('buste-profiel', 'image002.jpg'),
 		rotation: 3,
 		pos: { x: 880, y: 260 },
 		width: 300
@@ -55,13 +77,18 @@ export const drawings: Drawing[] = [
 		title: 'Maskers',
 		year: '2023',
 		medium: 'potlood op papier',
-		src: asset('/drawings/image003.jpg'),
 		alt: 'Vier Venetiaanse maskers, getekend in potlood',
+		...drawingPaths('maskers', 'image003.jpg'),
 		rotation: -4,
 		pos: { x: 1520, y: 180 },
 		width: 280
 	}
 ];
+
+export function atelierMaxZoom() {
+	const perDrawing = drawings.map((d) => maxSharpZoom(d.width ?? 320));
+	return Math.min(ATELIER_ZOOM_CAP, ...perDrawing);
+}
 
 export const tracks: Track[] = [
 	{
