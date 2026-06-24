@@ -3,7 +3,7 @@
  * Generate gallery/atelier placeholder thumbs from original JPEGs.
  * Reads source filenames from src/lib/content.ts (drawingPaths lines).
  *
- * image001.jpg → image001-thumb.webp  (640 px long edge, WebP)
+ * image001.jpg → image001-thumb.webp  (960 px long edge, WebP)
  *
  * Usage: pnpm assets:thumbs
  *        DRAWINGS_DIR=./static/drawings pnpm assets:thumbs
@@ -19,7 +19,7 @@ const root = join(__dirname, '..');
 
 const DRAWINGS_DIR = process.env.DRAWINGS_DIR ?? join(root, 'static/drawings');
 const CONTENT_TS = join(root, 'src/lib/content.ts');
-const THUMB_LONG_EDGE = 640;
+const THUMB_LONG_EDGE = 960;
 const THUMB_QUALITY = 80;
 
 function loadSourceFiles() {
