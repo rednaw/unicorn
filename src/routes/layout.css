@@ -1,11 +1,14 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/typography';
 
+/* Latin subset only — site copy is Dutch / Western European */
+@import '@fontsource/cormorant-garamond/latin-400.css';
+@import '@fontsource/cormorant-garamond/latin-400-italic.css';
+
 @theme {
-	--font-display: 'DM Serif Display', 'Cormorant Garamond', Georgia, serif;
-	--font-serif: 'EB Garamond', 'Cormorant Garamond', Georgia, serif;
+	--font-serif: 'Cormorant Garamond', Georgia, serif;
 	--font-museum: 'Cormorant Garamond', Georgia, serif;
-	--font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+	--font-sans: ui-sans-serif, system-ui, sans-serif;
 
 	--color-paper: #f1ece1;
 	--color-ink: #1a1814;
