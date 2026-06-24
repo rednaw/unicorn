@@ -1,8 +1,9 @@
 <script lang="ts">
-	import { tracks } from '$lib/content';
+	import { drawingForTrack, tracks } from '$lib/content';
 	import { engine } from './audio-engine.svelte';
 
 	const nearTrack = $derived(engine.near.index >= 0 ? tracks[engine.near.index] : undefined);
+	const nearDrawing = $derived(nearTrack ? drawingForTrack(nearTrack.id) : undefined);
 </script>
 
 {#if nearTrack}
@@ -12,6 +13,10 @@
 		aria-hidden="true"
 	>
 		<span class="nearcue__label">nu dichtbij</span>
+		{#if nearDrawing}
+			<span class="nearcue__drawing">{nearDrawing.title}</span>
+			<span class="nearcue__sep" aria-hidden="true">·</span>
+		{/if}
 		<span class="nearcue__title">{nearTrack.title}</span>
 	</div>
 {/if}
@@ -43,6 +48,18 @@
 		letter-spacing: 0.18em;
 		text-transform: uppercase;
 		opacity: 0.7;
+		flex: none;
+	}
+
+	.nearcue__drawing {
+		font-family: var(--font-museum);
+		font-size: 0.95rem;
+		white-space: nowrap;
+		flex: none;
+	}
+
+	.nearcue__sep {
+		opacity: 0.45;
 		flex: none;
 	}
 

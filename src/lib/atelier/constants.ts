@@ -1,5 +1,5 @@
-/** Virtual table size in canvas pixels. */
-export const ATELIER_CANVAS = { width: 2200, height: 1400 } as const;
+/** Virtual table size in canvas pixels. Scale up as more works are added. */
+export const ATELIER_CANVAS = { width: 1320, height: 780 } as const;
 
 export const ATELIER_ZOOM = {
 	initial: 0.7,
@@ -28,7 +28,7 @@ export const ATELIER_GESTURES = {
 } as const;
 
 export const ATELIER_AUDIO = {
-	proxRadius: 760,
+	proxRadius: 300,
 	zoomGateLow: 0.65,
 	zoomGateHigh: 0.95,
 	panCap: 0.8,

@@ -60,6 +60,7 @@ export const artist = {
 	tagline: 'tekeningen en geluid'
 };
 
+/** Atelier layout: three works on an uneven (scalene) triangle — apex, lower-left, right flank. */
 export const drawings: Drawing[] = [
 	{
 		id: 'studie-i',
@@ -71,7 +72,7 @@ export const drawings: Drawing[] = [
 		srcWidth: 2999,
 		srcHeight: 4441,
 		rotation: -2,
-		pos: { x: 240, y: 200 },
+		pos: { x: 75, y: 410 },
 		width: 280
 	},
 	{
@@ -84,7 +85,7 @@ export const drawings: Drawing[] = [
 		srcWidth: 3100,
 		srcHeight: 4471,
 		rotation: 3,
-		pos: { x: 880, y: 260 },
+		pos: { x: 820, y: 260 },
 		width: 300
 	},
 	{
@@ -97,7 +98,7 @@ export const drawings: Drawing[] = [
 		srcWidth: 2956,
 		srcHeight: 4398,
 		rotation: -4,
-		pos: { x: 1520, y: 180 },
+		pos: { x: 400, y: 55 },
 		width: 280
 	}
 ];
@@ -107,22 +108,19 @@ export const tracks: Track[] = [
 		id: 'chopin-ballade-4',
 		title: 'Ballade nr. 4 in f klein, op. 52',
 		composer: 'Frédéric Chopin',
-		src: asset('/audio/chopin-ballade-opus-52-no-4.m4a'),
-		pos: { x: 450, y: 580 }
+		src: asset('/audio/chopin-ballade-opus-52-no-4.m4a')
 	},
 	{
 		id: 'chopin-mazurka-op50-2',
 		title: 'Mazurka in As, op. 50 nr. 2',
 		composer: 'Frédéric Chopin',
-		src: asset('/audio/chopin-mazurka-opus-50-no-2.m4a'),
-		pos: { x: 1100, y: 620 }
+		src: asset('/audio/chopin-mazurka-opus-50-no-2.m4a')
 	},
 	{
 		id: 'chopin-polonaise',
 		title: 'Polonaise in As, op. 53 ("Heroïque")',
 		composer: 'Frédéric Chopin',
-		src: asset('/audio/chopin-polonaise.ogg'),
-		pos: { x: 1720, y: 530 }
+		src: asset('/audio/chopin-polonaise.ogg')
 	}
 ];
 

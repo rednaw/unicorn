@@ -5,6 +5,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { drawings, artist, atelierMaxZoom } from '$lib/content';
+	import '$lib/atelier/backgrounds.css';
 	import BackLink from '$lib/atelier/BackLink.svelte';
 	import NearCue from '$lib/atelier/NearCue.svelte';
 	import Canvas from '$lib/atelier/Canvas.svelte';
@@ -93,16 +94,11 @@
 
 <style>
 	.atelier {
-		background: #c9c0a8;
-		color: #1a1814;
 		height: 100vh;
 		height: 100svh;
 		overflow: hidden;
 		position: relative;
 		font-family: var(--font-serif);
-		background-image: radial-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px),
-			linear-gradient(180deg, #d4cbb3, #bfb59c);
-		background-size: 8px 8px, 100% 100%;
 		touch-action: none;
 		overscroll-behavior: none;
 	}

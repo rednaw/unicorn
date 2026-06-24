@@ -2,6 +2,7 @@ import type { Drawing, Track } from '$lib/content';
 import { ATELIER_ANIM, ATELIER_GESTURES, ATELIER_ZOOM } from './constants';
 import { drawingSize } from './drawing-geometry';
 import { prefersReducedMotion, smoothstep } from './math';
+import { spatialSpeakerPoint } from './spatial-positions';
 import {
 	centreOnCanvas,
 	clampView,
@@ -16,7 +17,7 @@ import { EMPTY_VIEWPORT, type ViewportMetrics } from './viewport-metrics';
 export function createAtelierView(maxZoom: number) {
 	let tx = $state(0);
 	let ty = $state(0);
-	let zoom = $state(ATELIER_ZOOM.initial);
+	let zoom = $state<number>(ATELIER_ZOOM.initial);
 	let hasUserNavigatedView = $state(false);
 	let dragging = $state(false);
 	let metrics = $state<ViewportMetrics>(EMPTY_VIEWPORT);
@@ -189,9 +190,10 @@ export function createAtelierView(maxZoom: number) {
 	}
 
 	function focusSpeaker(track: Track) {
-		if (!track.pos) return;
+		const point = spatialSpeakerPoint(track);
+		if (!point) return;
 		stopInertia();
-		zoomTo(track.pos.x, track.pos.y, Math.max(zoom, ATELIER_ZOOM.speakerMin), true);
+		zoomTo(point.x, point.y, Math.max(zoom, ATELIER_ZOOM.speakerMin), true);
 	}
 
 	function dispose() {

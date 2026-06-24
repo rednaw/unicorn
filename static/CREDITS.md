@@ -13,11 +13,6 @@ Drawings and audio recordings on this site may **not** be copied, downloaded for
 redistribution, republished, or used in other works without prior written
 permission. Viewing here does not grant any licence.
 
-The site is **work in progress**. Some assets are placeholders and will be
-replaced.
-
-## Drawings
-
 Original work by the artist. Pre-scans only (low resolution; final scans pending).
 
 
