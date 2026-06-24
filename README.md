@@ -86,9 +86,9 @@ unpaired tracks still appear as speakers.
 
 ```
 src/
-  app.html
+  app.html                  # favicon links, HTML shell
   routes/
-    +layout.svelte          # global head (favicon, CSS)
+    +layout.svelte          # global CSS import
     +layout.ts              # prerender + trailingSlash: 'always'
     layout.css              # Tailwind + theme tokens + view transitions
     (site)/
