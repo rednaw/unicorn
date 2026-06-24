@@ -34,6 +34,12 @@
 		{prefetch}
 		viewTransitionName={focused ? `piece-${drawing.id}` : undefined}
 	/>
+	{#if pairedTrack}
+		<p class="piece__track">
+			<span class="piece__track-label">geluid</span>
+			{pairedTrack.title}
+		</p>
+	{/if}
 </button>
 
 <style>
@@ -58,5 +64,28 @@
 		transform: rotate(var(--rot, 0deg)) translateY(-3px);
 		box-shadow: 0 28px 48px -22px rgba(0, 0, 0, 0.5), 0 3px 10px -2px rgba(0, 0, 0, 0.25);
 		z-index: 10;
+	}
+
+	.piece__track {
+		margin: 0.35rem 0 0;
+		padding-top: 0.35rem;
+		border-top: 1px solid rgba(0, 0, 0, 0.08);
+		font-family: var(--font-museum);
+		font-size: 0.72rem;
+		font-style: italic;
+		line-height: 1.35;
+		color: rgba(26, 24, 20, 0.72);
+		text-align: center;
+	}
+
+	.piece__track-label {
+		display: block;
+		font-family: var(--font-sans);
+		font-size: 0.52rem;
+		font-style: normal;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+		color: rgba(26, 24, 20, 0.45);
+		margin-bottom: 0.15rem;
 	}
 </style>
