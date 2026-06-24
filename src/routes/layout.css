@@ -1,5 +1,4 @@
 @import 'tailwindcss';
-@plugin '@tailwindcss/typography';
 
 /* Latin subset only — site copy is Dutch / Western European */
 @import '@fontsource/cormorant-garamond/latin-400.css';

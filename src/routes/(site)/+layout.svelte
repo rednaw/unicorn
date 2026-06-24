@@ -3,9 +3,8 @@
 	import { base } from '$app/paths';
 	import { onNavigate } from '$app/navigation';
 	import { page } from '$app/state';
-	import { artist, drawings, tracks } from '$lib/content';
+	import { artist, drawings } from '$lib/content';
 	import { cacheAsset } from '$lib/drawing-asset-cache';
-	import { engine } from '$lib/audio-engine.svelte';
 
 	let { children } = $props();
 
@@ -25,7 +24,6 @@
 	});
 
 	const isAtelier = $derived(page.url.pathname.startsWith(`${base}/atelier`));
-	const nearTrack = $derived(engine.near.index >= 0 ? tracks[engine.near.index] : undefined);
 </script>
 
 <div class="site" class:site--immersive={isAtelier}>
@@ -47,17 +45,6 @@
 		<footer class="site__footer">
 			<a href="{base}/credits/">colofon</a>
 		</footer>
-	{/if}
-
-	{#if isAtelier && nearTrack}
-		<div
-			class="site__nearcue"
-			style:opacity={Math.min(1, engine.near.level * 1.4)}
-			aria-hidden="true"
-		>
-			<span class="site__nearcue-label">nu dichtbij</span>
-			<span class="site__nearcue-title">{nearTrack.title}</span>
-		</div>
 	{/if}
 </div>
 
@@ -136,49 +123,5 @@
 
 	.site__footer a:hover {
 		opacity: 0.75;
-	}
-
-	.site__nearcue {
-		position: fixed;
-		left: 50%;
-		bottom: 1.25rem;
-		transform: translateX(-50%);
-		display: flex;
-		align-items: baseline;
-		gap: 0.5rem;
-		padding: 0.35rem 0.85rem;
-		border-radius: 9999px;
-		background: rgba(20, 18, 14, 0.5);
-		color: #efe9da;
-		backdrop-filter: blur(8px);
-		-webkit-backdrop-filter: blur(8px);
-		pointer-events: none;
-		z-index: 40;
-		transition: opacity 200ms linear;
-		max-width: calc(100vw - 1.5rem);
-	}
-
-	.site__nearcue-label {
-		font-family: var(--font-sans);
-		font-size: 0.6rem;
-		letter-spacing: 0.18em;
-		text-transform: uppercase;
-		opacity: 0.7;
-		flex: none;
-	}
-
-	.site__nearcue-title {
-		font-family: var(--font-museum);
-		font-style: italic;
-		font-size: 0.95rem;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.site__nearcue {
-			transition: none;
-		}
 	}
 </style>
