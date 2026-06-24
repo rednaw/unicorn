@@ -1,5 +1,5 @@
 import { drawings } from '$lib/content';
-import { cacheAsset } from '$lib/drawing-asset-cache';
+import { cacheAsset } from '$lib/drawing/asset-cache';
 
 /** Queue full-res download for a drawing (idempotent per session). */
 export function queueDrawingPrefetch(

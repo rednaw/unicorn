@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { drawings, tracks } from '$lib/content';
 	import { ATELIER_CANVAS } from '$lib/atelier/constants';
-	import type { AtelierGestures } from '$lib/atelier/atelier-gestures.svelte';
-	import type { AtelierView } from '$lib/atelier/atelier-view.svelte';
-	import AtelierDrawingPiece from './AtelierDrawingPiece.svelte';
-	import AtelierSpeakerPiece from './AtelierSpeakerPiece.svelte';
+	import type { AtelierGestures } from './gestures.svelte';
+	import type { AtelierView } from './view.svelte';
+	import DrawingPiece from './DrawingPiece.svelte';
+	import SpeakerPiece from './SpeakerPiece.svelte';
 
 	let {
 		view,
@@ -45,7 +45,7 @@
 		style:height="{ATELIER_CANVAS.height}px"
 	>
 		{#each drawings as drawing (drawing.id)}
-			<AtelierDrawingPiece
+			<DrawingPiece
 				{drawing}
 				prefetch={prefetchIds.has(drawing.id)}
 				focused={drawing.id === focusedId}
@@ -54,7 +54,7 @@
 		{/each}
 
 		{#each tracks as track, i (track.id)}
-			<AtelierSpeakerPiece
+			<SpeakerPiece
 				{track}
 				level={speakerLevels[i] ?? 0}
 				onfocus={() => onFocusSpeaker(track)}

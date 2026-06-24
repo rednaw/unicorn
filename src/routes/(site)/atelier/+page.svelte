@@ -5,15 +5,15 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { drawings, artist, atelierMaxZoom } from '$lib/content';
-	import BackLink from '$lib/components/BackLink.svelte';
-	import AtelierNearCue from '$lib/components/AtelierNearCue.svelte';
-	import AtelierCanvas from '$lib/components/atelier/AtelierCanvas.svelte';
-	import { createAtelierGestures } from '$lib/atelier/atelier-gestures.svelte';
-	import { createAtelierView } from '$lib/atelier/atelier-view.svelte';
+	import BackLink from '$lib/atelier/BackLink.svelte';
+	import NearCue from '$lib/atelier/NearCue.svelte';
+	import Canvas from '$lib/atelier/Canvas.svelte';
+	import { createAtelierGestures } from '$lib/atelier/gestures.svelte';
+	import { createAtelierView } from '$lib/atelier/view.svelte';
 	import { queueDrawingPrefetch } from '$lib/atelier/drawing-prefetch';
 	import { createSpatialAudioLoop } from '$lib/atelier/spatial-audio-loop.svelte';
 	import { observeViewport, readViewportMetrics } from '$lib/atelier/viewport-metrics';
-	import { enterSpatial, leaveSpatial, unlock } from '$lib/audio-engine.svelte';
+	import { enterSpatial, leaveSpatial, unlock } from '$lib/atelier/audio-engine.svelte';
 
 	let focusedId = $state<string | null>(browser ? page.url.searchParams.get('focus') : null);
 	let prefetchIds = $state(new Set<string>());
@@ -77,9 +77,9 @@
 
 <div class="atelier">
 	<BackLink />
-	<AtelierNearCue />
+	<NearCue />
 
-	<AtelierCanvas
+	<Canvas
 		{view}
 		{gestures}
 		bind:viewport

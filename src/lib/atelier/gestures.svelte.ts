@@ -2,7 +2,7 @@ import { drawings } from '$lib/content';
 import { ATELIER_GESTURES, ATELIER_INTERACTIVE_SELECTOR, ATELIER_ZOOM } from './constants';
 import { drawingAtCanvasPoint } from './drawing-geometry';
 import { viewportToCanvas } from './view-math';
-import type { AtelierView } from './atelier-view.svelte';
+import type { AtelierView } from './view.svelte';
 
 type InteractionMode = 'idle' | 'pending-pan' | 'panning' | 'pinching';
 

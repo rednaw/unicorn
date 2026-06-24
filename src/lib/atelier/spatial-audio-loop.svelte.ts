@@ -1,7 +1,7 @@
 import { tracks } from '$lib/content';
-import { applySpatial, setNear } from '$lib/audio-engine.svelte';
+import { applySpatial, setNear } from './audio-engine.svelte';
 import { computeSpatialMix } from './spatial-mix';
-import type { AtelierView } from './atelier-view.svelte';
+import type { AtelierView } from './view.svelte';
 
 export function createSpatialAudioLoop(view: AtelierView) {
 	let speakerLevels = $state<number[]>(tracks.map(() => 0));
