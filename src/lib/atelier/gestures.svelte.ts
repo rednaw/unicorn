@@ -19,7 +19,7 @@ export type AtelierGestureDeps = {
 export function createAtelierGestures(view: AtelierView, deps: AtelierGestureDeps) {
 	const pointers = new Map<number, { x: number; y: number }>();
 
-	let interactionMode = $state<InteractionMode>('idle');
+	let interactionMode: InteractionMode = 'idle';
 	let primaryPointerId: number | null = null;
 	let primaryPointerType = 'mouse';
 	let startedOnPiece = false;
@@ -41,7 +41,7 @@ export function createAtelierGestures(view: AtelierView, deps: AtelierGestureDep
 
 	function prefetchAtViewport(viewportX: number, viewportY: number) {
 		const canvas = viewportToCanvas(view.getView(), viewportX, viewportY);
-		const id = drawingAtCanvasPoint(drawings, canvas.x, canvas.y);
+		const id = drawingAtCanvasPoint(drawings, canvas.x, canvas.y, (d) => view.drawingPos(d));
 		if (id) deps.onPrefetchDrawing(id);
 	}
 
@@ -83,7 +83,7 @@ export function createAtelierGestures(view: AtelierView, deps: AtelierGestureDep
 			startedOnPiece = !!target.closest('.piece--drawing');
 			const pieceId = target.closest('[data-drawing-id]')?.getAttribute('data-drawing-id');
 			if (pieceId) deps.onPrefetchDrawing(pieceId);
-			if (target.closest('.speaker, .back')) return;
+			if (target.closest('.back')) return;
 		}
 
 		pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
@@ -230,7 +230,9 @@ export function createAtelierGestures(view: AtelierView, deps: AtelierGestureDep
 	}
 
 	function onKeyDown(e: KeyboardEvent) {
-		deps.unlock();
+		// Leave browser/OS shortcuts (⌘R, ⌘0, ⌘←, …) untouched.
+		if (e.metaKey || e.ctrlKey || e.altKey) return;
+
 		const { width, height } = view.metrics;
 		let handled = true;
 
@@ -280,6 +282,7 @@ export function createAtelierGestures(view: AtelierView, deps: AtelierGestureDep
 		}
 
 		if (handled) {
+			deps.unlock();
 			e.preventDefault();
 			view.stopInertia();
 		}

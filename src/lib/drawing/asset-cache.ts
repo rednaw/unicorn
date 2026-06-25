@@ -48,10 +48,3 @@ export function cacheAsset(url: string): Promise<string> {
 	void job.finally(() => pending.delete(url));
 	return job;
 }
-
-/** @deprecated use cacheAsset */
-export const prefetchDrawingSrc = cacheAsset;
-
-export function isDrawingSrcCached(url: string): boolean {
-	return ready.has(url);
-}

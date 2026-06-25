@@ -7,7 +7,7 @@ view where works sit on a pannable canvas with proximity-based audio.
 | Route       | Idea                                                       |
 | ----------- | ---------------------------------------------------------- |
 | `/`         | Gallery — grid of drawings; click a work to open the atelier |
-| `/atelier/` | Studio — pan/zoom canvas, spatial audio near each speaker  |
+| `/atelier/` | Studio — pan/zoom canvas, spatial audio near each drawing  |
 | `/credits/` | Colofon — rights and asset credits                         |
 
 ## Prerequisites
@@ -52,11 +52,10 @@ the workflow.
 
 ## Content & assets
 
-The site uses the artist's own drawings and piano recordings. A few assets are
-still placeholders (see `static/CREDITS.md`).
+The site uses the artist's own drawings and piano recordings.
 
 - `/static/drawings/*.jpg` — drawing pre-scans (final scans TBD)
-- `/static/audio/` — performances (m4a / ogg); one track still pending replacement
+- `/static/audio/` — performances (m4a / ogg)
 
 See `static/CREDITS.md` for sources and licensing.
 
@@ -64,23 +63,24 @@ See `static/CREDITS.md` for sources and licensing.
 
 1. Drop new files into `/static/drawings/`, `/static/audio/`, etc.
    (they are stored via Git LFS — patterns live in `.gitattributes`).
-2. Edit `src/lib/content.ts` — update the `drawings` and `tracks` arrays
-   (paths, titles, metadata, and atelier placement).
-3. Optionally add or remove rows in the `pairings` array in the same file.
+2. Run `pnpm assets:thumbs` to generate the `-thumb.webp` placeholders.
+3. Edit `src/lib/content.ts` — add or update entries in the `drawings` array
+   (paths, titles, metadata, atelier placement, and an optional `track`).
 
 The shape is:
 
 ```ts
-type Drawing = { id; title; year; medium; src; alt; rotation?; pos?; width? }
-type Track   = { id; title; composer; src; pos? }
+type DrawingTrack = { id; title; composer; src }
+type Drawing = {
+  id; title; year; medium; src; thumb; srcWidth; srcHeight; alt;
+  rotation?; pos?; width?; track?
+}
 ```
 
-**Pairings** link drawings to recordings (`drawingId` ↔ `trackId`). Either side
-may be unpaired as assets arrive at different times — add or remove pairing rows
-only; unpaired drawings still appear in the gallery and on the atelier table,
-unpaired tracks still appear as speakers.
-
-`pos`, `rotation`, and `width` define placement on the atelier canvas.
+Audio is embedded directly on a drawing via its optional `track`: when present,
+that recording plays with proximity-based gain/pan as you approach the work in
+the atelier. Drawings without a `track` are silent. `pos`, `rotation`, and
+`width` define placement on the atelier canvas.
 
 ## Architecture
 
@@ -96,7 +96,7 @@ src/
       +page.svelte          # gallery grid
       atelier/+page.svelte  # fullscreen studio canvas
   lib/
-    content.ts              # drawings, tracks, pairings, lookups
+    content.ts              # drawings (with embedded tracks) + lookups
     drawing/
       asset-cache.ts        # session blob cache (gallery + atelier)
       CachedDrawingImg.svelte

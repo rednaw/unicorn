@@ -13,6 +13,13 @@ Drawings and audio recordings on this site may **not** be copied, downloaded for
 redistribution, republished, or used in other works without prior written
 permission. Viewing here does not grant any licence.
 
+## Atelier — *His Master’s Voice*
+
+Desk markers use Francis Barraud’s 1898 painting (public domain):
+`static/atelier/His_Master's_Voice.jpg` from
+[Wikimedia Commons](https://commons.wikimedia.org/wiki/File:His_Master%27s_Voice.jpg).
+Not the modern HMV/RCA trademark logo.
+
 Original work by the artist. Pre-scans only (low resolution; final scans pending).
 
 
@@ -28,10 +35,9 @@ Original work by the artist. Pre-scans only (low resolution; final scans pending
 Chopin compositions are in the public domain. **Recordings** are separate works.
 
 
-| Piece                                  | Recording                                                                                         |
-| -------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| *Ballade nr. 4 in f klein, op. 52*     | Original performance by the artist                                                                |
-| *Mazurka in As, op. 50 nr. 2*          | Original performance by the artist                                                                |
-| *Polonaise in As, op. 53 ("Heroïque")* | **Placeholder** — excerpt from YouTube; temporary, to be replaced by an original artist recording |
+| Piece                              | Recording                         |
+| ---------------------------------- | --------------------------------- |
+| *Ballade nr. 4 in f klein, op. 52* | Original performance by the artist |
+| *Mazurka in As, op. 50 nr. 2*      | Original performance by the artist |
 
 

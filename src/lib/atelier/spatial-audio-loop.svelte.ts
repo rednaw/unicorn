@@ -1,28 +1,24 @@
-import { tracks } from '$lib/content';
 import { applySpatial, setNear } from './audio-engine.svelte';
 import { computeSpatialMix } from './spatial-mix';
 import type { AtelierView } from './view.svelte';
 
 export function createSpatialAudioLoop(view: AtelierView) {
-	let speakerLevels = $state<number[]>(tracks.map(() => 0));
+	let nearDrawingId = $state<string | null>(null);
 	let raf = 0;
 
 	function tick() {
-		const { width, height } = view.metrics;
-		if (width === 0) {
-			raf = requestAnimationFrame(tick);
-			return;
-		}
-
-		const mix = computeSpatialMix(view.getView(), { width, height });
-		const levels = tracks.map(() => 0);
-		for (const { index, volume, pan } of mix.tracks) {
-			applySpatial(index, volume, pan);
-			levels[index] = volume;
-		}
-		speakerLevels = levels;
-		setNear(mix.nearIndex, mix.nearLevel);
 		raf = requestAnimationFrame(tick);
+
+		if (document.hidden || view.metrics.width === 0) return;
+
+		const mix = computeSpatialMix(view.getView(), view.metrics, view.layoutMode);
+		for (const { audioIndex, volume, pan } of mix.drawings) {
+			applySpatial(audioIndex, volume, pan);
+		}
+		if (mix.nearDrawingId !== nearDrawingId) {
+			nearDrawingId = mix.nearDrawingId;
+		}
+		setNear(mix.nearDrawingId, mix.nearLevel);
 	}
 
 	function start() {
@@ -36,8 +32,8 @@ export function createSpatialAudioLoop(view: AtelierView) {
 	}
 
 	return {
-		get speakerLevels() {
-			return speakerLevels;
+		get nearDrawingId() {
+			return nearDrawingId;
 		},
 		start,
 		stop
