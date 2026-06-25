@@ -4,6 +4,7 @@ import type { AtelierView } from './view.svelte';
 
 export function createSpatialAudioLoop(view: AtelierView) {
 	let nearDrawingId = $state<string | null>(null);
+	let dominantAudioDrawingId = $state<string | null>(null);
 	let raf = 0;
 
 	function tick() {
@@ -19,9 +20,13 @@ export function createSpatialAudioLoop(view: AtelierView) {
 			if (mix.nearDrawingId !== nearDrawingId) {
 				nearDrawingId = mix.nearDrawingId;
 			}
+			if (mix.dominantAudioDrawingId !== dominantAudioDrawingId) {
+				dominantAudioDrawingId = mix.dominantAudioDrawingId;
+			}
 			setNear(mix.nearDrawingId, mix.nearLevel);
-		} else if (nearDrawingId !== null) {
-			nearDrawingId = null;
+		} else {
+			if (nearDrawingId !== null) nearDrawingId = null;
+			if (dominantAudioDrawingId !== null) dominantAudioDrawingId = null;
 			setNear(null, 0);
 		}
 	}
@@ -39,6 +44,9 @@ export function createSpatialAudioLoop(view: AtelierView) {
 	return {
 		get nearDrawingId() {
 			return nearDrawingId;
+		},
+		get dominantAudioDrawingId() {
+			return dominantAudioDrawingId;
 		},
 		start,
 		stop
