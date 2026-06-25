@@ -2,9 +2,12 @@
 	import { base } from '$app/paths';
 	import { artist, drawings } from '$lib/content';
 	import { cacheAsset } from '$lib/drawing/asset-cache';
+	import { initAudio, unlock } from '$lib/atelier/audio-engine.svelte';
 	import CachedDrawingImg from '$lib/drawing/CachedDrawingImg.svelte';
 
 	function onPlatePointerDown(drawing: (typeof drawings)[number]) {
+		initAudio();
+		unlock();
 		void cacheAsset(drawing.thumb);
 		void cacheAsset(drawing.src);
 	}

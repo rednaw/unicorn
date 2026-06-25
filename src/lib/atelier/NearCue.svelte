@@ -7,7 +7,7 @@
 	);
 </script>
 
-{#if nearDrawing?.track}
+{#if engine.armed && nearDrawing?.track}
 	<div class="nearcue" role="status">
 		<span class="nearcue__pulse" aria-hidden="true"></span>
 		<span class="nearcue__label">speelt</span>
