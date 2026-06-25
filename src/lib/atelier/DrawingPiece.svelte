@@ -2,6 +2,7 @@
 	import { base } from '$app/paths';
 	import type { Drawing } from '$lib/content';
 	import { audioIndexForDrawing, DEFAULT_DRAWING_WIDTH } from '$lib/content';
+	import { HMV_PLAQUE } from './hmv-plaque';
 	import DrawingImg from './DrawingImg.svelte';
 
 	let {
@@ -46,10 +47,10 @@
 				<img
 					class="piece__hmv"
 					class:piece__hmv--singing={isNear}
-					src="{base}/atelier/His_Master's_Voice.jpg"
+					src="{base}{HMV_PLAQUE.src}"
 					alt=""
-					width="68"
-					height="51"
+					width={HMV_PLAQUE.srcWidth}
+					height={HMV_PLAQUE.srcHeight}
 					draggable="false"
 					decoding="async"
 				/>
@@ -104,7 +105,7 @@
 
 	.piece__plaque {
 		margin: 0;
-		padding: 7px 10px 9px;
+		padding: 5px 8px 6px;
 		border-top: 1px solid rgba(212, 175, 95, 0.28);
 		background: linear-gradient(180deg, #f0ead8 0%, #e8e0cc 100%);
 		box-shadow:
@@ -117,7 +118,7 @@
 
 	.piece__hmv {
 		display: block;
-		width: 68px;
+		width: 44px;
 		height: auto;
 		aspect-ratio: 1200 / 898;
 		object-fit: cover;
@@ -130,40 +131,24 @@
 		opacity: 0.38;
 		filter: saturate(0.55) brightness(0.88);
 		transition:
-			opacity 280ms ease,
-			box-shadow 280ms ease,
-			transform 280ms ease,
-			border-color 280ms ease,
-			filter 280ms ease;
+			opacity 420ms ease,
+			box-shadow 420ms ease,
+			border-color 420ms ease,
+			filter 420ms ease;
 	}
 
 	.piece__hmv--singing {
-		opacity: 1;
-		filter: saturate(1) brightness(1);
-		border: 2px solid rgba(212, 175, 95, 0.9);
-		/* Static glow + a transform-only pulse: animating box-shadow repaints
-		   every frame, but transform stays on the compositor (paint-free). */
+		opacity: 0.92;
+		filter: saturate(0.92) brightness(1.02);
+		border-color: rgba(212, 175, 95, 0.55);
 		box-shadow:
-			0 0 0 1px rgba(255, 255, 255, 0.4),
-			0 2px 8px rgba(26, 24, 20, 0.25),
-			0 0 22px rgba(212, 175, 95, 0.7);
-		transform: scale(1.08);
-		animation: hmv-singing 1.6s ease-in-out infinite;
-	}
-
-	@keyframes hmv-singing {
-		0%,
-		100% {
-			transform: scale(1.05);
-		}
-		50% {
-			transform: scale(1.1);
-		}
+			0 1px 3px rgba(26, 24, 20, 0.2),
+			0 0 10px rgba(212, 175, 95, 0.28);
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		.piece__hmv--singing {
-			animation: none;
+		.piece__hmv {
+			transition-duration: 0.01ms;
 		}
 	}
 </style>
