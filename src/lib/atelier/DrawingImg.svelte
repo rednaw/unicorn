@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Drawing } from '$lib/content';
-	import { cacheAsset, peekCachedAsset } from '$lib/drawing/asset-cache';
+	import { cacheAsset } from '$lib/drawing/asset-cache';
 
 	let {
 		drawing,
@@ -13,7 +13,6 @@
 		viewTransitionName?: string;
 	} = $props();
 
-	let thumbSrc = $state<string | undefined>(undefined);
 	let fullSrc = $state<string | undefined>(undefined);
 	let shouldLoadFull = $state(false);
 
@@ -25,19 +24,7 @@
 	}
 
 	$effect(() => {
-		const thumb = drawing.thumb;
-		const cached = peekCachedAsset(thumb);
-		if (cached) {
-			thumbSrc = cached;
-			return;
-		}
-		let cancelled = false;
-		void cacheAsset(thumb).then((url) => {
-			if (!cancelled) thumbSrc = url;
-		});
-		return () => {
-			cancelled = true;
-		};
+		void cacheAsset(drawing.thumb);
 	});
 
 	$effect(() => {
@@ -46,9 +33,8 @@
 
 	$effect(() => {
 		if (!shouldLoadFull || fullSrc) return;
-		const src = drawing.src;
 		let cancelled = false;
-		void cacheAsset(src).then((url) => {
+		void cacheAsset(drawing.src).then((url) => {
 			if (!cancelled) fullSrc = url;
 		});
 		return () => {
@@ -57,22 +43,27 @@
 	});
 </script>
 
-<div class="atelier-drawing">
-	{#if thumbSrc}
-		<img
-			class="atelier-drawing-img atelier-drawing-img--thumb"
-			class:atelier-drawing-img--hidden={originalReady}
-			src={thumbSrc}
-			alt=""
-			aria-hidden="true"
-			decoding="async"
-			draggable="false"
-		/>
-	{/if}
+<div
+	class="atelier-drawing"
+	style:aspect-ratio="{drawing.srcWidth} / {drawing.srcHeight}"
+>
+	<img
+		class="atelier-drawing-img atelier-drawing-img--thumb"
+		class:atelier-drawing-img--hidden={originalReady}
+		src={drawing.thumb}
+		width={drawing.srcWidth}
+		height={drawing.srcHeight}
+		alt=""
+		aria-hidden="true"
+		decoding="async"
+		draggable="false"
+	/>
 	{#if fullSrc}
 		<img
 			class="atelier-drawing-img atelier-drawing-img--full"
 			src={fullSrc}
+			width={drawing.srcWidth}
+			height={drawing.srcHeight}
 			alt={drawing.alt}
 			decoding="async"
 			draggable="false"
@@ -84,7 +75,8 @@
 <style>
 	.atelier-drawing {
 		display: grid;
-		min-height: 4rem;
+		width: 100%;
+		min-height: 0;
 	}
 
 	.atelier-drawing-img {

@@ -9,7 +9,7 @@
 <style>
 	.back {
 		position: fixed;
-		top: calc(env(safe-area-inset-top, 0px) + var(--browser-chrome-top, 0px) + 1rem);
+		top: calc(env(safe-area-inset-top, 0px) + 1rem);
 		left: max(1rem, env(safe-area-inset-left, 0px));
 		z-index: 110;
 		display: grid;
@@ -26,13 +26,15 @@
 		font-size: 1.1rem;
 		line-height: 1;
 		opacity: 0.9;
+		/* transform for browser-chrome offset — excluded from CLS (unlike top/bottom). */
+		transform: translateY(var(--browser-chrome-top, 0px));
 		transition: opacity 200ms ease, transform 200ms ease, background 200ms ease;
 	}
 
 	.back:hover,
 	.back:focus-visible {
 		opacity: 1;
-		transform: translateX(-2px);
+		transform: translateY(var(--browser-chrome-top, 0px)) translateX(-2px);
 		background: rgba(255, 255, 255, 0.95);
 		outline: none;
 	}

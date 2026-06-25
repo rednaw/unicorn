@@ -17,8 +17,14 @@
 	});
 </script>
 
-{#if nearDrawing}
-	<div class="nearcue" role="status" aria-label={ariaLabel}>
+<div
+	class="nearcue"
+	class:nearcue--hidden={!nearDrawing}
+	role={nearDrawing ? 'status' : undefined}
+	aria-hidden={!nearDrawing}
+	aria-label={nearDrawing ? ariaLabel : undefined}
+>
+	{#if nearDrawing}
 		<div class="nearcue__drawing">
 			<span class="nearcue__drawing-title">{nearDrawing.title}</span>
 			<span class="nearcue__drawing-meta">{nearDrawing.year} · {nearDrawing.medium}</span>
@@ -29,15 +35,15 @@
 				<span class="nearcue__piece">{nearDrawing.track.title}</span>
 			</div>
 		{/if}
-	</div>
-{/if}
+	{/if}
+</div>
 
 <style>
 	.nearcue {
 		position: fixed;
 		left: 50%;
-		bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px) + var(--browser-chrome-bottom, 0px));
-		transform: translateX(-50%);
+		bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+		transform: translateX(-50%) translateY(calc(-1 * var(--browser-chrome-bottom, 0px)));
 		display: flex;
 		flex-direction: column;
 		gap: 0.5rem;
@@ -54,6 +60,14 @@
 		pointer-events: none;
 		z-index: 40;
 		max-width: min(92vw, 22rem);
+		min-width: min(92vw, 16rem);
+		min-height: 4.75rem;
+		transition: opacity 420ms ease, visibility 420ms ease;
+	}
+
+	.nearcue--hidden {
+		opacity: 0;
+		visibility: hidden;
 	}
 
 	.nearcue__drawing {
@@ -92,6 +106,7 @@
 		padding-top: 0.45rem;
 		border-top: 1px solid rgba(212, 175, 95, 0.28);
 		min-width: 0;
+		min-height: 2.35rem;
 	}
 
 	.nearcue__composer {
@@ -116,5 +131,11 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.nearcue {
+			transition-duration: 0.01ms;
+		}
 	}
 </style>

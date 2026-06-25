@@ -23,7 +23,7 @@
 		});
 	});
 
-	const isAtelier = $derived(page.url.pathname.startsWith(`${base}/atelier`));
+	const isAtelier = $derived(page.route.id === '/(site)/atelier');
 </script>
 
 <div class="site" class:site--immersive={isAtelier}>
@@ -58,7 +58,8 @@
 
 	.site--immersive {
 		min-height: 0;
-		height: 100svh;
+		height: 100vh;
+		height: 100lvh;
 		overflow: hidden;
 		background: none;
 	}
@@ -67,6 +68,8 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
+		min-height: 3.25rem;
+		box-sizing: border-box;
 		padding: 1rem clamp(1rem, 3vw, 3.5rem);
 		padding-inline: max(1rem, env(safe-area-inset-left, 0px))
 			max(1rem, env(safe-area-inset-right, 0px));

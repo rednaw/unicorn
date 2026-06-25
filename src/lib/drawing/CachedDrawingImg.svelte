@@ -1,45 +1,38 @@
 <script lang="ts">
-	import { cacheAsset, peekCachedAsset } from '$lib/drawing/asset-cache';
+	import { cacheAsset } from '$lib/drawing/asset-cache';
 
 	let {
 		url,
 		alt = '',
 		class: className = '',
+		width,
+		height,
 		loading,
 		viewTransitionName
 	}: {
 		url: string;
 		alt?: string;
 		class?: string;
+		/** Intrinsic width — reserves aspect ratio before decode. */
+		width: number;
+		height: number;
 		loading?: 'lazy' | 'eager' | null;
 		viewTransitionName?: string;
 	} = $props();
 
-	let src = $state<string | undefined>(undefined);
-
+	/** Warm session cache for atelier navigation — keep a stable HTTP src (no blob swap). */
 	$effect(() => {
-		const cached = peekCachedAsset(url);
-		if (cached) {
-			src = cached;
-			return;
-		}
-		let cancelled = false;
-		void cacheAsset(url).then((resolved) => {
-			if (!cancelled) src = resolved;
-		});
-		return () => {
-			cancelled = true;
-		};
+		void cacheAsset(url);
 	});
 </script>
 
-{#if src}
-	<img
-		class={className}
-		{src}
-		{alt}
-		{loading}
-		decoding="async"
-		style:view-transition-name={viewTransitionName}
-	/>
-{/if}
+<img
+	class={className}
+	src={url}
+	{width}
+	{height}
+	{alt}
+	{loading}
+	decoding="async"
+	style:view-transition-name={viewTransitionName}
+/>
