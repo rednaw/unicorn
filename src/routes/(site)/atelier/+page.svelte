@@ -13,6 +13,7 @@
 	import { createAtelierView } from '$lib/atelier/view.svelte';
 	import { queueDrawingPrefetch } from '$lib/atelier/drawing-prefetch';
 	import { createSpatialAudioLoop } from '$lib/atelier/spatial-audio-loop.svelte';
+	import { observeBrowserChromeInsets } from '$lib/atelier/browser-chrome-insets';
 	import { observeViewport, readViewportMetrics } from '$lib/atelier/viewport-metrics';
 	import { enterSpatial, leaveSpatial, unlock, initAudio, armSpatial, engine } from '$lib/atelier/audio-engine.svelte';
 
@@ -20,6 +21,7 @@
 	/** Pins HUD / HMV to gallery focus until the visitor pans or zooms. */
 	let nearLockId = $state<string | null>(browser ? page.url.searchParams.get('focus') : null);
 	let prefetchIds = $state(new Set<string>());
+	let atelierEl = $state<HTMLDivElement>();
 	let viewport = $state<HTMLDivElement>();
 
 	const view = createAtelierView(atelierMaxZoom());
@@ -57,11 +59,17 @@
 		enterSpatial();
 
 		let unobserveViewport: (() => void) | undefined;
+		let unobserveBrowserChrome: (() => void) | undefined;
 		let viewportEl: HTMLDivElement | undefined;
 
 		void tick().then(() => {
-			if (!viewport) return;
+			if (!viewport || !atelierEl) return;
 			viewportEl = viewport;
+			const canvasEl = viewportEl;
+			unobserveBrowserChrome = observeBrowserChromeInsets(atelierEl, () => {
+				view.setMetrics(readViewportMetrics(canvasEl));
+				view.onViewportResize();
+			});
 			unobserveViewport = observeViewport(viewport, (metrics) => {
 				view.setMetrics(metrics);
 				view.onViewportResize();
@@ -76,6 +84,7 @@
 
 		window.addEventListener('keydown', gestures.onKeyDown);
 		return () => {
+			unobserveBrowserChrome?.();
 			unobserveViewport?.();
 			viewportEl?.removeEventListener('wheel', gestures.onWheel);
 			viewportEl?.removeEventListener('touchmove', gestures.onTouchMove);
@@ -91,7 +100,7 @@
 	<title>De werktafel — {artist.name}</title>
 </svelte:head>
 
-<div class="atelier">
+<div class="atelier" bind:this={atelierEl}>
 	<BackLink />
 	<NearCue nearDrawingId={engine.armed ? displayNearId : null} />
 
