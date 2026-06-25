@@ -1,4 +1,4 @@
-import { audioDrawings } from '$lib/content';
+import { audioDrawings, drawings, type Drawing } from '$lib/content';
 import { layoutPos, type AtelierLayoutMode } from './atelier-layout';
 import { ATELIER_AUDIO } from './constants';
 import { drawingListenPoint } from './drawing-geometry';
@@ -16,11 +16,13 @@ export type SpatialMixResult = {
 	drawings: SpatialDrawingMix[];
 	nearDrawingId: string | null;
 	nearLevel: number;
+	/** Loudest audible track — use for HMV / HUD when it disagrees with geometric near. */
+	dominantAudioDrawingId: string | null;
 };
 
 /** Mat centres for the active desk layout. */
-function listenPoints(mode: AtelierLayoutMode) {
-	return audioDrawings.map((d) => ({
+function listenPoints(list: Drawing[], mode: AtelierLayoutMode) {
+	return list.map((d) => ({
 		id: d.id,
 		...drawingListenPoint(d, layoutPos(d.id, mode, d.pos))
 	}));
@@ -45,23 +47,41 @@ export function computeSpatialMix(
 	let nearDrawingId: string | null = null;
 	let nearLevel = 0;
 
-	const drawings = listenPoints(layoutMode).map((point, audioIndex) => {
-		const dist = Math.hypot(point.x - centre.x, point.y - centre.y);
-		const volume = smoothstep(clamp01(1 - dist / proxRadius)) * zoomGate;
-		const screenX = view.tx + point.x * view.zoom;
-		const pan = Math.max(-1, Math.min(1, (screenX - halfWidth) / halfWidth)) * panCap;
+	const mixes: SpatialDrawingMix[] = listenPoints(audioDrawings, layoutMode).map(
+		(point, audioIndex) => {
+			const dist = Math.hypot(point.x - centre.x, point.y - centre.y);
+			const volume = smoothstep(clamp01(1 - dist / proxRadius)) * zoomGate;
+			const screenX = view.tx + point.x * view.zoom;
+			const pan = Math.max(-1, Math.min(1, (screenX - halfWidth) / halfWidth)) * panCap;
+			return { drawingId: point.id, audioIndex, volume, pan };
+		}
+	);
 
-		if (volume > nearLevel) {
-			nearLevel = volume;
+	for (const point of listenPoints(drawings, layoutMode)) {
+		const dist = Math.hypot(point.x - centre.x, point.y - centre.y);
+		const level = smoothstep(clamp01(1 - dist / proxRadius)) * zoomGate;
+		if (level > nearLevel) {
+			nearLevel = level;
 			nearDrawingId = point.id;
 		}
-		return { drawingId: point.id, audioIndex, volume, pan };
-	});
+	}
 
 	const near = zoomGate > 0 && nearLevel > nearThreshold;
+
+	let dominantAudioDrawingId: string | null = null;
+	let maxVolume = 0;
+	for (const { drawingId, volume } of mixes) {
+		if (volume > maxVolume) {
+			maxVolume = volume;
+			dominantAudioDrawingId = drawingId;
+		}
+	}
+	if (maxVolume <= nearThreshold) dominantAudioDrawingId = null;
+
 	return {
-		drawings,
+		drawings: mixes,
 		nearDrawingId: near ? nearDrawingId : null,
-		nearLevel: zoomGate > 0 ? nearLevel : 0
+		nearLevel: zoomGate > 0 ? nearLevel : 0,
+		dominantAudioDrawingId
 	};
 }

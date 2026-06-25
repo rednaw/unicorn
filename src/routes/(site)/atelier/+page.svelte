@@ -14,17 +14,29 @@
 	import { queueDrawingPrefetch } from '$lib/atelier/drawing-prefetch';
 	import { createSpatialAudioLoop } from '$lib/atelier/spatial-audio-loop.svelte';
 	import { observeViewport, readViewportMetrics } from '$lib/atelier/viewport-metrics';
-	import { enterSpatial, leaveSpatial, unlock, initAudio, armSpatial } from '$lib/atelier/audio-engine.svelte';
+	import { enterSpatial, leaveSpatial, unlock, initAudio, armSpatial, engine } from '$lib/atelier/audio-engine.svelte';
 
 	let focusedId = $state<string | null>(browser ? page.url.searchParams.get('focus') : null);
+	/** Pins HUD / HMV to gallery focus until the visitor pans or zooms. */
+	let nearLockId = $state<string | null>(browser ? page.url.searchParams.get('focus') : null);
 	let prefetchIds = $state(new Set<string>());
 	let viewport = $state<HTMLDivElement>();
 
 	const view = createAtelierView(atelierMaxZoom());
 	const spatial = createSpatialAudioLoop(view);
+
+	const displayNearId = $derived(
+		nearLockId ?? spatial.dominantAudioDrawingId ?? spatial.nearDrawingId
+	);
+
+	function releaseNearLock() {
+		nearLockId = null;
+	}
+
 	const gestures = createAtelierGestures(view, {
 		unlock,
 		armSpatial,
+		releaseNearLock,
 		onPrefetchDrawing: (id) => queueDrawingPrefetch(prefetchIds, id, (next) => (prefetchIds = next)),
 		onEscape: () => goto(`${base}/`),
 		syncViewportOffset: () => {
@@ -34,6 +46,7 @@
 
 	function focusDrawingById(id: string) {
 		focusedId = id;
+		nearLockId = id;
 		armSpatial();
 		queueDrawingPrefetch(prefetchIds, id, (next) => (prefetchIds = next));
 		const drawing = drawings.find((d) => d.id === id);
@@ -80,7 +93,7 @@
 
 <div class="atelier">
 	<BackLink />
-	<NearCue />
+	<NearCue nearDrawingId={engine.armed ? displayNearId : null} />
 
 	<Canvas
 		{view}
@@ -88,7 +101,7 @@
 		bind:viewport
 		{focusedId}
 		{prefetchIds}
-		nearDrawingId={spatial.nearDrawingId}
+		nearDrawingId={displayNearId}
 		onFocusDrawing={focusDrawingById}
 	/>
 </div>
