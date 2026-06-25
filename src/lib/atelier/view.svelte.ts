@@ -20,13 +20,25 @@ import {
 import { EMPTY_VIEWPORT, type ViewportMetrics } from './viewport-metrics';
 
 export function createAtelierView(maxZoom: number) {
+	function readInitialViewport(): ViewportMetrics {
+		if (typeof window === 'undefined') return EMPTY_VIEWPORT;
+		return {
+			width: window.innerWidth,
+			height: window.innerHeight,
+			left: 0,
+			top: 0
+		};
+	}
+
 	let tx = $state(0);
 	let ty = $state(0);
 	let zoom = $state<number>(ATELIER_ZOOM.initial);
 	let hasUserNavigatedView = $state(false);
 	let dragging = $state(false);
-	let metrics = $state<ViewportMetrics>(EMPTY_VIEWPORT);
-	let layoutMode = $state<AtelierLayoutMode>('scattered');
+	let metrics = $state<ViewportMetrics>(readInitialViewport());
+	let layoutMode = $state<AtelierLayoutMode>(
+		metrics.width > 0 ? resolveLayoutMode(metrics) : 'scattered'
+	);
 
 	let inertiaRaf = 0;
 	let viewAnimRaf = 0;
@@ -141,6 +153,8 @@ export function createAtelierView(maxZoom: number) {
 		metrics = next;
 	}
 
+	let viewFitted = false;
+
 	function resetView() {
 		if (metrics.width === 0) return;
 		applyView(fitViewToCanvas(viewportRect(), minZoom, canvasSize(), ATELIER_ZOOM.fitPadding));
@@ -150,8 +164,16 @@ export function createAtelierView(maxZoom: number) {
 
 	function onViewportResize() {
 		const modeChanged = syncLayoutMode();
-		if (modeChanged || !hasUserNavigatedView) resetView();
-		else syncClamp();
+		if (metrics.width === 0) return;
+		if (modeChanged) {
+			resetView();
+			viewFitted = true;
+		} else if (!viewFitted && !hasUserNavigatedView) {
+			resetView();
+			viewFitted = true;
+		} else {
+			syncClamp();
+		}
 	}
 
 	function applyZoomAt(viewportX: number, viewportY: number, nextZoom: number) {

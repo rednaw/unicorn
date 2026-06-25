@@ -31,6 +31,8 @@
 					<div class="plate__frame">
 						<CachedDrawingImg
 							url={drawing.thumb}
+							width={drawing.srcWidth}
+							height={drawing.srcHeight}
 							alt={drawing.alt}
 							loading="lazy"
 							viewTransitionName="piece-{drawing.id}"
@@ -81,6 +83,7 @@
 		display: grid;
 		place-items: center;
 		overflow: hidden;
+		min-height: 0;
 	}
 
 	.plate:hover .plate__frame {
@@ -89,8 +92,10 @@
 	}
 
 	.plate__frame :global(img) {
-		max-width: 100%;
-		max-height: 100%;
+		display: block;
+		width: 100%;
+		height: 100%;
+		min-height: 0;
 		object-fit: contain;
 	}
 </style>

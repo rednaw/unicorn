@@ -65,11 +65,7 @@
 		void tick().then(() => {
 			if (!viewport || !atelierEl) return;
 			viewportEl = viewport;
-			const canvasEl = viewportEl;
-			unobserveBrowserChrome = observeBrowserChromeInsets(atelierEl, () => {
-				view.setMetrics(readViewportMetrics(canvasEl));
-				view.onViewportResize();
-			});
+			unobserveBrowserChrome = observeBrowserChromeInsets(atelierEl);
 			unobserveViewport = observeViewport(viewport, (metrics) => {
 				view.setMetrics(metrics);
 				view.onViewportResize();
@@ -118,7 +114,7 @@
 <style>
 	.atelier {
 		height: 100vh;
-		height: 100svh;
+		height: 100lvh;
 		overflow: hidden;
 		position: relative;
 		font-family: var(--font-serif);
