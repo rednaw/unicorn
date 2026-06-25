@@ -8,8 +8,9 @@ type InteractionMode = 'idle' | 'pending-pan' | 'panning' | 'pinching';
 
 type PinchState = { midX: number; midY: number; dist: number };
 
-export type AtelierGestureDeps = {
+	export type AtelierGestureDeps = {
 	unlock: () => void;
+	armSpatial: () => void;
 	onPrefetchDrawing: (id: string) => void;
 	onEscape: () => void;
 	/** Refresh cached viewport offset at pinch start (one layout read per gesture). */
@@ -68,6 +69,7 @@ export function createAtelierGestures(view: AtelierView, deps: AtelierGestureDep
 		const current = view.getView();
 		view.setPan(current.tx + midX - pinch.midX, current.ty + midY - pinch.midY);
 		view.applyZoomAt(midX, midY, current.zoom * (dist / pinch.dist));
+		deps.armSpatial();
 		prefetchAtViewport(midX, midY);
 
 		pinch = { midX, midY, dist };
@@ -123,6 +125,7 @@ export function createAtelierGestures(view: AtelierView, deps: AtelierGestureDep
 			if (moved >= panThreshold()) {
 				interactionMode = 'panning';
 				view.dragging = true;
+				deps.armSpatial();
 			}
 		}
 
@@ -167,6 +170,7 @@ export function createAtelierGestures(view: AtelierView, deps: AtelierGestureDep
 					now - lastTapTime < ATELIER_GESTURES.dblTapWindowMs &&
 					Math.hypot(e.clientX - lastTapX, e.clientY - lastTapY) < ATELIER_GESTURES.dblTapSlopPx
 				) {
+					deps.armSpatial();
 					view.zoomAtViewport(
 						e.clientX - left,
 						e.clientY - top,
@@ -193,6 +197,7 @@ export function createAtelierGestures(view: AtelierView, deps: AtelierGestureDep
 
 	function onWheel(e: WheelEvent) {
 		deps.unlock();
+		deps.armSpatial();
 		view.stopInertia();
 		e.preventDefault();
 
@@ -219,6 +224,8 @@ export function createAtelierGestures(view: AtelierView, deps: AtelierGestureDep
 
 	function onDblClick(e: MouseEvent) {
 		if ((e.target as HTMLElement).closest(ATELIER_INTERACTIVE_SELECTOR)) return;
+		deps.unlock();
+		deps.armSpatial();
 		view.stopInertia();
 		const { left, top } = view.metrics;
 		const current = view.getView();
@@ -283,6 +290,7 @@ export function createAtelierGestures(view: AtelierView, deps: AtelierGestureDep
 
 		if (handled) {
 			deps.unlock();
+			deps.armSpatial();
 			e.preventDefault();
 			view.stopInertia();
 		}

@@ -10,6 +10,8 @@ type TrackNodes = {
 export const engine = $state({
 	ready: false,
 	unlocked: false,
+	/** When false, spatial mix runs but tracks stay silent (overview / direct entry). */
+	armed: false,
 	near: { drawingId: null as string | null, level: 0 }
 });
 
@@ -61,17 +63,24 @@ export function unlock(): void {
 
 export function enterSpatial(): void {
 	initAudio();
+	engine.armed = false;
 	engine.near = { drawingId: null, level: 0 };
 	pauseAllTracks();
+}
+
+/** Allow proximity audio — set on gallery focus entry or after the visitor explores. */
+export function armSpatial(): void {
+	engine.armed = true;
 }
 
 export function applySpatial(i: number, gain: number, pan: number): void {
 	const n = nodes[i];
 	if (!n || !ctx) return;
 	const now = ctx.currentTime;
-	const audible = engine.unlocked && gain >= ATELIER_AUDIO.playThreshold;
+	const effectiveGain = engine.armed ? gain : 0;
+	const audible = engine.unlocked && engine.armed && gain >= ATELIER_AUDIO.playThreshold;
 
-	n.gain.gain.setTargetAtTime(gain, now, ATELIER_AUDIO.rampTimeSec);
+	n.gain.gain.setTargetAtTime(effectiveGain, now, ATELIER_AUDIO.rampTimeSec);
 	n.panner?.pan.setTargetAtTime(pan, now, ATELIER_AUDIO.rampTimeSec);
 
 	if (audible) {
@@ -109,5 +118,6 @@ export function setNear(drawingId: string | null, level: number): void {
 
 export function leaveSpatial(): void {
 	pauseAllTracks();
+	engine.armed = false;
 	engine.near = { drawingId: null, level: 0 };
 }

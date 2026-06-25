@@ -14,7 +14,7 @@
 	import { queueDrawingPrefetch } from '$lib/atelier/drawing-prefetch';
 	import { createSpatialAudioLoop } from '$lib/atelier/spatial-audio-loop.svelte';
 	import { observeViewport, readViewportMetrics } from '$lib/atelier/viewport-metrics';
-	import { enterSpatial, leaveSpatial, unlock } from '$lib/atelier/audio-engine.svelte';
+	import { enterSpatial, leaveSpatial, unlock, initAudio, armSpatial } from '$lib/atelier/audio-engine.svelte';
 
 	let focusedId = $state<string | null>(browser ? page.url.searchParams.get('focus') : null);
 	let prefetchIds = $state(new Set<string>());
@@ -24,6 +24,7 @@
 	const spatial = createSpatialAudioLoop(view);
 	const gestures = createAtelierGestures(view, {
 		unlock,
+		armSpatial,
 		onPrefetchDrawing: (id) => queueDrawingPrefetch(prefetchIds, id, (next) => (prefetchIds = next)),
 		onEscape: () => goto(`${base}/`),
 		syncViewportOffset: () => {
@@ -33,6 +34,7 @@
 
 	function focusDrawingById(id: string) {
 		focusedId = id;
+		armSpatial();
 		queueDrawingPrefetch(prefetchIds, id, (next) => (prefetchIds = next));
 		const drawing = drawings.find((d) => d.id === id);
 		if (drawing) view.focusDrawing(drawing);
