@@ -154,25 +154,34 @@ export function createAtelierView(maxZoom: number) {
 	}
 
 	let viewFitted = false;
+	let lastFitWidth = 0;
+	let lastFitHeight = 0;
 
 	function resetView() {
 		if (metrics.width === 0) return;
 		applyView(fitViewToCanvas(viewportRect(), minZoom, canvasSize(), ATELIER_ZOOM.fitPadding));
 		syncClamp();
 		hasUserNavigatedView = false;
+		lastFitWidth = metrics.width;
+		lastFitHeight = metrics.height;
 	}
 
 	function onViewportResize() {
-		const modeChanged = syncLayoutMode();
 		if (metrics.width === 0) return;
+		const modeChanged = syncLayoutMode();
+		const sizeChanged =
+			Math.abs(metrics.width - lastFitWidth) > 0.5 ||
+			Math.abs(metrics.height - lastFitHeight) > 0.5;
 		if (modeChanged) {
 			resetView();
 			viewFitted = true;
 		} else if (!viewFitted && !hasUserNavigatedView) {
 			resetView();
 			viewFitted = true;
-		} else {
+		} else if (sizeChanged && hasUserNavigatedView) {
 			syncClamp();
+			lastFitWidth = metrics.width;
+			lastFitHeight = metrics.height;
 		}
 	}
 

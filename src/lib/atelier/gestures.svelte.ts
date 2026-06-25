@@ -6,7 +6,7 @@ import type { AtelierView } from './view.svelte';
 
 type InteractionMode = 'idle' | 'pending-pan' | 'panning' | 'pinching';
 
-type PinchState = { midX: number; midY: number; dist: number };
+type PinchState = { midX: number; midY: number; dist: number; left: number; top: number };
 
 	export type AtelierGestureDeps = {
 	unlock: () => void;
@@ -14,9 +14,13 @@ type PinchState = { midX: number; midY: number; dist: number };
 	releaseNearLock: () => void;
 	onPrefetchDrawing: (id: string) => void;
 	onEscape: () => void;
-	/** Refresh cached viewport offset at pinch start (one layout read per gesture). */
-	syncViewportOffset: () => void;
+	viewport: () => HTMLElement | undefined;
 };
+
+function viewportOrigin(el: HTMLElement) {
+	const rect = el.getBoundingClientRect();
+	return { left: rect.left, top: rect.top };
+}
 
 export function createAtelierGestures(view: AtelierView, deps: AtelierGestureDeps) {
 	const pointers = new Map<number, { x: number; y: number }>();
@@ -54,19 +58,22 @@ export function createAtelierGestures(view: AtelierView, deps: AtelierGestureDep
 
 	function startPinch() {
 		if (pointers.size < 2) return;
-		deps.syncViewportOffset();
-		const { left, top } = view.metrics;
+		const vp = deps.viewport();
+		if (!vp) return;
+		const { left, top } = viewportOrigin(vp);
 		const [a, b] = Array.from(pointers.values()).slice(0, 2);
 		pinch = {
 			midX: (a.x + b.x) / 2 - left,
 			midY: (a.y + b.y) / 2 - top,
-			dist: Math.hypot(b.x - a.x, b.y - a.y)
+			dist: Math.hypot(b.x - a.x, b.y - a.y),
+			left,
+			top
 		};
 	}
 
 	function updatePinch() {
 		if (!pinch || pointers.size < 2) return;
-		const { left, top } = view.metrics;
+		const { left, top } = pinch;
 		const [a, b] = Array.from(pointers.values()).slice(0, 2);
 		const midX = (a.x + b.x) / 2 - left;
 		const midY = (a.y + b.y) / 2 - top;
@@ -78,7 +85,7 @@ export function createAtelierGestures(view: AtelierView, deps: AtelierGestureDep
 		engage();
 		prefetchAtViewport(midX, midY);
 
-		pinch = { midX, midY, dist };
+		pinch = { midX, midY, dist, left, top };
 	}
 
 	function onPointerDown(e: PointerEvent) {
@@ -171,7 +178,9 @@ export function createAtelierGestures(view: AtelierView, deps: AtelierGestureDep
 				!(e.target as HTMLElement).closest(ATELIER_INTERACTIVE_SELECTOR)
 			) {
 				const now = performance.now();
-				const { left, top } = view.metrics;
+				const vp = deps.viewport();
+				if (!vp) return;
+				const { left, top } = viewportOrigin(vp);
 				if (
 					now - lastTapTime < ATELIER_GESTURES.dblTapWindowMs &&
 					Math.hypot(e.clientX - lastTapX, e.clientY - lastTapY) < ATELIER_GESTURES.dblTapSlopPx
@@ -207,7 +216,8 @@ export function createAtelierGestures(view: AtelierView, deps: AtelierGestureDep
 		view.stopInertia();
 		e.preventDefault();
 
-		const { left, top, height } = view.metrics;
+		const vp = e.currentTarget as HTMLElement;
+		const { left, top, height } = vp.getBoundingClientRect();
 		const cx = e.clientX - left;
 		const cy = e.clientY - top;
 		const deltaUnit =
@@ -233,7 +243,8 @@ export function createAtelierGestures(view: AtelierView, deps: AtelierGestureDep
 		deps.unlock();
 		engage();
 		view.stopInertia();
-		const { left, top } = view.metrics;
+		const vp = e.currentTarget as HTMLElement;
+		const { left, top } = vp.getBoundingClientRect();
 		const current = view.getView();
 		view.applyZoomAt(
 			e.clientX - left,

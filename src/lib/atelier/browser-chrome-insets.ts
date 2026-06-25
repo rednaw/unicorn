@@ -1,14 +1,18 @@
 /** iOS Safari (and similar): fixed UI vs floating browser chrome. Updates CSS vars on `el`. */
-export function observeBrowserChromeInsets(el: HTMLElement, onChange?: () => void) {
+export function observeBrowserChromeInsets(el: HTMLElement) {
 	const vv = window.visualViewport;
 	if (!vv) return () => {};
 
+	let raf = 0;
+
 	const update = () => {
-		const top = Math.max(0, vv.offsetTop);
-		const bottom = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
-		el.style.setProperty('--browser-chrome-top', `${top}px`);
-		el.style.setProperty('--browser-chrome-bottom', `${bottom}px`);
-		onChange?.();
+		cancelAnimationFrame(raf);
+		raf = requestAnimationFrame(() => {
+			const top = Math.max(0, vv.offsetTop);
+			const bottom = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+			el.style.setProperty('--browser-chrome-top', `${top}px`);
+			el.style.setProperty('--browser-chrome-bottom', `${bottom}px`);
+		});
 	};
 
 	update();
@@ -17,6 +21,7 @@ export function observeBrowserChromeInsets(el: HTMLElement, onChange?: () => voi
 	window.addEventListener('resize', update);
 
 	return () => {
+		cancelAnimationFrame(raf);
 		vv.removeEventListener('resize', update);
 		vv.removeEventListener('scroll', update);
 		window.removeEventListener('resize', update);
