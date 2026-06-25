@@ -105,6 +105,10 @@
 
 <svelte:head>
 	<title>De werktafel — {artist.name}</title>
+	<meta
+		name="description"
+		content="Verken de tekeningen op de werktafel — zoom, pan en ontdek de bijbehorende muziek."
+	/>
 </svelte:head>
 
 <div class="atelier" bind:this={atelierEl}>
