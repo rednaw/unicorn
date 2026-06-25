@@ -1,45 +1,61 @@
 <script lang="ts">
+	import { base } from '$app/paths';
 	import type { Drawing } from '$lib/content';
-	import { trackForDrawing } from '$lib/content';
+	import { audioIndexForDrawing, DEFAULT_DRAWING_WIDTH } from '$lib/content';
 	import DrawingImg from './DrawingImg.svelte';
 
 	let {
 		drawing,
+		pos,
 		prefetch = false,
 		focused = false,
+		isNear = false,
 		onfocus
 	}: {
 		drawing: Drawing;
+		pos: { x: number; y: number };
 		prefetch?: boolean;
 		focused?: boolean;
+		isNear?: boolean;
 		onfocus: () => void;
 	} = $props();
-
-	const pairedTrack = $derived(trackForDrawing(drawing.id));
 </script>
 
 <button
 	type="button"
 	class="piece piece--drawing"
+	class:piece--has-audio={!!drawing.track}
 	data-drawing-id={drawing.id}
-	style:left="{drawing.pos?.x ?? 0}px"
-	style:top="{drawing.pos?.y ?? 0}px"
-	style:width="{drawing.width ?? 320}px"
+	data-audio-index={drawing.track ? audioIndexForDrawing(drawing.id) : undefined}
+	style:left="{pos.x}px"
+	style:top="{pos.y}px"
+	style:width="{drawing.width ?? DEFAULT_DRAWING_WIDTH}px"
 	style:--rot="{drawing.rotation ?? 0}deg"
 	onclick={onfocus}
-	aria-label={pairedTrack ? `${drawing.title} — ${pairedTrack.title}` : drawing.title}
+	aria-label={drawing.track ? `${drawing.title} — ${drawing.track.title}` : drawing.title}
+	aria-pressed={isNear}
 >
-	<DrawingImg
-		{drawing}
-		{prefetch}
-		viewTransitionName={focused ? `piece-${drawing.id}` : undefined}
-	/>
-	{#if pairedTrack}
-		<p class="piece__track">
-			<span class="piece__track-label">geluid</span>
-			{pairedTrack.title}
-		</p>
-	{/if}
+	<div class="piece__mat">
+		<DrawingImg
+			{drawing}
+			{prefetch}
+			viewTransitionName={focused ? `piece-${drawing.id}` : undefined}
+		/>
+		{#if drawing.track}
+			<figure class="piece__plaque" aria-hidden="true">
+				<img
+					class="piece__hmv"
+					class:piece__hmv--singing={isNear}
+					src="{base}/atelier/His_Master's_Voice.jpg"
+					alt=""
+					width="68"
+					height="51"
+					draggable="false"
+					decoding="async"
+				/>
+			</figure>
+		{/if}
+	</div>
 </button>
 
 <style>
@@ -50,42 +66,104 @@
 
 	.piece--drawing {
 		appearance: none;
-		background: #fbf6e9;
 		border: none;
-		padding: 14px 14px 36px;
-		box-shadow: 0 18px 36px -22px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.2);
+		padding: 0;
+		background: transparent;
 		cursor: zoom-in;
 		display: block;
 		transition: transform 250ms ease, box-shadow 250ms ease;
 		touch-action: manipulation;
+		/* box-shadow (not filter: drop-shadow): a filter rasterizes the large
+		   image into a GPU buffer sized by the zoomed device pixels, which blows
+		   up GPU memory as you zoom. The mats are rectangular, so this is
+		   visually identical and far cheaper. */
+		box-shadow:
+			0 18px 36px rgba(0, 0, 0, 0.22),
+			0 2px 6px rgba(0, 0, 0, 0.12);
 	}
 
 	.piece--drawing:hover {
 		transform: rotate(var(--rot, 0deg)) translateY(-3px);
-		box-shadow: 0 28px 48px -22px rgba(0, 0, 0, 0.5), 0 3px 10px -2px rgba(0, 0, 0, 0.25);
+		box-shadow:
+			0 24px 44px rgba(0, 0, 0, 0.28),
+			0 4px 10px rgba(0, 0, 0, 0.14);
 		z-index: 10;
 	}
 
-	.piece__track {
-		margin: 0.35rem 0 0;
-		padding-top: 0.35rem;
-		border-top: 1px solid rgba(0, 0, 0, 0.08);
-		font-family: var(--font-museum);
-		font-size: 0.72rem;
-		font-style: italic;
-		line-height: 1.35;
-		color: rgba(26, 24, 20, 0.72);
-		text-align: center;
+	.piece__mat {
+		background: #fbf6e9;
+		padding: 14px;
+		box-shadow:
+			inset 0 0 0 1px rgba(255, 255, 255, 0.65),
+			inset 0 0 0 2px rgba(26, 24, 20, 0.07);
 	}
 
-	.piece__track-label {
+	.piece--has-audio .piece__mat {
+		padding-bottom: 0;
+	}
+
+	.piece__plaque {
+		margin: 0;
+		padding: 7px 10px 9px;
+		border-top: 1px solid rgba(212, 175, 95, 0.28);
+		background: linear-gradient(180deg, #f0ead8 0%, #e8e0cc 100%);
+		box-shadow:
+			inset 0 1px 0 rgba(255, 255, 255, 0.55),
+			inset 0 -1px 0 rgba(26, 24, 20, 0.05);
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.piece__hmv {
 		display: block;
-		font-family: var(--font-sans);
-		font-size: 0.52rem;
-		font-style: normal;
-		letter-spacing: 0.16em;
-		text-transform: uppercase;
-		color: rgba(26, 24, 20, 0.45);
-		margin-bottom: 0.15rem;
+		width: 68px;
+		height: auto;
+		aspect-ratio: 1200 / 898;
+		object-fit: cover;
+		object-position: center;
+		pointer-events: none;
+		user-select: none;
+		-webkit-user-drag: none;
+		border: 1px solid rgba(26, 24, 20, 0.12);
+		box-shadow: 0 1px 2px rgba(26, 24, 20, 0.15);
+		opacity: 0.38;
+		filter: saturate(0.55) brightness(0.88);
+		transition:
+			opacity 280ms ease,
+			box-shadow 280ms ease,
+			transform 280ms ease,
+			border-color 280ms ease,
+			filter 280ms ease;
+	}
+
+	.piece__hmv--singing {
+		opacity: 1;
+		filter: saturate(1) brightness(1);
+		border: 2px solid rgba(212, 175, 95, 0.9);
+		/* Static glow + a transform-only pulse: animating box-shadow repaints
+		   every frame, but transform stays on the compositor (paint-free). */
+		box-shadow:
+			0 0 0 1px rgba(255, 255, 255, 0.4),
+			0 2px 8px rgba(26, 24, 20, 0.25),
+			0 0 22px rgba(212, 175, 95, 0.7);
+		transform: scale(1.08);
+		animation: hmv-singing 1.6s ease-in-out infinite;
+	}
+
+	@keyframes hmv-singing {
+		0%,
+		100% {
+			transform: scale(1.05);
+		}
+		50% {
+			transform: scale(1.1);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.piece__hmv--singing {
+			animation: none;
+		}
 	}
 </style>

@@ -1,5 +1,12 @@
 import { base } from '$app/paths';
 
+export type DrawingTrack = {
+	id: string;
+	title: string;
+	composer: string;
+	src: string;
+};
+
 export type Drawing = {
 	id: string;
 	title: string;
@@ -17,10 +24,16 @@ export type Drawing = {
 	rotation?: number;
 	pos?: { x: number; y: number };
 	width?: number;
+	/** Optional 1:1 audio — spatial centre is the drawing mat centre. */
+	track?: DrawingTrack;
 };
+
+export type DrawingWithTrack = Drawing & { track: DrawingTrack };
 
 /** Horizontal mat padding on atelier pieces (14px × 2) — sync with `DrawingPiece.svelte`. */
 export const DRAWING_SLOT_PADDING_X = 28;
+/** Fallback piece slot width when a drawing omits `width`. */
+export const DEFAULT_DRAWING_WIDTH = 320;
 /** Worst-case DPR for sharp zoom cap (phones). */
 export const SHARP_DPR = 3;
 
@@ -29,7 +42,7 @@ export const SHARP_DPR = 3;
  * `width` is the piece slot; the image spans `width - DRAWING_SLOT_PADDING_X`.
  */
 export function maxSharpZoomForDrawing(d: Drawing): number {
-	const inner = (d.width ?? 320) - DRAWING_SLOT_PADDING_X;
+	const inner = (d.width ?? DEFAULT_DRAWING_WIDTH) - DRAWING_SLOT_PADDING_X;
 	return d.srcWidth / (inner * SHARP_DPR);
 }
 
@@ -37,21 +50,13 @@ export function atelierMaxZoom(): number {
 	return Math.min(...drawings.map(maxSharpZoomForDrawing));
 }
 
-export type Track = {
-	id: string;
-	title: string;
-	composer: string;
-	src: string;
-	pos?: { x: number; y: number };
-};
-
 const asset = (path: string) => `${base}${path}`;
 
 const drawingPaths = (_id: string, file: string) => {
-	const base = file.replace(/\.[^.]+$/, '');
+	const baseName = file.replace(/\.[^.]+$/, '');
 	return {
 		src: asset(`/drawings/${file}`),
-		thumb: asset(`/drawings/${base}-thumb.webp`)
+		thumb: asset(`/drawings/${baseName}-thumb.webp`)
 	};
 };
 
@@ -60,7 +65,7 @@ export const artist = {
 	tagline: 'tekeningen en geluid'
 };
 
-/** Atelier layout: three works on an uneven (scalene) triangle — apex, lower-left, right flank. */
+/** Atelier layout: scattered triangle on desk — positions for tablet/desktop. */
 export const drawings: Drawing[] = [
 	{
 		id: 'studie-i',
@@ -72,8 +77,14 @@ export const drawings: Drawing[] = [
 		srcWidth: 2999,
 		srcHeight: 4441,
 		rotation: -2,
-		pos: { x: 75, y: 410 },
-		width: 280
+		pos: { x: 75, y: 378 },
+		width: 280,
+		track: {
+			id: 'chopin-ballade-4',
+			title: 'Ballade nr. 4 in f klein, op. 52',
+			composer: 'Frédéric Chopin',
+			src: asset('/audio/chopin-ballade-opus-52-no-4.m4a')
+		}
 	},
 	{
 		id: 'buste-profiel',
@@ -85,8 +96,14 @@ export const drawings: Drawing[] = [
 		srcWidth: 3100,
 		srcHeight: 4471,
 		rotation: 3,
-		pos: { x: 820, y: 260 },
-		width: 300
+		pos: { x: 798, y: 248 },
+		width: 300,
+		track: {
+			id: 'chopin-mazurka-op50-2',
+			title: 'Mazurka in As, op. 50 nr. 2',
+			composer: 'Frédéric Chopin',
+			src: asset('/audio/chopin-mazurka-opus-50-no-2.m4a')
+		}
 	},
 	{
 		id: 'maskers',
@@ -98,49 +115,17 @@ export const drawings: Drawing[] = [
 		srcWidth: 2956,
 		srcHeight: 4398,
 		rotation: -4,
-		pos: { x: 400, y: 55 },
+		pos: { x: 400, y: 62 },
 		width: 280
 	}
 ];
 
-export const tracks: Track[] = [
-	{
-		id: 'chopin-ballade-4',
-		title: 'Ballade nr. 4 in f klein, op. 52',
-		composer: 'Frédéric Chopin',
-		src: asset('/audio/chopin-ballade-opus-52-no-4.m4a')
-	},
-	{
-		id: 'chopin-mazurka-op50-2',
-		title: 'Mazurka in As, op. 50 nr. 2',
-		composer: 'Frédéric Chopin',
-		src: asset('/audio/chopin-mazurka-opus-50-no-2.m4a')
-	},
-	{
-		id: 'chopin-polonaise',
-		title: 'Polonaise in As, op. 53 ("Heroïque")',
-		composer: 'Frédéric Chopin',
-		src: asset('/audio/chopin-polonaise.ogg')
-	}
-];
+/** Drawings that carry audio — index matches the spatial audio graph. */
+export const audioDrawings = drawings.filter((d): d is DrawingWithTrack => !!d.track);
 
-// Optional drawing ↔ track links. Add or remove rows as assets arrive at uneven
-// pace. At most one track per drawing and one drawing per track.
-const pairings: { drawingId: string; trackId: string }[] = [
-	{ drawingId: 'studie-i', trackId: 'chopin-ballade-4' },
-	{ drawingId: 'buste-profiel', trackId: 'chopin-mazurka-op50-2' },
-	{ drawingId: 'maskers', trackId: 'chopin-polonaise' }
-];
+/** Flat track list (credits, etc.). */
+export const tracks = audioDrawings.map((d) => d.track);
 
-const trackIdByDrawing = new Map(pairings.map((p) => [p.drawingId, p.trackId]));
-const drawingIdByTrack = new Map(pairings.map((p) => [p.trackId, p.drawingId]));
-
-export function trackForDrawing(drawingId: string): Track | undefined {
-	const id = trackIdByDrawing.get(drawingId);
-	return id ? tracks.find((t) => t.id === id) : undefined;
-}
-
-export function drawingForTrack(trackId: string): Drawing | undefined {
-	const id = drawingIdByTrack.get(trackId);
-	return id ? drawings.find((d) => d.id === id) : undefined;
+export function audioIndexForDrawing(drawingId: string): number {
+	return audioDrawings.findIndex((d) => d.id === drawingId);
 }

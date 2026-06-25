@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { base } from '$app/paths';
 	import { artist, drawings, tracks } from '$lib/content';
-
-	const placeholderTracks = new Set(['chopin-polonaise']);
 </script>
 
 <svelte:head>
@@ -54,11 +52,7 @@
 				<li>
 					<em>{track.title}</em>
 					<span class="credits__meta">{track.composer}</span>
-					{#if placeholderTracks.has(track.id)}
-						<span class="credits__placeholder">tijdelijke placeholder (YouTube)</span>
-					{:else}
-						<span class="credits__meta">eigen opname</span>
-					{/if}
+					<span class="credits__meta">eigen opname</span>
 				</li>
 			{/each}
 		</ul>
@@ -143,13 +137,6 @@
 	.credits__meta {
 		font-size: 0.9rem;
 		opacity: 0.8;
-	}
-
-	.credits__placeholder {
-		font-family: var(--font-sans);
-		font-size: 0.75rem;
-		letter-spacing: 0.04em;
-		color: #6b5340;
 	}
 
 	.credits__back {

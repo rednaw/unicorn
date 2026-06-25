@@ -1,7 +1,7 @@
-import { computeAtelierCanvas } from './canvas-bounds';
+import { computeAtelierCanvas } from './atelier-layout';
 
-/** Virtual table size in canvas pixels — derived from piece layout. */
-export const ATELIER_CANVAS = computeAtelierCanvas();
+/** Default desk size (scattered layout) — used as view-math fallback. */
+export const ATELIER_CANVAS = computeAtelierCanvas('scattered');
 
 export const ATELIER_ZOOM = {
 	initial: 0.7,
@@ -9,8 +9,6 @@ export const ATELIER_ZOOM = {
 	fitPadding: 0.95,
 	focusFill: 0.76,
 	focusStep: 0.22,
-	/** Minimum zoom when jumping to a speaker (`ZOOM_GATE_HIGH + 0.15`). */
-	speakerMin: 1.1,
 	dblTapFactor: 1.7,
 	wheelExp: 0.0018,
 	keyboardStep: 1.15,
@@ -30,20 +28,20 @@ export const ATELIER_GESTURES = {
 } as const;
 
 export const ATELIER_AUDIO = {
-	proxRadius: 300,
+	proxRadius: 460,
 	zoomGateLow: 0.65,
 	zoomGateHigh: 0.95,
 	panCap: 0.8,
-	nearThreshold: 0.05
+	nearThreshold: 0.05,
+	/** Gain must reach this before `<audio>` starts — avoids silent playback. */
+	playThreshold: 0.08,
+	/** `setTargetAtTime` time constant for gain/pan ramps (seconds). */
+	rampTimeSec: 0.08
 } as const;
 
 export const ATELIER_ANIM = {
 	viewDurationMs: 380
 } as const;
 
-/** Piece slot height / width (mat padding included in layout). */
-export const DRAWING_ASPECT = 1.25;
-export const DEFAULT_DRAWING_WIDTH = 320;
-
 /** Elements that should not start a canvas pan. */
-export const ATELIER_INTERACTIVE_SELECTOR = '.piece, .speaker, .back';
+export const ATELIER_INTERACTIVE_SELECTOR = '.piece, .back';

@@ -86,9 +86,8 @@
 		bind:viewport
 		{focusedId}
 		{prefetchIds}
-		speakerLevels={spatial.speakerLevels}
+		nearDrawingId={spatial.nearDrawingId}
 		onFocusDrawing={focusDrawingById}
-		onFocusSpeaker={(track) => view.focusSpeaker(track)}
 	/>
 </div>
 

@@ -1,4 +1,5 @@
-import { tracks } from '$lib/content';
+import { audioDrawings } from '$lib/content';
+import { ATELIER_AUDIO } from './constants';
 
 type TrackNodes = {
 	el: HTMLAudioElement;
@@ -9,7 +10,7 @@ type TrackNodes = {
 export const engine = $state({
 	ready: false,
 	unlocked: false,
-	near: { index: -1, level: 0 }
+	near: { drawingId: null as string | null, level: 0 }
 });
 
 let ctx: AudioContext | undefined;
@@ -23,8 +24,8 @@ export function initAudio(): void {
 	ctx = new Ctx();
 	const canPan = typeof ctx.createStereoPanner === 'function';
 
-	nodes = tracks.map((t) => {
-		const el = new Audio(t.src);
+	nodes = audioDrawings.map((d) => {
+		const el = new Audio(d.track.src);
 		el.preload = 'metadata';
 		el.loop = false;
 		const source = ctx!.createMediaElementSource(el);
@@ -37,58 +38,76 @@ export function initAudio(): void {
 		} else {
 			source.connect(gain).connect(ctx!.destination);
 		}
+		el.pause();
 		return { el, gain, panner };
 	});
 
 	engine.ready = true;
 }
 
+/** Resume the audio graph on user gesture — do not start any recordings. */
 export function unlock(): void {
-	if (!ctx || engine.unlocked) return;
+	if (!ctx) return;
+	if (ctx.state !== 'running') void ctx.resume().catch(() => {});
+	if (engine.unlocked) return;
 	engine.unlocked = true;
-	void ctx.resume().catch(() => {});
-	for (const n of nodes) {
-		if (n.el.paused) {
-			n.el
-				.play()
-				.then(() => n.el.pause())
-				.catch(() => {});
-		}
-	}
+	// Inaudible blip to satisfy autoplay policy without advancing track positions.
+	const buffer = ctx.createBuffer(1, 1, 22050);
+	const src = ctx.createBufferSource();
+	src.buffer = buffer;
+	src.connect(ctx.destination);
+	src.start();
 }
 
 export function enterSpatial(): void {
 	initAudio();
-	engine.near = { index: -1, level: 0 };
+	engine.near = { drawingId: null, level: 0 };
+	pauseAllTracks();
 }
 
 export function applySpatial(i: number, gain: number, pan: number): void {
 	const n = nodes[i];
 	if (!n || !ctx) return;
 	const now = ctx.currentTime;
-	n.gain.gain.setTargetAtTime(gain, now, 0.08);
-	n.panner?.pan.setTargetAtTime(pan, now, 0.08);
-	if (gain > 0.05) {
+	const audible = engine.unlocked && gain >= ATELIER_AUDIO.playThreshold;
+
+	n.gain.gain.setTargetAtTime(gain, now, ATELIER_AUDIO.rampTimeSec);
+	n.panner?.pan.setTargetAtTime(pan, now, ATELIER_AUDIO.rampTimeSec);
+
+	if (audible) {
 		if (n.el.paused) {
 			if (n.el.ended) n.el.currentTime = 0;
 			void n.el.play().catch(() => {});
 		}
-	} else if (gain < 0.01 && !n.el.paused) {
+	} else if (!n.el.paused) {
 		n.el.pause();
 	}
 }
 
-export function setNear(index: number, level: number): void {
-	engine.near = { index, level };
+export function pauseAllTracks(): void {
+	for (const n of nodes) {
+		if (!n.el.paused) n.el.pause();
+	}
+	if (ctx) {
+		const now = ctx.currentTime;
+		for (const n of nodes) {
+			n.gain.gain.cancelScheduledValues(now);
+			n.gain.gain.setValueAtTime(0, now);
+		}
+	}
+}
+
+export function setNear(drawingId: string | null, level: number): void {
+	if (
+		engine.near.drawingId === drawingId &&
+		Math.abs(engine.near.level - level) < 0.02
+	) {
+		return;
+	}
+	engine.near = { drawingId, level };
 }
 
 export function leaveSpatial(): void {
-	if (!ctx) return;
-	const now = ctx.currentTime;
-	for (const n of nodes) {
-		n.gain.gain.cancelScheduledValues(now);
-		n.gain.gain.setValueAtTime(0, now);
-		if (!n.el.paused) n.el.pause();
-	}
-	engine.near = { index: -1, level: 0 };
+	pauseAllTracks();
+	engine.near = { drawingId: null, level: 0 };
 }

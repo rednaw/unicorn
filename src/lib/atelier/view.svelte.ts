@@ -1,8 +1,13 @@
-import type { Drawing, Track } from '$lib/content';
+import type { Drawing } from '$lib/content';
+import {
+	computeAtelierCanvas,
+	layoutPos,
+	resolveLayoutMode,
+	type AtelierLayoutMode
+} from './atelier-layout';
 import { ATELIER_ANIM, ATELIER_GESTURES, ATELIER_ZOOM } from './constants';
-import { drawingSize } from './drawing-geometry';
+import { drawingListenPoint, pieceBounds } from './drawing-geometry';
 import { prefersReducedMotion, smoothstep } from './math';
-import { spatialSpeakerPoint } from './spatial-positions';
 import {
 	centreOnCanvas,
 	clampView,
@@ -21,6 +26,7 @@ export function createAtelierView(maxZoom: number) {
 	let hasUserNavigatedView = $state(false);
 	let dragging = $state(false);
 	let metrics = $state<ViewportMetrics>(EMPTY_VIEWPORT);
+	let layoutMode = $state<AtelierLayoutMode>('scattered');
 
 	let inertiaRaf = 0;
 	let viewAnimRaf = 0;
@@ -43,9 +49,26 @@ export function createAtelierView(maxZoom: number) {
 		return { width: metrics.width, height: metrics.height };
 	}
 
+	function canvasSize() {
+		return computeAtelierCanvas(layoutMode);
+	}
+
+	function drawingPos(drawing: Drawing) {
+		return layoutPos(drawing.id, layoutMode, drawing.pos);
+	}
+
+	function syncLayoutMode(): boolean {
+		if (metrics.width === 0) return false;
+		const next = resolveLayoutMode(metrics);
+		if (next === layoutMode) return false;
+		layoutMode = next;
+		hasUserNavigatedView = false;
+		return true;
+	}
+
 	function syncClamp() {
 		if (metrics.width === 0) return;
-		applyView(clampView(getView(), viewportRect()));
+		applyView(clampView(getView(), viewportRect(), canvasSize()));
 	}
 
 	function stopViewAnim() {
@@ -120,14 +143,15 @@ export function createAtelierView(maxZoom: number) {
 
 	function resetView() {
 		if (metrics.width === 0) return;
-		applyView(fitViewToCanvas(viewportRect(), minZoom, undefined, ATELIER_ZOOM.fitPadding));
+		applyView(fitViewToCanvas(viewportRect(), minZoom, canvasSize(), ATELIER_ZOOM.fitPadding));
 		syncClamp();
 		hasUserNavigatedView = false;
 	}
 
 	function onViewportResize() {
-		if (hasUserNavigatedView) syncClamp();
-		else resetView();
+		const modeChanged = syncLayoutMode();
+		if (modeChanged || !hasUserNavigatedView) resetView();
+		else syncClamp();
 	}
 
 	function applyZoomAt(viewportX: number, viewportY: number, nextZoom: number) {
@@ -175,25 +199,17 @@ export function createAtelierView(maxZoom: number) {
 		}
 	}
 
-	function focusTargetZoom(itemW: number, itemH: number, fill = 0.74) {
+	function focusTargetZoom(itemW: number, itemH: number, fill: number) {
 		if (metrics.width === 0) return zoom;
 		return fitZoomForItem(viewportRect(), itemW, itemH, fill, minZoom, maxZoom);
 	}
 
 	function focusDrawing(d: Drawing) {
-		const { width, height } = drawingSize(d);
-		const cx = (d.pos?.x ?? 0) + width / 2;
-		const cy = (d.pos?.y ?? 0) + height / 2;
+		const { width, height } = pieceBounds(d);
+		const { x: cx, y: cy } = drawingListenPoint(d, drawingPos(d));
 		const fitTarget = focusTargetZoom(width, height, ATELIER_ZOOM.focusFill);
 		const steppedTarget = Math.min(maxZoom, zoom + ATELIER_ZOOM.focusStep);
 		zoomTo(cx, cy, Math.max(fitTarget, steppedTarget), true);
-	}
-
-	function focusSpeaker(track: Track) {
-		const point = spatialSpeakerPoint(track);
-		if (!point) return;
-		stopInertia();
-		zoomTo(point.x, point.y, Math.max(zoom, ATELIER_ZOOM.speakerMin), true);
 	}
 
 	function dispose() {
@@ -216,15 +232,16 @@ export function createAtelierView(maxZoom: number) {
 		set dragging(value: boolean) {
 			dragging = value;
 		},
-		get hasUserNavigatedView() {
-			return hasUserNavigatedView;
-		},
 		get metrics() {
 			return metrics;
 		},
-		get maxZoom() {
-			return maxZoom;
+		get layoutMode() {
+			return layoutMode;
 		},
+		get canvas() {
+			return canvasSize();
+		},
+		drawingPos,
 		getView,
 		setMetrics,
 		syncClamp,
@@ -236,7 +253,6 @@ export function createAtelierView(maxZoom: number) {
 		zoomTo,
 		zoomAtViewport,
 		focusDrawing,
-		focusSpeaker,
 		stopInertia,
 		startInertia,
 		dispose

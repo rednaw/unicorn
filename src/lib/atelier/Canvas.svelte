@@ -1,10 +1,8 @@
 <script lang="ts">
-	import { drawings, tracks } from '$lib/content';
-	import { ATELIER_CANVAS } from '$lib/atelier/constants';
+	import { drawings } from '$lib/content';
 	import type { AtelierGestures } from './gestures.svelte';
 	import type { AtelierView } from './view.svelte';
 	import DrawingPiece from './DrawingPiece.svelte';
-	import SpeakerPiece from './SpeakerPiece.svelte';
 
 	let {
 		view,
@@ -12,18 +10,16 @@
 		viewport = $bindable(),
 		focusedId,
 		prefetchIds,
-		speakerLevels,
-		onFocusDrawing,
-		onFocusSpeaker
+		nearDrawingId,
+		onFocusDrawing
 	}: {
 		view: AtelierView;
 		gestures: AtelierGestures;
 		viewport?: HTMLDivElement;
 		focusedId: string | null;
 		prefetchIds: Set<string>;
-		speakerLevels: number[];
+		nearDrawingId: string | null;
 		onFocusDrawing: (id: string) => void;
-		onFocusSpeaker: (track: (typeof tracks)[number]) => void;
 	} = $props();
 </script>
 
@@ -41,23 +37,17 @@
 	<div
 		class="atelier__inner"
 		style:transform="translate({view.tx}px, {view.ty}px) scale({view.zoom})"
-		style:width="{ATELIER_CANVAS.width}px"
-		style:height="{ATELIER_CANVAS.height}px"
+		style:width="{view.canvas.width}px"
+		style:height="{view.canvas.height}px"
 	>
 		{#each drawings as drawing (drawing.id)}
 			<DrawingPiece
 				{drawing}
+				pos={view.drawingPos(drawing)}
 				prefetch={prefetchIds.has(drawing.id)}
 				focused={drawing.id === focusedId}
+				isNear={drawing.id === nearDrawingId}
 				onfocus={() => onFocusDrawing(drawing.id)}
-			/>
-		{/each}
-
-		{#each tracks as track, i (track.id)}
-			<SpeakerPiece
-				{track}
-				level={speakerLevels[i] ?? 0}
-				onfocus={() => onFocusSpeaker(track)}
 			/>
 		{/each}
 	</div>
@@ -81,6 +71,5 @@
 	.atelier__inner {
 		position: relative;
 		transform-origin: 0 0;
-		will-change: transform;
 	}
 </style>
