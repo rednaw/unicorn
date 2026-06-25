@@ -118,13 +118,12 @@
 	}
 
 	.site__footer a {
-		color: inherit;
+		color: var(--color-ink-muted);
 		text-decoration: none;
-		opacity: 0.45;
-		transition: opacity 200ms ease;
+		transition: color 200ms ease;
 	}
 
 	.site__footer a:hover {
-		opacity: 0.75;
+		color: var(--color-ink-soft);
 	}
 </style>
