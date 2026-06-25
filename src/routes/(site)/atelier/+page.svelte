@@ -14,7 +14,7 @@
 	import { queueDrawingPrefetch } from '$lib/atelier/drawing-prefetch';
 	import { createSpatialAudioLoop } from '$lib/atelier/spatial-audio-loop.svelte';
 	import { observeBrowserChromeInsets } from '$lib/atelier/browser-chrome-insets';
-	import { observeViewport, readViewportMetrics } from '$lib/atelier/viewport-metrics';
+	import { observeViewport } from '$lib/atelier/viewport-metrics';
 	import { enterSpatial, leaveSpatial, unlock, initAudio, armSpatial, engine } from '$lib/atelier/audio-engine.svelte';
 
 	let focusedId = $state<string | null>(browser ? page.url.searchParams.get('focus') : null);
@@ -41,9 +41,7 @@
 		releaseNearLock,
 		onPrefetchDrawing: (id) => queueDrawingPrefetch(prefetchIds, id, (next) => (prefetchIds = next)),
 		onEscape: () => goto(`${base}/`),
-		syncViewportOffset: () => {
-			if (viewport) view.setMetrics(readViewportMetrics(viewport));
-		}
+		viewport: () => viewport
 	});
 
 	function focusDrawingById(id: string) {
@@ -65,14 +63,27 @@
 		void tick().then(() => {
 			if (!viewport || !atelierEl) return;
 			viewportEl = viewport;
-			unobserveBrowserChrome = observeBrowserChromeInsets(atelierEl);
+
+			// Fit from window metrics (already in view) — no DOM geometry read on load.
+			view.onViewportResize();
+
 			unobserveViewport = observeViewport(viewport, (metrics) => {
 				view.setMetrics(metrics);
 				view.onViewportResize();
 			});
+
+			const chromeEl = atelierEl;
+			requestAnimationFrame(() => {
+				unobserveBrowserChrome = observeBrowserChromeInsets(chromeEl);
+			});
+
 			spatial.start();
 
-			if (focusedId) focusDrawingById(focusedId);
+			if (focusedId) {
+				requestAnimationFrame(() => {
+					if (focusedId) focusDrawingById(focusedId);
+				});
+			}
 
 			viewport.addEventListener('wheel', gestures.onWheel, { passive: false });
 			viewport.addEventListener('touchmove', gestures.onTouchMove, { passive: false });

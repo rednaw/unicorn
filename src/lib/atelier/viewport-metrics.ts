@@ -1,26 +1,34 @@
 export type ViewportMetrics = {
 	width: number;
 	height: number;
+	/** Screen offset — only needed for pointer math; not used for desk fit. */
 	left: number;
 	top: number;
 };
 
 export const EMPTY_VIEWPORT: ViewportMetrics = { width: 0, height: 0, left: 0, top: 0 };
 
-export function readViewportMetrics(el: HTMLElement): ViewportMetrics {
-	const rect = el.getBoundingClientRect();
-	return {
-		width: el.clientWidth,
-		height: el.clientHeight,
-		left: rect.left,
-		top: rect.top
-	};
-}
+/** Size from ResizeObserver (no extra layout read). Skips initial synchronous read. */
+export function observeViewport(
+	el: HTMLElement,
+	onChange: (metrics: ViewportMetrics) => void
+) {
+	let raf = 0;
 
-export function observeViewport(el: HTMLElement, onChange: (metrics: ViewportMetrics) => void) {
-	const notify = () => onChange(readViewportMetrics(el));
-	notify();
-	const ro = new ResizeObserver(notify);
+	const ro = new ResizeObserver((entries) => {
+		const entry = entries[0];
+		if (!entry) return;
+		cancelAnimationFrame(raf);
+		raf = requestAnimationFrame(() => {
+			const { width, height } = entry.contentRect;
+			onChange({ width, height, left: 0, top: 0 });
+		});
+	});
+
 	ro.observe(el);
-	return () => ro.disconnect();
+
+	return () => {
+		cancelAnimationFrame(raf);
+		ro.disconnect();
+	};
 }
