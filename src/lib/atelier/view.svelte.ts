@@ -86,7 +86,7 @@ export function createAtelierView(maxZoom: number) {
 		targetTx: number,
 		targetTy: number,
 		targetZoom: number,
-		duration = ATELIER_ANIM.viewDurationMs
+		duration: number = ATELIER_ANIM.viewDurationMs
 	) {
 		stopViewAnim();
 		const from = getView();
@@ -179,7 +179,7 @@ export function createAtelierView(maxZoom: number) {
 		centreY: number,
 		target: number,
 		animate = false,
-		duration = ATELIER_ANIM.viewDurationMs
+		duration: number = ATELIER_ANIM.viewDurationMs
 	) {
 		if (metrics.width === 0) return;
 		const next = centreOnCanvas(viewportRect(), centreX, centreY, target);

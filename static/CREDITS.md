@@ -15,8 +15,7 @@ permission. Viewing here does not grant any licence.
 
 ## Atelier — *His Master’s Voice*
 
-Desk markers use Francis Barraud’s 1898 painting (public domain):
-`static/atelier/His_Master's_Voice.jpg` from
+Desk markers use Francis Barraud’s 1898 painting (public domain), from
 [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:His_Master%27s_Voice.jpg).
 Not the modern HMV/RCA trademark logo.
 
