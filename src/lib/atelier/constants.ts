@@ -40,7 +40,9 @@ export const ATELIER_AUDIO = {
 } as const;
 
 export const ATELIER_ANIM = {
-	viewDurationMs: 380
+	viewDurationMs: 380,
+	/** Gallery entry / piece focus — slower so pan/zoom affordance reads clearly. */
+	focusDurationMs: 720
 } as const;
 
 /** Elements that should not start a canvas pan. */
