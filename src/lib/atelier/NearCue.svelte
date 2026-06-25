@@ -36,7 +36,7 @@
 	.nearcue {
 		position: fixed;
 		left: 50%;
-		bottom: 1.25rem;
+		bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px) + var(--browser-chrome-bottom, 0px));
 		transform: translateX(-50%);
 		display: flex;
 		flex-direction: column;
