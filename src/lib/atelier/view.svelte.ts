@@ -174,11 +174,17 @@ export function createAtelierView(maxZoom: number) {
 		hasUserNavigatedView = true;
 	}
 
-	function zoomTo(centreX: number, centreY: number, target: number, animate = false) {
+	function zoomTo(
+		centreX: number,
+		centreY: number,
+		target: number,
+		animate = false,
+		duration = ATELIER_ANIM.viewDurationMs
+	) {
 		if (metrics.width === 0) return;
 		const next = centreOnCanvas(viewportRect(), centreX, centreY, target);
 		if (animate && !prefersReducedMotion()) {
-			animateView(next.tx, next.ty, next.zoom);
+			animateView(next.tx, next.ty, next.zoom, duration);
 		} else {
 			applyView(next);
 			syncClamp();
@@ -209,7 +215,7 @@ export function createAtelierView(maxZoom: number) {
 		const { x: cx, y: cy } = drawingListenPoint(d, drawingPos(d));
 		const fitTarget = focusTargetZoom(width, height, ATELIER_ZOOM.focusFill);
 		const steppedTarget = Math.min(maxZoom, zoom + ATELIER_ZOOM.focusStep);
-		zoomTo(cx, cy, Math.max(fitTarget, steppedTarget), true);
+		zoomTo(cx, cy, Math.max(fitTarget, steppedTarget), true, ATELIER_ANIM.focusDurationMs);
 	}
 
 	function dispose() {
