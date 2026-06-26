@@ -47,10 +47,12 @@
 	function focusDrawingById(id: string) {
 		focusedId = id;
 		nearLockId = id;
-		armSpatial();
 		queueDrawingPrefetch(prefetchIds, id, (next) => (prefetchIds = next));
 		const drawing = drawings.find((d) => d.id === id);
-		if (drawing) view.focusDrawing(drawing);
+		// Arm audio only once the view settles on the target — playing during the
+		// programmatic focus sweep would briefly trigger tracks the view passes over.
+		if (drawing) view.focusDrawing(drawing, armSpatial);
+		else armSpatial();
 	}
 
 	onMount(() => {
@@ -113,7 +115,7 @@
 
 <div class="atelier" bind:this={atelierEl}>
 	<BackLink />
-	<NearCue nearDrawingId={engine.armed ? displayNearId : null} />
+	<NearCue nearDrawingId={engine.armed || nearLockId ? displayNearId : null} />
 
 	<Canvas
 		{view}

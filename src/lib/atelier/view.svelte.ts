@@ -99,7 +99,8 @@ export function createAtelierView(maxZoom: number) {
 		targetTx: number,
 		targetTy: number,
 		targetZoom: number,
-		duration: number = ATELIER_ANIM.viewDurationMs
+		duration: number = ATELIER_ANIM.viewDurationMs,
+		onDone?: () => void
 	) {
 		stopViewAnim();
 		const from = getView();
@@ -114,7 +115,10 @@ export function createAtelierView(maxZoom: number) {
 			});
 			syncClamp();
 			if (t < 1) viewAnimRaf = requestAnimationFrame(step);
-			else viewAnimRaf = 0;
+			else {
+				viewAnimRaf = 0;
+				onDone?.();
+			}
 		};
 		viewAnimRaf = requestAnimationFrame(step);
 	}
@@ -211,15 +215,20 @@ export function createAtelierView(maxZoom: number) {
 		centreY: number,
 		target: number,
 		animate = false,
-		duration: number = ATELIER_ANIM.viewDurationMs
+		duration: number = ATELIER_ANIM.viewDurationMs,
+		onDone?: () => void
 	) {
-		if (metrics.width === 0) return;
+		if (metrics.width === 0) {
+			onDone?.();
+			return;
+		}
 		const next = centreOnCanvas(viewportRect(), centreX, centreY, target);
 		if (animate && !prefersReducedMotion()) {
-			animateView(next.tx, next.ty, next.zoom, duration);
+			animateView(next.tx, next.ty, next.zoom, duration, onDone);
 		} else {
 			applyView(next);
 			syncClamp();
+			onDone?.();
 		}
 		hasUserNavigatedView = true;
 	}
@@ -242,12 +251,12 @@ export function createAtelierView(maxZoom: number) {
 		return fitZoomForItem(viewportRect(), itemW, itemH, fill, minZoom, maxZoom);
 	}
 
-	function focusDrawing(d: Drawing) {
+	function focusDrawing(d: Drawing, onArrive?: () => void) {
 		const { width, height } = pieceBounds(d);
 		const { x: cx, y: cy } = drawingListenPoint(d, drawingPos(d));
 		const fitTarget = focusTargetZoom(width, height, ATELIER_ZOOM.focusFill);
 		const steppedTarget = Math.min(maxZoom, zoom + ATELIER_ZOOM.focusStep);
-		zoomTo(cx, cy, Math.max(fitTarget, steppedTarget), true, ATELIER_ANIM.focusDurationMs);
+		zoomTo(cx, cy, Math.max(fitTarget, steppedTarget), true, ATELIER_ANIM.focusDurationMs, onArrive);
 	}
 
 	function dispose() {
