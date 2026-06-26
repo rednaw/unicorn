@@ -13,10 +13,11 @@
 		viewTransitionName?: string;
 	} = $props();
 
-	let thumbSrc = $state<string | undefined>(peekCachedAsset(drawing.thumb));
+	let thumbResolved = $state<string | undefined>(undefined);
 	let fullSrc = $state<string | undefined>(undefined);
 	let shouldLoadFull = $state(false);
 
+	const thumbSrc = $derived(thumbResolved ?? peekCachedAsset(drawing.thumb));
 	const originalReady = $derived(fullSrc !== undefined);
 
 	function startFullPrefetch() {
@@ -25,9 +26,10 @@
 	}
 
 	$effect(() => {
+		const thumb = drawing.thumb;
 		let cancelled = false;
-		void cacheAsset(drawing.thumb).then((url) => {
-			if (!cancelled) thumbSrc = url;
+		void cacheAsset(thumb).then((url) => {
+			if (!cancelled) thumbResolved = url;
 		});
 		return () => {
 			cancelled = true;

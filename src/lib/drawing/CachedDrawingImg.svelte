@@ -20,12 +20,14 @@
 		viewTransitionName?: string;
 	} = $props();
 
-	let src = $state<string | undefined>(peekCachedAsset(url));
+	let resolvedSrc = $state<string | undefined>(undefined);
+	const src = $derived(resolvedSrc ?? peekCachedAsset(url));
 
 	$effect(() => {
+		const assetUrl = url;
 		let cancelled = false;
-		void cacheAsset(url).then((resolved) => {
-			if (!cancelled) src = resolved;
+		void cacheAsset(assetUrl).then((resolved) => {
+			if (!cancelled) resolvedSrc = resolved;
 		});
 		return () => {
 			cancelled = true;
@@ -36,7 +38,7 @@
 {#if src}
 	<img
 		class={className}
-		{src}
+		src={src}
 		{width}
 		{height}
 		{alt}
