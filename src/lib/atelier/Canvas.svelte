@@ -45,7 +45,6 @@
 				{drawing}
 				pos={view.drawingPos(drawing)}
 				prefetch={prefetchIds.has(drawing.id)}
-				deferFullReveal={drawing.id === view.focusAnimatingId}
 				focused={drawing.id === focusedId}
 				isNear={drawing.id === nearDrawingId}
 				onfocus={() => onFocusDrawing(drawing.id)}
