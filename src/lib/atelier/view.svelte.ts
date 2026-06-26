@@ -35,9 +35,10 @@ export function createAtelierView(maxZoom: number) {
 	let zoom = $state<number>(ATELIER_ZOOM.initial);
 	let hasUserNavigatedView = $state(false);
 	let dragging = $state(false);
-	let metrics = $state<ViewportMetrics>(readInitialViewport());
+	const initialMetrics = readInitialViewport();
+	let metrics = $state<ViewportMetrics>(initialMetrics);
 	let layoutMode = $state<AtelierLayoutMode>(
-		metrics.width > 0 ? resolveLayoutMode(metrics) : 'scattered'
+		initialMetrics.width > 0 ? resolveLayoutMode(initialMetrics) : 'scattered'
 	);
 
 	let inertiaRaf = 0;
