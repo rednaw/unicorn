@@ -9,6 +9,7 @@
 		drawing,
 		pos,
 		prefetch = false,
+		deferFullReveal = false,
 		focused = false,
 		isNear = false,
 		onfocus
@@ -16,6 +17,7 @@
 		drawing: Drawing;
 		pos: { x: number; y: number };
 		prefetch?: boolean;
+		deferFullReveal?: boolean;
 		focused?: boolean;
 		isNear?: boolean;
 		onfocus: () => void;
@@ -40,6 +42,7 @@
 		<DrawingImg
 			{drawing}
 			{prefetch}
+			{deferFullReveal}
 			viewTransitionName={focused ? `piece-${drawing.id}` : undefined}
 		/>
 		{#if drawing.track}

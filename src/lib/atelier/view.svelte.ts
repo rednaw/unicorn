@@ -44,6 +44,8 @@ export function createAtelierView(maxZoom: number) {
 	let viewAnimRaf = 0;
 	let vx = 0;
 	let vy = 0;
+	/** While set, the focused piece keeps its thumb until this focus zoom finishes. */
+	let focusAnimatingId = $state<string | null>(null);
 
 	const minZoom = ATELIER_ZOOM.min;
 
@@ -83,9 +85,10 @@ export function createAtelierView(maxZoom: number) {
 		applyView(clampView(getView(), viewportRect(), canvasSize()));
 	}
 
-	function stopViewAnim() {
+	function stopViewAnim(clearFocusHold = true) {
 		if (viewAnimRaf) cancelAnimationFrame(viewAnimRaf);
 		viewAnimRaf = 0;
+		if (clearFocusHold) focusAnimatingId = null;
 	}
 
 	function stopInertia() {
@@ -98,9 +101,10 @@ export function createAtelierView(maxZoom: number) {
 		targetTx: number,
 		targetTy: number,
 		targetZoom: number,
-		duration: number = ATELIER_ANIM.viewDurationMs
+		duration: number = ATELIER_ANIM.viewDurationMs,
+		onComplete?: () => void
 	) {
-		stopViewAnim();
+		stopViewAnim(false);
 		const from = getView();
 		const t0 = performance.now();
 		const step = (now: number) => {
@@ -113,7 +117,10 @@ export function createAtelierView(maxZoom: number) {
 			});
 			syncClamp();
 			if (t < 1) viewAnimRaf = requestAnimationFrame(step);
-			else viewAnimRaf = 0;
+			else {
+				viewAnimRaf = 0;
+				onComplete?.();
+			}
 		};
 		viewAnimRaf = requestAnimationFrame(step);
 	}
@@ -242,11 +249,25 @@ export function createAtelierView(maxZoom: number) {
 	}
 
 	function focusDrawing(d: Drawing) {
+		if (metrics.width === 0) return;
 		const { width, height } = pieceBounds(d);
 		const { x: cx, y: cy } = drawingListenPoint(d, drawingPos(d));
 		const fitTarget = focusTargetZoom(width, height, ATELIER_ZOOM.focusFill);
 		const steppedTarget = Math.min(maxZoom, zoom + ATELIER_ZOOM.focusStep);
-		zoomTo(cx, cy, Math.max(fitTarget, steppedTarget), true, ATELIER_ANIM.focusDurationMs);
+		const targetZoom = Math.max(fitTarget, steppedTarget);
+		const next = centreOnCanvas(viewportRect(), cx, cy, targetZoom);
+		hasUserNavigatedView = true;
+
+		if (prefersReducedMotion()) {
+			applyView(next);
+			syncClamp();
+			return;
+		}
+
+		focusAnimatingId = d.id;
+		animateView(next.tx, next.ty, next.zoom, ATELIER_ANIM.focusDurationMs, () => {
+			if (focusAnimatingId === d.id) focusAnimatingId = null;
+		});
 	}
 
 	function dispose() {
@@ -274,6 +295,9 @@ export function createAtelierView(maxZoom: number) {
 		},
 		get layoutMode() {
 			return layoutMode;
+		},
+		get focusAnimatingId() {
+			return focusAnimatingId;
 		},
 		get canvas() {
 			return canvasSize();
