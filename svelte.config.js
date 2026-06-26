@@ -12,6 +12,23 @@ const config = {
 		}),
 		paths: {
 			base: process.env.BASE_PATH ?? ''
+		},
+		csp: {
+			mode: 'auto',
+			directives: {
+				'default-src': ['self'],
+				'script-src': ['self'],
+				// Svelte scoped styles + view transitions inject <style> blocks.
+				'style-src': ['self', 'unsafe-inline'],
+				'img-src': ['self', 'blob:', 'data:'],
+				'media-src': ['self'],
+				'font-src': ['self', 'data:'],
+				'connect-src': ['self'],
+				'object-src': ['none'],
+				'base-uri': ['self'],
+				'form-action': ['self'],
+				'upgrade-insecure-requests': true
+			}
 		}
 	}
 };
