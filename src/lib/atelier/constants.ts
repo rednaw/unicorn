@@ -2,7 +2,7 @@ export const ATELIER_ZOOM = {
 	initial: 0.7,
 	min: 0.25,
 	fitPadding: 0.95,
-	focusFill: 0.76,
+	focusFill: 0.9,
 	focusStep: 0.22,
 	dblTapFactor: 1.7,
 	wheelExp: 0.0018,
