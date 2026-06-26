@@ -56,10 +56,6 @@
 	onMount(() => {
 		enterSpatial();
 
-		if (focusedId) {
-			queueDrawingPrefetch(prefetchIds, focusedId, (next) => (prefetchIds = next));
-		}
-
 		let unobserveViewport: (() => void) | undefined;
 		let unobserveBrowserChrome: (() => void) | undefined;
 		let viewportEl: HTMLDivElement | undefined;

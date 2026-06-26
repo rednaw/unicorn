@@ -5,25 +5,20 @@
 	let {
 		drawing,
 		prefetch = false,
-		deferFullReveal = false,
 		viewTransitionName
 	}: {
 		drawing: Drawing;
 		/** Parent queued this piece for full-res download. */
 		prefetch?: boolean;
-		/** Full-res may load, but stay on thumb until focus zoom finishes. */
-		deferFullReveal?: boolean;
 		viewTransitionName?: string;
 	} = $props();
 
 	let thumbResolved = $state<string | undefined>(undefined);
 	let fullSrc = $state<string | undefined>(undefined);
 	let shouldLoadFull = $state(false);
-	let fullDecoded = $state(false);
-	let fullImgEl = $state<HTMLImageElement | undefined>(undefined);
 
 	const thumbSrc = $derived(thumbResolved ?? peekCachedAsset(drawing.thumb));
-	const revealFull = $derived(fullSrc !== undefined && fullDecoded && !deferFullReveal);
+	const originalReady = $derived(fullSrc !== undefined);
 
 	function startFullPrefetch() {
 		if (shouldLoadFull) return;
@@ -55,30 +50,6 @@
 			cancelled = true;
 		};
 	});
-
-	$effect(() => {
-		if (!fullSrc) {
-			fullDecoded = false;
-			return;
-		}
-		const img = fullImgEl;
-		if (!img || img.src !== fullSrc) return;
-
-		let cancelled = false;
-		fullDecoded = false;
-		void img
-			.decode()
-			.then(() => {
-				if (!cancelled) fullDecoded = true;
-			})
-			.catch(() => {
-				if (!cancelled) fullDecoded = true;
-			});
-
-		return () => {
-			cancelled = true;
-		};
-	});
 </script>
 
 <div
@@ -88,7 +59,7 @@
 	{#if thumbSrc}
 		<img
 			class="atelier-drawing-img atelier-drawing-img--thumb"
-			class:atelier-drawing-img--hidden={revealFull}
+			class:atelier-drawing-img--hidden={originalReady}
 			src={thumbSrc}
 			width={drawing.srcWidth}
 			height={drawing.srcHeight}
@@ -100,9 +71,7 @@
 	{/if}
 	{#if fullSrc}
 		<img
-			bind:this={fullImgEl}
 			class="atelier-drawing-img atelier-drawing-img--full"
-			class:atelier-drawing-img--revealed={revealFull}
 			src={fullSrc}
 			width={drawing.srcWidth}
 			height={drawing.srcHeight}
@@ -138,11 +107,6 @@
 	}
 
 	.atelier-drawing-img--full {
-		opacity: 0;
-		transition: opacity 180ms ease;
-	}
-
-	.atelier-drawing-img--full.atelier-drawing-img--revealed {
 		opacity: 1;
 	}
 </style>
