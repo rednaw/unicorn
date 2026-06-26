@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { cacheAsset } from '$lib/drawing/asset-cache';
+	import { cacheAsset, peekCachedAsset } from '$lib/drawing/asset-cache';
 
 	let {
 		url,
@@ -20,19 +20,28 @@
 		viewTransitionName?: string;
 	} = $props();
 
-	/** Warm session cache for atelier navigation — keep a stable HTTP src (no blob swap). */
+	let src = $state<string | undefined>(peekCachedAsset(url));
+
 	$effect(() => {
-		void cacheAsset(url);
+		let cancelled = false;
+		void cacheAsset(url).then((resolved) => {
+			if (!cancelled) src = resolved;
+		});
+		return () => {
+			cancelled = true;
+		};
 	});
 </script>
 
-<img
-	class={className}
-	src={url}
-	{width}
-	{height}
-	{alt}
-	{loading}
-	decoding="async"
-	style:view-transition-name={viewTransitionName}
-/>
+{#if src}
+	<img
+		class={className}
+		{src}
+		{width}
+		{height}
+		{alt}
+		{loading}
+		decoding="async"
+		style:view-transition-name={viewTransitionName}
+	/>
+{/if}
