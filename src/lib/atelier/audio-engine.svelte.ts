@@ -66,6 +66,17 @@ export function enterSpatial(): void {
 	engine.armed = false;
 	engine.near = { drawingId: null, level: 0 };
 	pauseAllTracks();
+	// Each atelier visit starts recordings from the top — otherwise a track left
+	// paused mid-recording would resume from its old position on the next visit.
+	rewindAllTracks();
+}
+
+function rewindAllTracks(): void {
+	for (const n of nodes) {
+		try {
+			n.el.currentTime = 0;
+		} catch {}
+	}
 }
 
 /** Allow proximity audio — set on gallery focus entry or after the visitor explores. */
