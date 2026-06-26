@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Drawing } from '$lib/content';
-	import { cacheAsset } from '$lib/drawing/asset-cache';
+	import { cacheAsset, peekCachedAsset } from '$lib/drawing/asset-cache';
 
 	let {
 		drawing,
@@ -13,6 +13,7 @@
 		viewTransitionName?: string;
 	} = $props();
 
+	let thumbSrc = $state<string | undefined>(peekCachedAsset(drawing.thumb));
 	let fullSrc = $state<string | undefined>(undefined);
 	let shouldLoadFull = $state(false);
 
@@ -24,7 +25,13 @@
 	}
 
 	$effect(() => {
-		void cacheAsset(drawing.thumb);
+		let cancelled = false;
+		void cacheAsset(drawing.thumb).then((url) => {
+			if (!cancelled) thumbSrc = url;
+		});
+		return () => {
+			cancelled = true;
+		};
 	});
 
 	$effect(() => {
@@ -47,17 +54,19 @@
 	class="atelier-drawing"
 	style:aspect-ratio="{drawing.srcWidth} / {drawing.srcHeight}"
 >
-	<img
-		class="atelier-drawing-img atelier-drawing-img--thumb"
-		class:atelier-drawing-img--hidden={originalReady}
-		src={drawing.thumb}
-		width={drawing.srcWidth}
-		height={drawing.srcHeight}
-		alt=""
-		aria-hidden="true"
-		decoding="async"
-		draggable="false"
-	/>
+	{#if thumbSrc}
+		<img
+			class="atelier-drawing-img atelier-drawing-img--thumb"
+			class:atelier-drawing-img--hidden={originalReady}
+			src={thumbSrc}
+			width={drawing.srcWidth}
+			height={drawing.srcHeight}
+			alt=""
+			aria-hidden="true"
+			decoding="async"
+			draggable="false"
+		/>
+	{/if}
 	{#if fullSrc}
 		<img
 			class="atelier-drawing-img atelier-drawing-img--full"
