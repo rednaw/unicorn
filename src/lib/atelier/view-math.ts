@@ -1,5 +1,3 @@
-import { ATELIER_CANVAS } from './constants';
-
 export type ViewTransform = { tx: number; ty: number; zoom: number };
 export type ViewportRect = { width: number; height: number };
 
@@ -10,7 +8,7 @@ export function clampZoom(zoom: number, minZoom: number, maxZoom: number): numbe
 export function clampView(
 	view: ViewTransform,
 	viewport: ViewportRect,
-	canvas = ATELIER_CANVAS,
+	canvas: { width: number; height: number },
 	/** Extra pan room (canvas px) so edge pieces clear mobile UI chrome. */
 	panSlack = 64
 ): ViewTransform {
@@ -47,7 +45,7 @@ export function zoomAtPoint(
 export function fitViewToCanvas(
 	viewport: ViewportRect,
 	minZoom: number,
-	canvas = ATELIER_CANVAS,
+	canvas: { width: number; height: number },
 	fitPadding = 0.95
 ): ViewTransform {
 	const fit =

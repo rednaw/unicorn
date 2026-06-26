@@ -1,8 +1,3 @@
-import { computeAtelierCanvas } from './atelier-layout';
-
-/** Default desk size (scattered layout) — used as view-math fallback. */
-export const ATELIER_CANVAS = computeAtelierCanvas('scattered');
-
 export const ATELIER_ZOOM = {
 	initial: 0.7,
 	min: 0.25,
