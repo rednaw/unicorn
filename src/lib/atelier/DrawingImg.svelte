@@ -5,11 +5,14 @@
 	let {
 		drawing,
 		prefetch = false,
+		deferFullReveal = false,
 		viewTransitionName
 	}: {
 		drawing: Drawing;
 		/** Parent queued this piece for full-res download. */
 		prefetch?: boolean;
+		/** Full-res may load, but stay on thumb until focus zoom finishes. */
+		deferFullReveal?: boolean;
 		viewTransitionName?: string;
 	} = $props();
 
@@ -18,7 +21,7 @@
 	let shouldLoadFull = $state(false);
 
 	const thumbSrc = $derived(thumbResolved ?? peekCachedAsset(drawing.thumb));
-	const originalReady = $derived(fullSrc !== undefined);
+	const revealFull = $derived(fullSrc !== undefined && !deferFullReveal);
 
 	function startFullPrefetch() {
 		if (shouldLoadFull) return;
@@ -59,7 +62,7 @@
 	{#if thumbSrc}
 		<img
 			class="atelier-drawing-img atelier-drawing-img--thumb"
-			class:atelier-drawing-img--hidden={originalReady}
+			class:atelier-drawing-img--hidden={revealFull}
 			src={thumbSrc}
 			width={drawing.srcWidth}
 			height={drawing.srcHeight}
@@ -69,7 +72,7 @@
 			draggable="false"
 		/>
 	{/if}
-	{#if fullSrc}
+	{#if revealFull}
 		<img
 			class="atelier-drawing-img atelier-drawing-img--full"
 			src={fullSrc}
