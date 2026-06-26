@@ -15,7 +15,7 @@
 	import { createSpatialAudioLoop } from '$lib/atelier/spatial-audio-loop.svelte';
 	import { observeBrowserChromeInsets } from '$lib/atelier/browser-chrome-insets';
 	import { observeViewport } from '$lib/atelier/viewport-metrics';
-	import { enterSpatial, leaveSpatial, unlock, initAudio, armSpatial, engine } from '$lib/atelier/audio-engine.svelte';
+	import { enterSpatial, leaveSpatial, unlock, armSpatial, engine } from '$lib/atelier/audio-engine.svelte';
 
 	let focusedId = $state<string | null>(browser ? page.url.searchParams.get('focus') : null);
 	/** Pins HUD / HMV to gallery focus until the visitor pans or zooms. */
