@@ -45,6 +45,7 @@
 	});
 
 	function focusDrawingById(id: string) {
+		unlock();
 		focusedId = id;
 		nearLockId = id;
 		queueDrawingPrefetch(prefetchIds, id, (next) => (prefetchIds = next));
