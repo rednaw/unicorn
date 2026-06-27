@@ -117,6 +117,45 @@ export const drawings: Drawing[] = [
 		rotation: -4,
 		pos: { x: 400, y: 62 },
 		width: 280
+	},
+	{
+		id: 'lachend-portret',
+		title: 'Lachend portret',
+		year: '2023',
+		medium: 'potlood op papier',
+		alt: 'Portret van een lachende man met opgerolde mouwen',
+		...drawingPaths('lachend-portret', 'image004.jpg'),
+		srcWidth: 3057,
+		srcHeight: 4441,
+		rotation: 2,
+		pos: { x: 1200, y: 560 },
+		width: 290
+	},
+	{
+		id: 'profielstudie',
+		title: 'Profielstudie',
+		year: '2023',
+		medium: 'potlood op papier',
+		alt: 'Gestileerd gezicht in profiel met zware schaduwen',
+		...drawingPaths('profielstudie', 'image005.jpg'),
+		srcWidth: 2885,
+		srcHeight: 4413,
+		rotation: -3,
+		pos: { x: 450, y: 780 },
+		width: 280
+	},
+	{
+		id: 'portret-strik',
+		title: 'Portret met strik',
+		year: '2023',
+		medium: 'potlood op papier',
+		alt: 'Portret in driekwartprofiel met strik en jas',
+		...drawingPaths('portret-strik', 'image006.jpg'),
+		srcWidth: 3057,
+		srcHeight: 4398,
+		rotation: 4,
+		pos: { x: 1280, y: 90 },
+		width: 300
 	}
 ];
 
