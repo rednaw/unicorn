@@ -27,6 +27,9 @@ Original work by the artist. Pre-scans only (low resolution; final scans pending
 | *Studie I*         | 2023 | potlood op papier |
 | *Buste in profiel* | 2023 | potlood op papier |
 | *Maskers*          | 2023 | potlood op papier |
+| *Lachend portret*  | 2023 | potlood op papier |
+| *Profielstudie*    | 2023 | potlood op papier |
+| *Portret met strik* | 2023 | potlood op papier |
 
 
 ## Audio
