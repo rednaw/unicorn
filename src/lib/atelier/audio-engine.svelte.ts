@@ -50,15 +50,38 @@ export function initAudio(): void {
 /** Resume the audio graph on user gesture — do not start any recordings. */
 export function unlock(): void {
 	if (!ctx) return;
-	if (ctx.state !== 'running') void ctx.resume().catch(() => {});
-	if (engine.unlocked) return;
-	engine.unlocked = true;
-	// Inaudible blip to satisfy autoplay policy without advancing track positions.
-	const buffer = ctx.createBuffer(1, 1, 22050);
-	const src = ctx.createBufferSource();
-	src.buffer = buffer;
-	src.connect(ctx.destination);
-	src.start();
+	ensureContextRunning();
+	const firstUnlock = !engine.unlocked;
+	if (firstUnlock) {
+		engine.unlocked = true;
+		// Inaudible blip to satisfy autoplay policy without advancing track positions.
+		const buffer = ctx.createBuffer(1, 1, 22050);
+		const src = ctx.createBufferSource();
+		src.buffer = buffer;
+		src.connect(ctx.destination);
+		src.start();
+	}
+	// iOS Safari: each <audio> must start once during a user gesture before later
+	// programmatic play() works. Re-prime when all tracks are paused (gesture refresh).
+	if (firstUnlock || nodes.every((n) => n.el.paused)) {
+		primeMediaElements();
+	}
+}
+
+function ensureContextRunning(): void {
+	if (ctx && ctx.state !== 'running') void ctx.resume().catch(() => {});
+}
+
+/** Play/pause each track once during unlock — unlocks iOS media playback. */
+function primeMediaElements(): void {
+	for (const n of nodes) {
+		void n.el.play().then(() => {
+			n.el.pause();
+			try {
+				n.el.currentTime = 0;
+			} catch {}
+		}).catch(() => {});
+	}
 }
 
 export function enterSpatial(): void {
@@ -95,6 +118,7 @@ export function applySpatial(i: number, gain: number, pan: number): void {
 	n.panner?.pan.setTargetAtTime(pan, now, ATELIER_AUDIO.rampTimeSec);
 
 	if (audible) {
+		ensureContextRunning();
 		if (n.el.paused) {
 			if (n.el.ended) n.el.currentTime = 0;
 			void n.el.play().catch(() => {});

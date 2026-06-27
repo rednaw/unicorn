@@ -5,9 +5,13 @@
 	import { initAudio, unlock } from '$lib/atelier/audio-engine.svelte';
 	import CachedDrawingImg from '$lib/drawing/CachedDrawingImg.svelte';
 
-	function onPlatePointerDown(drawing: (typeof drawings)[number]) {
+	function prepareAudio() {
 		initAudio();
 		unlock();
+	}
+
+	function onPlatePointerDown(drawing: (typeof drawings)[number]) {
+		prepareAudio();
 		void cacheAsset(drawing.thumb);
 		void cacheAsset(drawing.src);
 	}
@@ -27,6 +31,7 @@
 					href="{base}/atelier/?focus={drawing.id}"
 					aria-label="{drawing.title} — werktafel"
 					onpointerdown={() => onPlatePointerDown(drawing)}
+					onclick={() => prepareAudio()}
 				>
 					<div class="plate__frame">
 						<CachedDrawingImg
