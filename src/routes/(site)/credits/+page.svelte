@@ -12,16 +12,17 @@
 	<BackLink />
 
 	<header class="credits__header">
+		<p class="credits__artist">{artist.name}</p>
 		<h1 class="credits__title">Colofon</h1>
 		<p class="credits__lead">
-			De maker van de tekeningen en opnames op deze site is dezelfde persoon.
+			{artist.name} is de maker van de tekeningen en opnames op deze site.
 		</p>
 	</header>
 
 	<section class="credits__section">
 		<h2>Rechten</h2>
 		<p>
-			© 2023–2026 de maker. Alle rechten voorbehouden.
+			© 2023–2026 {artist.name}. Alle rechten voorbehouden.
 		</p>
 		<p>
 			Dit is een persoonlijke site, bedoeld om te bekijken — geen bibliotheek en
@@ -52,7 +53,7 @@
 				<li>
 					<em>{track.title}</em>
 					<span class="credits__meta">{track.composer}</span>
-					<span class="credits__meta">eigen opname</span>
+					<span class="credits__meta">eigen opname · {artist.name}</span>
 				</li>
 			{/each}
 		</ul>
@@ -84,14 +85,26 @@
 
 	.credits__header {
 		margin-bottom: 2rem;
+		text-align: center;
+		padding-top: 0.25rem;
+	}
+
+	.credits__artist {
+		font-family: var(--font-museum);
+		font-size: clamp(1.35rem, 4vw, 1.65rem);
+		font-weight: 400;
+		letter-spacing: 0.04em;
+		color: var(--color-ink);
+		margin: 0 0 0.35rem;
 	}
 
 	.credits__title {
-		font-family: var(--font-museum);
-		font-size: clamp(1.5rem, 4vw, 1.85rem);
-		font-weight: 400;
-		font-style: italic;
-		color: var(--color-ink);
+		font-family: var(--font-sans);
+		font-size: 0.65rem;
+		font-weight: 500;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+		color: var(--color-ink-muted);
 		margin: 0 0 0.75rem;
 	}
 
