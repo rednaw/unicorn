@@ -57,6 +57,17 @@
 			{/each}
 		</ul>
 	</section>
+
+	<section class="credits__section credits__section--last">
+		<h2>Atelier</h2>
+		<p>
+			De geluidsmarkeringen op de werken gebruiken Francis Barrauds schilderij
+			<em>His Master’s Voice</em> (1898), vrij van auteursrecht, via
+			<a href="https://commons.wikimedia.org/wiki/File:His_Master%27s_Voice.jpg"
+				>Wikimedia Commons</a
+			>. Niet het moderne HMV/RCA-handelsmerk.
+		</p>
+	</section>
 </article>
 
 <style>
@@ -104,6 +115,18 @@
 
 	.credits__section p {
 		margin: 0 0 0.75rem;
+	}
+
+	.credits__section--last {
+		margin-bottom: 0;
+	}
+
+	.credits__section a {
+		color: var(--color-ink-soft);
+	}
+
+	.credits__section a:hover {
+		color: var(--color-ink);
 	}
 
 	.credits__list {
