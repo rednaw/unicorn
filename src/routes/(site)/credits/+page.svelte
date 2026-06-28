@@ -12,25 +12,11 @@
 	<BackLink />
 
 	<header class="credits__header">
-		<p class="credits__artist">{artist.name}</p>
-		<h1 class="credits__title">Colofon</h1>
+		<h1 class="credits__artist">{artist.name}</h1>
 		<p class="credits__lead">
-			{artist.name} is de maker van de tekeningen en opnames op deze site.
+			{artist.name} tekent op papier en speelt Chopin — tekeningen en opnames, hier bij elkaar.
 		</p>
 	</header>
-
-	<section class="credits__section">
-		<h2>Rechten</h2>
-		<p>
-			© 2023–2026 {artist.name}. Alle rechten voorbehouden.
-		</p>
-		<p>
-			Dit is een persoonlijke site, bedoeld om te bekijken — geen bibliotheek en
-			niet bedoeld om bestanden te delen of te hergebruiken. Tekeningen en
-			opnames mogen niet worden gekopieerd, herpubliceerd of gebruikt zonder
-			voorafgaande schriftelijke toestemming.
-		</p>
-	</section>
 
 	<section class="credits__section">
 		<h2>Tekeningen</h2>
@@ -46,8 +32,8 @@
 	</section>
 
 	<section class="credits__section">
-		<h2>Geluid</h2>
-		<p>Composities van Chopin zijn vrij van auteursrecht. Opnames zijn afzonderlijke werken.</p>
+		<h2>Opnames</h2>
+		<p>Composities van Chopin zijn vrij van auteursrecht.</p>
 		<ul class="credits__list">
 			{#each tracks as track (track.id)}
 				<li>
@@ -59,16 +45,30 @@
 		</ul>
 	</section>
 
-	<section class="credits__section credits__section--last">
+	<section class="credits__section">
 		<h2>Atelier</h2>
 		<p>
-			De geluidsmarkeringen op de werken gebruiken Francis Barrauds schilderij
+			De plaquettes op werken met muziek verwijzen naar Francis Barrauds schilderij
 			<em>His Master’s Voice</em> (1898), vrij van auteursrecht, via
 			<a href="https://commons.wikimedia.org/wiki/File:His_Master%27s_Voice.jpg"
 				>Wikimedia Commons</a
 			>. Niet het moderne HMV/RCA-handelsmerk.
 		</p>
 	</section>
+
+  <section class="credits__section  credits__section--last">
+		<h2>Rechten</h2>
+		<p>
+			© 2023–2026 {artist.name}. Alle rechten voorbehouden.
+		</p>
+		<p>
+			Dit is een persoonlijke site, bedoeld om te bekijken — geen bibliotheek en
+			niet bedoeld om bestanden te delen of te hergebruiken. Tekeningen en
+			opnames mogen niet worden gekopieerd, herpubliceerd of gebruikt zonder
+			voorafgaande schriftelijke toestemming.
+		</p>
+	</section>
+
 </article>
 
 <style>
@@ -96,16 +96,6 @@
 		letter-spacing: 0.04em;
 		color: var(--color-ink);
 		margin: 0 0 0.35rem;
-	}
-
-	.credits__title {
-		font-family: var(--font-sans);
-		font-size: 0.65rem;
-		font-weight: 500;
-		letter-spacing: 0.16em;
-		text-transform: uppercase;
-		color: var(--color-ink-muted);
-		margin: 0 0 0.75rem;
 	}
 
 	.credits__lead {
