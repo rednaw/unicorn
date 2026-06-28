@@ -1,4 +1,4 @@
-# Unicorn — V. Solenne
+# Unicorn — RvA
 
 A SvelteKit site for one artist's drawings and piano recordings.
 The **home page** is a door sketch — click through to the **atelier**, an immersive

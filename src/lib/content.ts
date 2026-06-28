@@ -61,7 +61,7 @@ const drawingPaths = (_id: string, file: string) => {
 };
 
 export const artist = {
-	name: 'V. Solenne',
+	name: 'RvA',
 	tagline: 'tekeningen en muziek'
 };
 

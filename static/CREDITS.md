@@ -1,6 +1,6 @@
 # Credits & rights
 
-**V. Solenne** is a working name (pseudonym) and may change. The author of the
+**RvA** is a working name (pseudonym) and may change. The author of the
 drawings and of the original recordings listed below is the same person.
 
 This is a **personal site** for public viewing. It is not a stock library and not intended for sharing or reuse of its files.
