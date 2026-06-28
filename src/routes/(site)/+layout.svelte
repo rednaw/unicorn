@@ -24,14 +24,19 @@
 	});
 
 	const isAtelier = $derived(page.route.id === '/(site)/atelier');
+	const isHall = $derived(page.route.id === '/(site)');
 </script>
 
-<div class="site" class:site--immersive={isAtelier}>
+<div
+	class="site"
+	class:site--immersive={isAtelier}
+	class:site--hall={isHall}
+>
 	{#if !isAtelier}
 		<header class="site__header">
 			<div class="site__brand">
 				<h1 class="site__brand-title">
-					<a href="{base}/">{artist.name}</a>
+					<a href="{base}/credits/">{artist.name}</a>
 				</h1>
 			</div>
 		</header>
@@ -40,12 +45,6 @@
 	<main class="site__main" class:site__main--immersive={isAtelier}>
 		{@render children()}
 	</main>
-
-	{#if !isAtelier}
-		<footer class="site__footer">
-			<a href="{base}/credits/">colofon</a>
-		</footer>
-	{/if}
 </div>
 
 <style>
@@ -54,6 +53,38 @@
 		color: #1d1a16;
 		min-height: 100vh;
 		font-family: var(--font-museum);
+	}
+
+	.site--hall {
+		background: #fff;
+		color: #0a0a0a;
+		display: flex;
+		flex-direction: column;
+		min-height: 0;
+		height: 100vh;
+		height: 100svh;
+		overflow: hidden;
+	}
+
+	.site--hall .site__header {
+		flex: 0 0 auto;
+		min-height: auto;
+		padding-block: max(0.65rem, env(safe-area-inset-top, 0px)) 0.65rem;
+		border-bottom-color: rgba(0, 0, 0, 0.1);
+	}
+
+	.site--hall .site__brand-title {
+		font-style: normal;
+		letter-spacing: 0.02em;
+	}
+
+	.site--hall .site__main {
+		display: flex;
+		flex-direction: column;
+		flex: 1 1 auto;
+		min-height: 0;
+		overflow: hidden;
+		padding-bottom: env(safe-area-inset-bottom, 0px);
 	}
 
 	.site--immersive {
@@ -105,25 +136,5 @@
 	.site__main--immersive {
 		padding-bottom: 0;
 		height: 100%;
-	}
-
-	.site__footer {
-		display: flex;
-		justify-content: center;
-		padding: 0 1rem 1.5rem;
-		font-family: var(--font-sans);
-		font-size: 0.75rem;
-		letter-spacing: 0.12em;
-		text-transform: lowercase;
-	}
-
-	.site__footer a {
-		color: var(--color-ink-muted);
-		text-decoration: none;
-		transition: color 200ms ease;
-	}
-
-	.site__footer a:hover {
-		color: var(--color-ink-soft);
 	}
 </style>

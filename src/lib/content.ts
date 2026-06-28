@@ -62,7 +62,7 @@ const drawingPaths = (_id: string, file: string) => {
 
 export const artist = {
 	name: 'V. Solenne',
-	tagline: 'tekeningen en geluid'
+	tagline: 'tekeningen en muziek'
 };
 
 /** Atelier layout: scattered triangle on desk — positions for tablet/desktop. */
@@ -77,14 +77,8 @@ export const drawings: Drawing[] = [
 		srcWidth: 2999,
 		srcHeight: 4441,
 		rotation: -2,
-		pos: { x: 75, y: 378 },
-		width: 280,
-		track: {
-			id: 'chopin-ballade-4',
-			title: 'Ballade nr. 4 in f klein, op. 52',
-			composer: 'Frédéric Chopin',
-			src: asset('/audio/chopin-ballade-opus-52-no-4.m4a')
-		}
+		pos: { x: 1180, y: 1030 },
+		width: 280
 	},
 	{
 		id: 'buste-profiel',
@@ -116,7 +110,13 @@ export const drawings: Drawing[] = [
 		srcHeight: 4398,
 		rotation: -4,
 		pos: { x: 400, y: 62 },
-		width: 280
+		width: 280,
+		track: {
+			id: 'chopin-ballade-4',
+			title: 'Ballade nr. 4 in f klein, op. 52',
+			composer: 'Frédéric Chopin',
+			src: asset('/audio/chopin-ballade-opus-52-no-4.m4a')
+		}
 	},
 	{
 		id: 'lachend-portret',
