@@ -9,7 +9,7 @@ type InteractionMode = 'idle' | 'pending-pan' | 'panning' | 'pinching';
 type PinchState = { midX: number; midY: number; dist: number; left: number; top: number };
 
 	export type AtelierGestureDeps = {
-	unlock: () => void;
+	unlock: () => void | Promise<void>;
 	armSpatial: () => void;
 	releaseNearLock: () => void;
 	onPrefetchDrawing: (id: string) => void;

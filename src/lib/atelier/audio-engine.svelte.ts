@@ -48,9 +48,10 @@ export function initAudio(): void {
 }
 
 /** Resume the audio graph on user gesture — do not start any recordings. */
-export function unlock(): void {
+export async function unlock(): Promise<void> {
 	if (!ctx) return;
-	ensureContextRunning();
+	if (!(await ensureContextRunning())) return;
+
 	const firstUnlock = !engine.unlocked;
 	if (firstUnlock) {
 		engine.unlocked = true;
@@ -64,24 +65,37 @@ export function unlock(): void {
 	// iOS Safari: each <audio> must start once during a user gesture before later
 	// programmatic play() works. Re-prime when all tracks are paused (gesture refresh).
 	if (firstUnlock || nodes.every((n) => n.el.paused)) {
-		primeMediaElements();
+		await primeMediaElements();
 	}
 }
 
-function ensureContextRunning(): void {
-	if (ctx && ctx.state !== 'running') void ctx.resume().catch(() => {});
+async function ensureContextRunning(): Promise<boolean> {
+	const audio = ctx;
+	if (!audio) return false;
+	if (audio.state === 'running') return true;
+	try {
+		await audio.resume();
+		return audio.state !== 'suspended';
+	} catch {
+		return false;
+	}
 }
 
 /** Play/pause each track once during unlock — unlocks iOS media playback. */
-function primeMediaElements(): void {
-	for (const n of nodes) {
-		void n.el.play().then(() => {
-			n.el.pause();
-			try {
-				n.el.currentTime = 0;
-			} catch {}
-		}).catch(() => {});
-	}
+async function primeMediaElements(): Promise<void> {
+	await Promise.all(
+		nodes.map((n) =>
+			n.el
+				.play()
+				.then(() => {
+					n.el.pause();
+					try {
+						n.el.currentTime = 0;
+					} catch {}
+				})
+				.catch(() => {})
+		)
+	);
 }
 
 export function enterSpatial(): void {
@@ -117,8 +131,7 @@ export function applySpatial(i: number, gain: number, pan: number): void {
 	n.gain.gain.setTargetAtTime(effectiveGain, now, ATELIER_AUDIO.rampTimeSec);
 	n.panner?.pan.setTargetAtTime(pan, now, ATELIER_AUDIO.rampTimeSec);
 
-	if (audible) {
-		ensureContextRunning();
+	if (audible && ctx.state === 'running') {
 		if (n.el.paused) {
 			if (n.el.ended) n.el.currentTime = 0;
 			void n.el.play().catch(() => {});
