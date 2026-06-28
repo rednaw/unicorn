@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { base } from '$app/paths';
+	import BackLink from '$lib/atelier/BackLink.svelte';
 	import { artist, drawings, tracks } from '$lib/content';
 </script>
 
@@ -9,10 +9,11 @@
 </svelte:head>
 
 <article class="credits">
+	<BackLink />
+
 	<header class="credits__header">
 		<h1 class="credits__title">Colofon</h1>
 		<p class="credits__lead">
-			<strong>{artist.name}</strong> is een werknaam (pseudoniem) en kan nog wijzigen.
 			De maker van de tekeningen en opnames op deze site is dezelfde persoon.
 		</p>
 	</header>
@@ -28,12 +29,11 @@
 			opnames mogen niet worden gekopieerd, herpubliceerd of gebruikt zonder
 			voorafgaande schriftelijke toestemming.
 		</p>
-		<p class="credits__note">De site is nog in aanbouw; sommige bestanden zijn tijdelijk.</p>
 	</section>
 
 	<section class="credits__section">
 		<h2>Tekeningen</h2>
-		<p>Origineel werk. Pre-scans (lage resolutie; definitieve scans volgen).</p>
+		<p>Origineel werk.</p>
 		<ul class="credits__list">
 			{#each drawings as drawing (drawing.id)}
 				<li>
@@ -57,10 +57,6 @@
 			{/each}
 		</ul>
 	</section>
-
-	<p class="credits__back">
-		<a href="{base}/">← terug</a>
-	</p>
 </article>
 
 <style>
@@ -110,11 +106,6 @@
 		margin: 0 0 0.75rem;
 	}
 
-	.credits__note {
-		font-size: 0.95rem;
-		opacity: 0.85;
-	}
-
 	.credits__list {
 		list-style: none;
 		padding: 0;
@@ -137,22 +128,5 @@
 	.credits__meta {
 		font-size: 0.9rem;
 		opacity: 0.8;
-	}
-
-	.credits__back {
-		margin: 2.5rem 0 0;
-		font-family: var(--font-sans);
-		font-size: 0.9rem;
-	}
-
-	.credits__back a {
-		color: inherit;
-		text-decoration: none;
-		opacity: 0.7;
-		transition: opacity 200ms ease;
-	}
-
-	.credits__back a:hover {
-		opacity: 1;
 	}
 </style>

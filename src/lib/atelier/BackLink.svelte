@@ -2,7 +2,7 @@
 	import { base } from '$app/paths';
 </script>
 
-<a class="back" href="{base}/" aria-label="Terug naar de galerij">
+<a class="back" href="{base}/" aria-label="Terug">
 	<span aria-hidden="true">←</span>
 </a>
 

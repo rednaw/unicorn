@@ -107,10 +107,10 @@
 </script>
 
 <svelte:head>
-	<title>De werktafel — {artist.name}</title>
+	<title>De kamer — {artist.name}</title>
 	<meta
 		name="description"
-		content="Verken de tekeningen op de werktafel — zoom, pan en ontdek de bijbehorende muziek."
+		content="Tekeningen op tafel — zoom, pan en ontdek de bijbehorende muziek."
 	/>
 </svelte:head>
 

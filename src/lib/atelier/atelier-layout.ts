@@ -13,9 +13,9 @@ const DESK_MARGIN = LEATHER_PAD_INSET + CONTENT_MARGIN;
 /** Phone: vertical column with slight horizontal stagger — generous gaps between mats. */
 const STACKED_POSITIONS: Record<string, { x: number; y: number }> = {
 	maskers: { x: 108, y: 52 },
-	'studie-i': { x: 44, y: 540 },
-	'buste-profiel': { x: 180, y: 1080 },
-	'lachend-portret': { x: 72, y: 1620 },
+	'buste-profiel': { x: 180, y: 540 },
+	'lachend-portret': { x: 72, y: 1080 },
+	'studie-i': { x: 44, y: 1620 },
 	profielstudie: { x: 156, y: 2160 },
 	'portret-strik': { x: 48, y: 2700 }
 };
