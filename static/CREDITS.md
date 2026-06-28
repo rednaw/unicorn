@@ -7,7 +7,7 @@ This is a **personal site** for public viewing. It is not a stock library and no
 
 ## Rights
 
-© 2023–2026 the artist. All rights reserved.
+© 2023–2026 RvA. All rights reserved.
 
 Drawings and audio recordings on this site may **not** be copied, downloaded for
 redistribution, republished, or used in other works without prior written
