@@ -34,6 +34,8 @@
 </svelte:head>
 
 <section class="threshold" aria-label="Voor de deur">
+	<a class="threshold__colofon" href="{base}/credits/">colofon</a>
+
 	{#if maskers}
 		<a
 			class="threshold__frame"
@@ -58,6 +60,37 @@
 		overflow: hidden;
 		padding-inline: max(0.75rem, env(safe-area-inset-left, 0px))
 			max(0.75rem, env(safe-area-inset-right, 0px));
+	}
+
+	.threshold__colofon {
+		position: absolute;
+		right: max(0.75rem, env(safe-area-inset-right, 0px));
+		bottom: 0.65rem;
+		z-index: 3;
+		padding: 0.2rem 0.45rem;
+		border-radius: 2px;
+		font-family: var(--font-sans);
+		font-size: 0.7rem;
+		letter-spacing: 0.14em;
+		text-transform: lowercase;
+		color: rgba(251, 250, 246, 0.95);
+		background: rgba(26, 24, 20, 0.42);
+		backdrop-filter: blur(6px);
+		-webkit-backdrop-filter: blur(6px);
+		text-decoration: none;
+		transition: background 200ms ease, color 200ms ease;
+	}
+
+	.threshold__colofon:hover,
+	.threshold__colofon:focus-visible {
+		color: #fff;
+		background: rgba(26, 24, 20, 0.58);
+		outline: none;
+	}
+
+	.threshold__colofon:focus-visible {
+		text-decoration: underline;
+		text-underline-offset: 0.2em;
 	}
 
 	.threshold__frame {
