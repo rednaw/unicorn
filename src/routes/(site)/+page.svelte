@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { base } from '$app/paths';
+	import { goto } from '$app/navigation';
 	import { artist, drawings } from '$lib/content';
 	import { cacheAsset } from '$lib/drawing/asset-cache';
 	import { initAudio, unlock } from '$lib/atelier/audio-engine.svelte';
@@ -9,12 +10,19 @@
 	const doorSketch = `${base}/hall/door-ajar-sketch.webp`;
 	const maskers = drawings.find((d) => d.id === 'maskers');
 
-	function onDoorPointerDown() {
-		initAudio();
-		unlock();
+	function prefetchMaskers() {
 		if (!maskers) return;
 		void cacheAsset(maskers.thumb);
 		void cacheAsset(maskers.src);
+	}
+
+	async function onDoorClick(e: MouseEvent) {
+		if (!maskers) return;
+		e.preventDefault();
+		initAudio();
+		await unlock();
+		prefetchMaskers();
+		await goto(`${base}/atelier/?focus=${maskers.id}`);
 	}
 </script>
 
@@ -41,7 +49,8 @@
 			class="threshold__frame"
 			href="{base}/atelier/?focus={maskers.id}"
 			aria-label="Naar binnen — van dichtbij"
-			onpointerdown={onDoorPointerDown}
+			onpointerdown={prefetchMaskers}
+			onclick={onDoorClick}
 		>
 			{@render doorImage()}
 		</a>
