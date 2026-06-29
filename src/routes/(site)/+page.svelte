@@ -16,7 +16,8 @@
 	async function onDoorClick(e: MouseEvent) {
 		e.preventDefault();
 		initAudio();
-		await unlock();
+		// Prime the entry track within this gesture so it can play once inside the atelier (iOS).
+		await unlock([entryDrawingId]);
 		prefetchEntryDrawing();
 		await goto(`${base}/atelier/?focus=${entryDrawingId}`);
 	}

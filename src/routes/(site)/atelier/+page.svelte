@@ -58,8 +58,18 @@
 		nearLockId = null;
 	}
 
+	/** Tracks the visitor is at/approaching — primed on gesture so lazy elements can play (iOS). */
+	function nearbyAudioIds(): string[] {
+		const ids: string[] = [];
+		if (spatial.dominantAudioDrawingId) ids.push(spatial.dominantAudioDrawingId);
+		if (spatial.nearDrawingId && spatial.nearDrawingId !== spatial.dominantAudioDrawingId) {
+			ids.push(spatial.nearDrawingId);
+		}
+		return ids;
+	}
+
 	const gestures = createAtelierGestures(view, {
-		unlock,
+		unlock: () => unlock(nearbyAudioIds()),
 		armSpatial,
 		releaseNearLock,
 		onPrefetchDrawing: (id) => requestDrawing(id, 'full'),
@@ -68,7 +78,7 @@
 	});
 
 	function focusDrawingById(id: string) {
-		unlock();
+		unlock([id]);
 		focusedId = id;
 		nearLockId = id;
 		requestDrawing(id, 'full');

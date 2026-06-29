@@ -1,4 +1,4 @@
-import { applySpatial, engine, setNear } from './audio-engine.svelte';
+import { applyMix, engine, setNear } from './audio-engine.svelte';
 import { computeSpatialMix } from './spatial-mix';
 import type { AtelierView } from './view.svelte';
 
@@ -13,9 +13,7 @@ export function createSpatialAudioLoop(view: AtelierView) {
 		if (document.hidden || view.metrics.width === 0) return;
 
 		const mix = computeSpatialMix(view.getView(), view.metrics, view.layoutMode);
-		for (const { audioIndex, volume, pan } of mix.drawings) {
-			applySpatial(audioIndex, volume, pan);
-		}
+		applyMix(mix);
 		if (engine.armed) {
 			if (mix.nearDrawingId !== nearDrawingId) {
 				nearDrawingId = mix.nearDrawingId;

@@ -1,171 +1,269 @@
-import { audioDrawings } from '$lib/content';
+import { audioDrawings, audioIndexForDrawing } from '$lib/content';
 import { ATELIER_AUDIO } from './constants';
+import type { SpatialMixResult } from './spatial-mix';
 
 type TrackNodes = {
 	el: HTMLAudioElement;
 	gain: GainNode;
 	panner: StereoPannerNode | null;
+	/** When set, pause the element once this timestamp passes (lets the gain fade out first). */
+	pauseAt: number | null;
 };
 
-export const engine = $state({
-	ready: false,
-	unlocked: false,
-	/** When false, spatial mix runs but tracks stay silent (overview / direct entry). */
-	armed: false,
-	near: { drawingId: null as string | null, level: 0 }
-});
+/** Grace period before a faded-out (non-dominant) track is paused, so the ramp is audible. */
+const FADE_OUT_PAUSE_SEC = 0.3;
 
-let ctx: AudioContext | undefined;
-let nodes: TrackNodes[] = [];
+/**
+ * Spatial audio engine. Built as a factory but used as one shared instance (`audioEngine`)
+ * because the autoplay/iOS unlock happens on the home door-click and must carry into the
+ * atelier through the *same* `AudioContext` — SvelteKit's client-side navigation keeps the
+ * document (and context) alive, so a fresh per-page instance would lose the unlock.
+ *
+ * Tracks are created lazily by proximity (`ensureTrack`) and only the dominant one is audible
+ * (solo-near), so a floor of many recordings never downloads every `<audio>` upfront.
+ */
+export function createAudioEngine() {
+	const engine = $state({
+		ready: false,
+		unlocked: false,
+		/** When false, the spatial mix runs but tracks stay silent (overview / direct entry). */
+		armed: false,
+		near: { drawingId: null as string | null, level: 0 }
+	});
 
-export function initAudio(): void {
-	if (engine.ready || typeof window === 'undefined') return;
-	const Ctx: typeof AudioContext =
-		window.AudioContext ??
-		(window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-	ctx = new Ctx();
-	const canPan = typeof ctx.createStereoPanner === 'function';
+	let ctx: AudioContext | undefined;
+	let canPan = false;
+	/** Lazily-created nodes keyed by audio index — only tracks the visitor approaches exist. */
+	const nodes = new Map<number, TrackNodes>();
 
-	nodes = audioDrawings.map((d) => {
+	function initAudio(): void {
+		if (engine.ready || typeof window === 'undefined') return;
+		const Ctx: typeof AudioContext =
+			window.AudioContext ??
+			(window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+		ctx = new Ctx();
+		canPan = typeof ctx.createStereoPanner === 'function';
+		engine.ready = true;
+	}
+
+	/** Build a track's element + graph the first time it is needed; cached thereafter. */
+	function ensureTrack(index: number): TrackNodes | null {
+		if (!ctx) return null;
+		const existing = nodes.get(index);
+		if (existing) return existing;
+		const d = audioDrawings[index];
+		if (!d) return null;
+
 		const el = new Audio(d.track.src);
 		el.preload = 'metadata';
 		el.loop = false;
-		const source = ctx!.createMediaElementSource(el);
-		const gain = ctx!.createGain();
+		const source = ctx.createMediaElementSource(el);
+		const gain = ctx.createGain();
 		gain.gain.value = 0;
 		let panner: StereoPannerNode | null = null;
 		if (canPan) {
-			panner = ctx!.createStereoPanner();
-			source.connect(gain).connect(panner).connect(ctx!.destination);
+			panner = ctx.createStereoPanner();
+			source.connect(gain).connect(panner).connect(ctx.destination);
 		} else {
-			source.connect(gain).connect(ctx!.destination);
+			source.connect(gain).connect(ctx.destination);
 		}
 		el.pause();
-		return { el, gain, panner };
-	});
-
-	engine.ready = true;
-}
-
-/** Resume the audio graph on user gesture — do not start any recordings. */
-export async function unlock(): Promise<void> {
-	if (!ctx) return;
-	if (!(await ensureContextRunning())) return;
-
-	const firstUnlock = !engine.unlocked;
-	if (firstUnlock) {
-		engine.unlocked = true;
-		// Inaudible blip to satisfy autoplay policy without advancing track positions.
-		const buffer = ctx.createBuffer(1, 1, 22050);
-		const src = ctx.createBufferSource();
-		src.buffer = buffer;
-		src.connect(ctx.destination);
-		src.start();
+		const track: TrackNodes = { el, gain, panner, pauseAt: null };
+		nodes.set(index, track);
+		return track;
 	}
-	// iOS Safari: each <audio> must start once during a user gesture before later
-	// programmatic play() works. Re-prime when all tracks are paused (gesture refresh).
-	if (firstUnlock || nodes.every((n) => n.el.paused)) {
-		await primeMediaElements();
+
+	function indicesFor(drawingIds: Iterable<string>): number[] {
+		const out: number[] = [];
+		for (const id of drawingIds) {
+			const i = audioIndexForDrawing(id);
+			if (i >= 0) out.push(i);
+		}
+		return out;
 	}
-}
 
-async function ensureContextRunning(): Promise<boolean> {
-	const audio = ctx;
-	if (!audio) return false;
-	if (audio.state === 'running') return true;
-	try {
-		await audio.resume();
-		return audio.state !== 'suspended';
-	} catch {
-		return false;
+	/**
+	 * Resume the graph on a user gesture and (iOS) play/pause the named tracks once so they can
+	 * be started programmatically later. `primeDrawingIds` are the pieces the visitor is near or
+	 * entering — priming them within the gesture is what lets lazy tracks play on iOS.
+	 */
+	async function unlock(primeDrawingIds: string[] = []): Promise<void> {
+		if (!ctx) return;
+		if (!(await ensureContextRunning())) return;
+
+		const firstUnlock = !engine.unlocked;
+		if (firstUnlock) {
+			engine.unlocked = true;
+			// Inaudible blip to satisfy autoplay policy without advancing track positions.
+			const buffer = ctx.createBuffer(1, 1, 22050);
+			const src = ctx.createBufferSource();
+			src.buffer = buffer;
+			src.connect(ctx.destination);
+			src.start();
+		}
+
+		const toPrime = indicesFor(primeDrawingIds);
+		// Re-prime when everything is paused (gesture refresh) so a freshly-near track works on iOS.
+		const allPaused = [...nodes.values()].every((n) => n.el.paused);
+		if (toPrime.length && (firstUnlock || allPaused)) {
+			await primeTracks(toPrime);
+		}
 	}
-}
 
-/** Play/pause each track once during unlock — unlocks iOS media playback. */
-async function primeMediaElements(): Promise<void> {
-	await Promise.all(
-		nodes.map((n) =>
-			n.el
-				.play()
-				.then(() => {
-					n.el.pause();
-					try {
-						n.el.currentTime = 0;
-					} catch {}
-				})
-				.catch(() => {})
-		)
-	);
-}
-
-export function enterSpatial(): void {
-	initAudio();
-	engine.armed = false;
-	engine.near = { drawingId: null, level: 0 };
-	pauseAllTracks();
-	// Each atelier visit starts recordings from the top — otherwise a track left
-	// paused mid-recording would resume from its old position on the next visit.
-	rewindAllTracks();
-}
-
-function rewindAllTracks(): void {
-	for (const n of nodes) {
+	async function ensureContextRunning(): Promise<boolean> {
+		const audio = ctx;
+		if (!audio) return false;
+		if (audio.state === 'running') return true;
 		try {
-			n.el.currentTime = 0;
-		} catch {}
-	}
-}
-
-/** Allow proximity audio — set on gallery focus entry or after the visitor explores. */
-export function armSpatial(): void {
-	engine.armed = true;
-}
-
-export function applySpatial(i: number, gain: number, pan: number): void {
-	const n = nodes[i];
-	if (!n || !ctx) return;
-	const now = ctx.currentTime;
-	const effectiveGain = engine.armed ? gain : 0;
-	const audible = engine.unlocked && engine.armed && gain >= ATELIER_AUDIO.playThreshold;
-
-	n.gain.gain.setTargetAtTime(effectiveGain, now, ATELIER_AUDIO.rampTimeSec);
-	n.panner?.pan.setTargetAtTime(pan, now, ATELIER_AUDIO.rampTimeSec);
-
-	if (audible && ctx.state === 'running') {
-		if (n.el.paused) {
-			if (n.el.ended) n.el.currentTime = 0;
-			void n.el.play().catch(() => {});
+			await audio.resume();
+			return audio.state !== 'suspended';
+		} catch {
+			return false;
 		}
-	} else if (!n.el.paused) {
-		n.el.pause();
 	}
-}
 
-export function pauseAllTracks(): void {
-	for (const n of nodes) {
-		if (!n.el.paused) n.el.pause();
+	/** Play/pause each named track once during the unlock gesture — unlocks iOS media playback. */
+	async function primeTracks(indices: number[]): Promise<void> {
+		await Promise.all(
+			indices.map((i) => {
+				const n = ensureTrack(i);
+				if (!n) return Promise.resolve();
+				return n.el
+					.play()
+					.then(() => {
+						n.el.pause();
+						try {
+							n.el.currentTime = 0;
+						} catch {}
+					})
+					.catch(() => {});
+			})
+		);
 	}
-	if (ctx) {
+
+	function enterSpatial(): void {
+		initAudio();
+		engine.armed = false;
+		engine.near = { drawingId: null, level: 0 };
+		pauseAllTracks();
+		// Each atelier visit starts recordings from the top — otherwise a track left
+		// paused mid-recording would resume from its old position on the next visit.
+		rewindAllTracks();
+	}
+
+	function rewindAllTracks(): void {
+		for (const n of nodes.values()) {
+			try {
+				n.el.currentTime = 0;
+			} catch {}
+		}
+	}
+
+	/** Allow proximity audio — set on gallery focus entry or after the visitor explores. */
+	function armSpatial(): void {
+		engine.armed = true;
+	}
+
+	/**
+	 * Solo-near: drive only the dominant (loudest-by-proximity) track audible; ramp every other
+	 * existing track to silence and pause it after a short fade. Non-dominant tracks are never
+	 * created here, so only pieces the visitor reaches ever fetch their recording.
+	 */
+	function applyMix(mix: SpatialMixResult): void {
+		if (!ctx) return;
 		const now = ctx.currentTime;
-		for (const n of nodes) {
-			n.gain.gain.cancelScheduledValues(now);
-			n.gain.gain.setValueAtTime(0, now);
+		const { rampTimeSec, playThreshold } = ATELIER_AUDIO;
+
+		const dominantId = engine.armed ? mix.dominantAudioDrawingId : null;
+		const dominantIndex = dominantId == null ? -1 : audioIndexForDrawing(dominantId);
+		const dominantMix =
+			dominantIndex >= 0 ? mix.drawings.find((d) => d.audioIndex === dominantIndex) : undefined;
+
+		if (dominantMix) {
+			const n = ensureTrack(dominantIndex);
+			if (n) {
+				n.pauseAt = null;
+				n.gain.gain.setTargetAtTime(dominantMix.volume, now, rampTimeSec);
+				n.panner?.pan.setTargetAtTime(dominantMix.pan, now, rampTimeSec);
+				const audible = engine.unlocked && dominantMix.volume >= playThreshold;
+				if (audible && ctx.state === 'running') {
+					if (n.el.paused) {
+						if (n.el.ended) n.el.currentTime = 0;
+						void n.el.play().catch(() => {});
+					}
+				} else if (!n.el.paused) {
+					n.el.pause();
+				}
+			}
+		}
+
+		for (const [index, n] of nodes) {
+			if (index === dominantIndex && dominantMix) continue;
+			n.gain.gain.setTargetAtTime(0, now, rampTimeSec);
+			if (n.el.paused) {
+				n.pauseAt = null;
+			} else if (n.pauseAt == null) {
+				n.pauseAt = now + FADE_OUT_PAUSE_SEC;
+			} else if (now >= n.pauseAt) {
+				n.el.pause();
+				n.pauseAt = null;
+			}
 		}
 	}
-}
 
-export function setNear(drawingId: string | null, level: number): void {
-	if (
-		engine.near.drawingId === drawingId &&
-		Math.abs(engine.near.level - level) < 0.02
-	) {
-		return;
+	function pauseAllTracks(): void {
+		for (const n of nodes.values()) {
+			if (!n.el.paused) n.el.pause();
+			n.pauseAt = null;
+		}
+		if (ctx) {
+			const now = ctx.currentTime;
+			for (const n of nodes.values()) {
+				n.gain.gain.cancelScheduledValues(now);
+				n.gain.gain.setValueAtTime(0, now);
+			}
+		}
 	}
-	engine.near = { drawingId, level };
+
+	function setNear(drawingId: string | null, level: number): void {
+		if (engine.near.drawingId === drawingId && Math.abs(engine.near.level - level) < 0.02) {
+			return;
+		}
+		engine.near = { drawingId, level };
+	}
+
+	function leaveSpatial(): void {
+		pauseAllTracks();
+		engine.armed = false;
+		engine.near = { drawingId: null, level: 0 };
+	}
+
+	return {
+		engine,
+		initAudio,
+		ensureTrack,
+		unlock,
+		enterSpatial,
+		armSpatial,
+		applyMix,
+		pauseAllTracks,
+		setNear,
+		leaveSpatial
+	};
 }
 
-export function leaveSpatial(): void {
-	pauseAllTracks();
-	engine.armed = false;
-	engine.near = { drawingId: null, level: 0 };
-}
+export type AudioEngine = ReturnType<typeof createAudioEngine>;
+
+/** Shared instance — see `createAudioEngine` for why this is a singleton rather than per-page. */
+const audioEngine = createAudioEngine();
+
+export const engine = audioEngine.engine;
+export const initAudio = audioEngine.initAudio;
+export const ensureTrack = audioEngine.ensureTrack;
+export const unlock = audioEngine.unlock;
+export const enterSpatial = audioEngine.enterSpatial;
+export const armSpatial = audioEngine.armSpatial;
+export const applyMix = audioEngine.applyMix;
+export const pauseAllTracks = audioEngine.pauseAllTracks;
+export const setNear = audioEngine.setNear;
+export const leaveSpatial = audioEngine.leaveSpatial;

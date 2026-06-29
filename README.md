@@ -98,14 +98,16 @@ src/
       credits/+page.svelte  # colofon
       atelier/+page.svelte  # fullscreen studio canvas
   lib/
-    content.ts              # drawings (with embedded tracks) + lookups
+    content.ts              # atelier data + public API (drawings, tracks, lookups)
+    content-types.ts        # Drawing / Table / Atelier types + constants
+    content-derive.ts       # pure derivations (flatten, audio list, sharp zoom)
     drawing/
-      asset-cache.ts        # session blob cache (atelier prefetch)
-      CachedDrawingImg.svelte
+      prefetch.svelte.ts    # full-res coordinator (native <img>, serial queue)
     atelier/                # studio canvas, gestures, spatial audio
       audio-engine.svelte.ts
       view.svelte.ts, gestures.svelte.ts, …
-      Canvas.svelte, DrawingPiece.svelte, …
+      visible-drawings.ts   # viewport hit-test + coverage-based prefetch intents
+      Canvas.svelte, DrawingPiece.svelte, DrawingImg.svelte, …
 static/
   drawings/, hall/, audio/, .nojekyll, CREDITS.md
 .devcontainer/
