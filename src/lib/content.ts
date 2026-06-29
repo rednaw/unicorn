@@ -1,10 +1,9 @@
-import { base } from '$app/paths';
+import { asset } from '$app/paths';
 import {
 	atelierMaxZoom as deriveAtelierMaxZoom,
 	audioDrawingsFrom,
 	audioIndexForDrawing as deriveAudioIndex,
 	flattenAtelier,
-	maxSharpZoomForDrawing,
 	stackedDrawingOrder
 } from './content-derive';
 export type {
@@ -21,8 +20,6 @@ export {
 	SHARP_DPR
 } from './content-types';
 export { maxSharpZoomForDrawing } from './content-derive';
-
-const asset = (path: string) => `${base}${path}`;
 
 const drawingPaths = (_id: string, file: string) => {
 	const baseName = file.replace(/\.[^.]+$/, '');
