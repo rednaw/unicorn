@@ -191,6 +191,7 @@ export function createAtelierGestures(view: AtelierView, deps: AtelierGestureDep
 						e.clientY - top,
 						ATELIER_ZOOM.dblTapFactor
 					);
+					prefetchAtViewport(e.clientX - left, e.clientY - top);
 					lastTapTime = 0;
 				} else {
 					lastTapTime = now;
@@ -251,6 +252,7 @@ export function createAtelierGestures(view: AtelierView, deps: AtelierGestureDep
 			e.clientY - top,
 			current.zoom * ATELIER_ZOOM.dblTapFactor
 		);
+		prefetchAtViewport(e.clientX - left, e.clientY - top);
 	}
 
 	function onKeyDown(e: KeyboardEvent) {

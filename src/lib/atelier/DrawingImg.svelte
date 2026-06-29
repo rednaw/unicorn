@@ -1,84 +1,49 @@
 <script lang="ts">
 	import type { Drawing } from '$lib/content';
-	import { cacheAsset, peekCachedAsset } from '$lib/drawing/asset-cache';
+	import { fullReadyIds } from '$lib/drawing/prefetch.svelte';
 
 	let {
 		drawing,
-		prefetch = false,
 		viewTransitionName
 	}: {
 		drawing: Drawing;
-		/** Parent queued this piece for full-res download. */
-		prefetch?: boolean;
 		viewTransitionName?: string;
 	} = $props();
 
-	let thumbResolved = $state<string | undefined>(undefined);
-	let fullSrc = $state<string | undefined>(undefined);
-	let shouldLoadFull = $state(false);
+	let fullLoaded = $state(false);
 
-	const thumbSrc = $derived(thumbResolved ?? peekCachedAsset(drawing.thumb));
-	const originalReady = $derived(fullSrc !== undefined);
-
-	function startFullPrefetch() {
-		if (shouldLoadFull) return;
-		shouldLoadFull = true;
-	}
-
-	$effect(() => {
-		const thumb = drawing.thumb;
-		let cancelled = false;
-		void cacheAsset(thumb).then((url) => {
-			if (!cancelled) thumbResolved = url;
-		});
-		return () => {
-			cancelled = true;
-		};
-	});
-
-	$effect(() => {
-		if (prefetch) startFullPrefetch();
-	});
-
-	$effect(() => {
-		if (!shouldLoadFull || fullSrc) return;
-		let cancelled = false;
-		void cacheAsset(drawing.src).then((url) => {
-			if (!cancelled) fullSrc = url;
-		});
-		return () => {
-			cancelled = true;
-		};
-	});
+	const ready = $derived(fullReadyIds().has(drawing.id));
+	const showFull = $derived(ready || fullLoaded);
 </script>
 
 <div
 	class="atelier-drawing"
 	style:aspect-ratio="{drawing.srcWidth} / {drawing.srcHeight}"
 >
-	{#if thumbSrc}
-		<img
-			class="atelier-drawing-img atelier-drawing-img--thumb"
-			class:atelier-drawing-img--hidden={originalReady}
-			src={thumbSrc}
-			width={drawing.srcWidth}
-			height={drawing.srcHeight}
-			alt=""
-			aria-hidden="true"
-			decoding="async"
-			draggable="false"
-		/>
-	{/if}
-	{#if fullSrc}
+	<img
+		class="atelier-drawing-img atelier-drawing-img--thumb"
+		class:atelier-drawing-img--hidden={showFull}
+		src={drawing.thumb}
+		width={drawing.srcWidth}
+		height={drawing.srcHeight}
+		alt=""
+		aria-hidden="true"
+		decoding="async"
+		draggable="false"
+	/>
+	{#if showFull}
 		<img
 			class="atelier-drawing-img atelier-drawing-img--full"
-			src={fullSrc}
+			src={drawing.src}
 			width={drawing.srcWidth}
 			height={drawing.srcHeight}
 			alt={drawing.alt}
 			decoding="async"
 			draggable="false"
 			style:view-transition-name={viewTransitionName}
+			onload={() => {
+				fullLoaded = true;
+			}}
 		/>
 	{/if}
 </div>

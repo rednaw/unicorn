@@ -55,7 +55,16 @@ export function drawingAtCanvasPoint(
 	for (const d of drawings) {
 		const { width, height } = pieceBounds(d);
 		const { x, y } = posFor(d);
-		if (canvasX >= x && canvasX <= x + width && canvasY >= y && canvasY <= y + height) {
+		const rot = ((d.rotation ?? 0) * Math.PI) / 180;
+		const cx = x + width / 2;
+		const cy = y + height / 2;
+		const dx = canvasX - cx;
+		const dy = canvasY - cy;
+		const cos = Math.cos(-rot);
+		const sin = Math.sin(-rot);
+		const localX = dx * cos - dy * sin + width / 2;
+		const localY = dx * sin + dy * cos + height / 2;
+		if (localX >= 0 && localX <= width && localY >= 0 && localY <= height) {
 			return d.id;
 		}
 	}

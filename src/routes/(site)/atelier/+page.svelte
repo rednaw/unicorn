@@ -5,13 +5,13 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { drawings, artist, atelierMaxZoom } from '$lib/content';
+	import { prefetchVisibleInView, requestDrawing } from '$lib/drawing/prefetch.svelte';
 	import '$lib/atelier/backgrounds.css';
 	import BackLink from '$lib/atelier/BackLink.svelte';
 	import NearCue from '$lib/atelier/NearCue.svelte';
 	import Canvas from '$lib/atelier/Canvas.svelte';
 	import { createAtelierGestures } from '$lib/atelier/gestures.svelte';
 	import { createAtelierView } from '$lib/atelier/view.svelte';
-	import { queueDrawingPrefetch } from '$lib/atelier/drawing-prefetch';
 	import { createSpatialAudioLoop } from '$lib/atelier/spatial-audio-loop.svelte';
 	import { observeBrowserChromeInsets } from '$lib/atelier/browser-chrome-insets';
 	import { observeViewport } from '$lib/atelier/viewport-metrics';
@@ -20,7 +20,6 @@
 	let focusedId = $state<string | null>(browser ? page.url.searchParams.get('focus') : null);
 	/** Pins HUD / HMV to gallery focus until the visitor pans or zooms. */
 	let nearLockId = $state<string | null>(browser ? page.url.searchParams.get('focus') : null);
-	let prefetchIds = $state(new Set<string>());
 	let atelierEl = $state<HTMLDivElement>();
 	let viewport = $state<HTMLDivElement>();
 
@@ -31,6 +30,30 @@
 		nearLockId ?? spatial.dominantAudioDrawingId ?? spatial.nearDrawingId
 	);
 
+	let settleTimer: ReturnType<typeof setTimeout> | undefined;
+
+	function scheduleViewportPrefetch() {
+		if (!browser) return;
+		clearTimeout(settleTimer);
+		settleTimer = setTimeout(() => {
+			if (view.metrics.width === 0) return;
+			prefetchVisibleInView(
+				view.getView(),
+				view.metrics,
+				view.layoutMode,
+				(d) => view.drawingPos(d)
+			);
+		}, 200);
+	}
+
+	$effect(() => {
+		view.tx;
+		view.ty;
+		view.zoom;
+		view.layoutMode;
+		scheduleViewportPrefetch();
+	});
+
 	function releaseNearLock() {
 		nearLockId = null;
 	}
@@ -39,7 +62,7 @@
 		unlock,
 		armSpatial,
 		releaseNearLock,
-		onPrefetchDrawing: (id) => queueDrawingPrefetch(prefetchIds, id, (next) => (prefetchIds = next)),
+		onPrefetchDrawing: (id) => requestDrawing(id, 'full'),
 		onEscape: () => goto(`${base}/`),
 		viewport: () => viewport
 	});
@@ -48,7 +71,7 @@
 		unlock();
 		focusedId = id;
 		nearLockId = id;
-		queueDrawingPrefetch(prefetchIds, id, (next) => (prefetchIds = next));
+		requestDrawing(id, 'full');
 		const drawing = drawings.find((d) => d.id === id);
 		// Arm audio only once the view settles on the target — playing during the
 		// programmatic focus sweep would briefly trigger tracks the view passes over.
@@ -86,6 +109,8 @@
 				requestAnimationFrame(() => {
 					if (focusedId) focusDrawingById(focusedId);
 				});
+			} else {
+				scheduleViewportPrefetch();
 			}
 
 			viewport.addEventListener('wheel', gestures.onWheel, { passive: false });
@@ -94,6 +119,7 @@
 
 		window.addEventListener('keydown', gestures.onKeyDown);
 		return () => {
+			clearTimeout(settleTimer);
 			unobserveBrowserChrome?.();
 			unobserveViewport?.();
 			viewportEl?.removeEventListener('wheel', gestures.onWheel);
@@ -123,7 +149,6 @@
 		{gestures}
 		bind:viewport
 		{focusedId}
-		{prefetchIds}
 		nearDrawingId={displayNearId}
 		onFocusDrawing={focusDrawingById}
 	/>

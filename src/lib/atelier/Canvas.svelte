@@ -9,7 +9,6 @@
 		gestures,
 		viewport = $bindable(),
 		focusedId,
-		prefetchIds,
 		nearDrawingId,
 		onFocusDrawing
 	}: {
@@ -17,7 +16,6 @@
 		gestures: AtelierGestures;
 		viewport?: HTMLDivElement;
 		focusedId: string | null;
-		prefetchIds: Set<string>;
 		nearDrawingId: string | null;
 		onFocusDrawing: (id: string) => void;
 	} = $props();
@@ -44,7 +42,6 @@
 			<DrawingPiece
 				{drawing}
 				pos={view.drawingPos(drawing)}
-				prefetch={prefetchIds.has(drawing.id)}
 				focused={drawing.id === focusedId}
 				isNear={drawing.id === nearDrawingId}
 				onfocus={() => onFocusDrawing(drawing.id)}

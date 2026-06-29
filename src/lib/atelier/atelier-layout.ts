@@ -1,5 +1,5 @@
-import { drawings } from '$lib/content';
-import { LEATHER_PAD_INSET, rotatedPieceBounds } from './drawing-geometry';
+import { drawings, getStackedDrawingOrder } from '$lib/content';
+import { LEATHER_PAD_INSET, pieceBounds, rotatedPieceBounds } from './drawing-geometry';
 import type { ViewportRect } from './view-math';
 
 export type AtelierLayoutMode = 'scattered' | 'stacked';
@@ -10,15 +10,31 @@ export const ATELIER_PHONE_MAX_WIDTH = 767;
 const CONTENT_MARGIN = 36;
 const DESK_MARGIN = LEATHER_PAD_INSET + CONTENT_MARGIN;
 
-/** Phone: vertical column with slight horizontal stagger — generous gaps between mats. */
-const STACKED_POSITIONS: Record<string, { x: number; y: number }> = {
-	maskers: { x: 108, y: 52 },
-	'buste-profiel': { x: 180, y: 540 },
-	'lachend-portret': { x: 72, y: 1080 },
-	'studie-i': { x: 44, y: 1620 },
-	profielstudie: { x: 156, y: 2160 },
-	'portret-strik': { x: 48, y: 2700 }
-};
+/** Phone column — tuned to match the previous hand-keyed layout for six drawings. */
+const STACKED_START_Y = 52;
+const STACKED_GAP = 32;
+const STACKED_X_BASE = 108;
+const STACKED_X_STAGGER = [0, 72, -36, -64, 48, -60];
+
+function computeStackedPositions(): Record<string, { x: number; y: number }> {
+	const order = getStackedDrawingOrder();
+	const byId = new Map(drawings.map((d) => [d.id, d]));
+	let y = STACKED_START_Y;
+	const result: Record<string, { x: number; y: number }> = {};
+
+	for (let i = 0; i < order.length; i++) {
+		const id = order[i];
+		const drawing = byId.get(id);
+		if (!drawing) continue;
+		const stagger = STACKED_X_STAGGER[i % STACKED_X_STAGGER.length] ?? 0;
+		result[id] = { x: STACKED_X_BASE + stagger, y };
+		y += pieceBounds(drawing).height + STACKED_GAP;
+	}
+
+	return result;
+}
+
+const STACKED_POSITIONS = computeStackedPositions();
 
 export function resolveLayoutMode(viewport: ViewportRect): AtelierLayoutMode {
 	const { width, height } = viewport;

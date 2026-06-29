@@ -40,5 +40,18 @@ export const ATELIER_ANIM = {
 	focusDurationMs: 720
 } as const;
 
+export const ATELIER_PREFETCH = {
+	/**
+	 * Fraction of the viewport a drawing must cover before its full-res JPEG is fetched.
+	 * Coverage (not raw zoom) is the trigger because the view's max zoom is capped at
+	 * `min(maxSharpZoomForDrawing)`, so per-drawing zoom thresholds rarely fire. Coverage
+	 * means "the visitor is inspecting this piece" and naturally bounds how many upgrade
+	 * at once: nothing at overview, one or two as you zoom in.
+	 */
+	fullResCoverage: 0.18,
+	/** Full-res JPEGs are large — one at a time keeps the main thread and network usable on 3G. */
+	fullMaxConcurrent: 1
+} as const;
+
 /** Elements that should not start a canvas pan. */
 export const ATELIER_INTERACTIVE_SELECTOR = '.piece, .back';

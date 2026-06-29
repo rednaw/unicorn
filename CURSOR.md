@@ -7,7 +7,7 @@
 ## Don't break
 
 - Respect `maxSharpZoomForDrawing()` / `SHARP_DPR` — never cap zoom or leave thumbs as the final zoomed image to fix Lighthouse.
-- Full-res JPEGs load lazy via `cacheAsset()`; one fetch per URL, blob URLs only (`asset-cache.ts`).
+- Full-res JPEGs load lazy via the prefetch coordinator (`drawing/prefetch.svelte.ts`): native `<img>` (no blob cache), one full-res at a time, triggered by viewport coverage. Call `requestDrawing(id, intent)` — never fetch drawing URLs directly outside `DrawingImg`.
 - Pan/zoom stays on `translate` + `scale`; no heavy filters on zoomed art.
 - Gestures stay smooth while spatial audio runs.
 
@@ -23,4 +23,4 @@ Lighthouse complaints (LCP, cache TTL on GitHub Pages, `ssr = false` on atelier)
 
 ## Scale
 
-More drawings and recordings are coming — possibly **multiple tables** (desks/canvases), not just one scattered layout. Design for that: lazy full-res, prioritised prefetch, serial JPEG queue, and spatial audio must stay smooth as piece count grows. Never load every full-res JPEG on entry.
+More drawings and recordings are coming — **multiple tables** (clusters on one continuous floor), not just one scattered layout. Design for that: lazy full-res, coverage-triggered prefetch, serial JPEG queue, and spatial audio must stay smooth as piece count grows. Never load every full-res JPEG on entry.
