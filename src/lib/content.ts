@@ -12,7 +12,6 @@ export type {
 	Drawing,
 	DrawingTrack,
 	DrawingWithTrack,
-	LocalizedText,
 	Table,
 	TableDrawing
 } from './content-types';
