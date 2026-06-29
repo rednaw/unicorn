@@ -1,9 +1,6 @@
-/** Widen to `Record<Locale, string>` when i18n returns. */
-export type LocalizedText = string;
-
 export type DrawingTrack = {
 	id: string;
-	title: LocalizedText;
+	title: string;
 	composer: string;
 	src: string;
 };
@@ -11,10 +8,10 @@ export type DrawingTrack = {
 /** Authoring shape — `pos` is relative to the parent table's centre. */
 export type TableDrawing = {
 	id: string;
-	title: LocalizedText;
+	title: string;
 	year: string;
-	medium: LocalizedText;
-	alt: LocalizedText;
+	medium: string;
+	alt: string;
 	src: string;
 	thumb: string;
 	srcWidth: number;
