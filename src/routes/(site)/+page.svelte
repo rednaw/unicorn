@@ -1,28 +1,24 @@
 <script lang="ts">
 	import { base } from '$app/paths';
 	import { goto } from '$app/navigation';
-	import { artist, drawings } from '$lib/content';
-	import { cacheAsset } from '$lib/drawing/asset-cache';
+	import { artist, entryDrawingId } from '$lib/content';
+	import { requestDrawing } from '$lib/drawing/prefetch.svelte';
 	import { initAudio, unlock } from '$lib/atelier/audio-engine.svelte';
 
 	const DOOR_WIDTH = 1536;
 	const DOOR_HEIGHT = 1024;
 	const doorSketch = `${base}/hall/door-ajar-sketch.webp`;
-	const maskers = drawings.find((d) => d.id === 'maskers');
 
-	function prefetchMaskers() {
-		if (!maskers) return;
-		void cacheAsset(maskers.thumb);
-		void cacheAsset(maskers.src);
+	function prefetchEntryDrawing() {
+		requestDrawing(entryDrawingId, 'entry');
 	}
 
 	async function onDoorClick(e: MouseEvent) {
-		if (!maskers) return;
 		e.preventDefault();
 		initAudio();
 		await unlock();
-		prefetchMaskers();
-		await goto(`${base}/atelier/?focus=${maskers.id}`);
+		prefetchEntryDrawing();
+		await goto(`${base}/atelier/?focus=${entryDrawingId}`);
 	}
 </script>
 
@@ -44,21 +40,15 @@
 <section class="threshold" aria-label="Voor de deur">
 	<a class="threshold__colofon" href="{base}/credits/">colofon</a>
 
-	{#if maskers}
-		<a
-			class="threshold__frame"
-			href="{base}/atelier/?focus={maskers.id}"
-			aria-label="Naar binnen — van dichtbij"
-			onpointerdown={prefetchMaskers}
-			onclick={onDoorClick}
-		>
+	<a
+		class="threshold__frame"
+		href="{base}/atelier/?focus={entryDrawingId}"
+		aria-label="Naar binnen — van dichtbij"
+		onpointerdown={prefetchEntryDrawing}
+		onclick={onDoorClick}
+	>
 			{@render doorImage()}
-		</a>
-	{:else}
-		<div class="threshold__frame">
-			{@render doorImage()}
-		</div>
-	{/if}
+	</a>
 </section>
 
 <style>

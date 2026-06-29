@@ -1,15 +1,8 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { onNavigate } from '$app/navigation';
 	import { page } from '$app/state';
-	import { drawings } from '$lib/content';
-	import { cacheAsset } from '$lib/drawing/asset-cache';
 
 	let { children } = $props();
-
-	onMount(() => {
-		for (const d of drawings) void cacheAsset(d.thumb);
-	});
 
 	onNavigate((navigation) => {
 		if (typeof document === 'undefined' || !document.startViewTransition) return;

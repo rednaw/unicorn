@@ -8,14 +8,12 @@
 	let {
 		drawing,
 		pos,
-		prefetch = false,
 		focused = false,
 		isNear = false,
 		onfocus
 	}: {
 		drawing: Drawing;
 		pos: { x: number; y: number };
-		prefetch?: boolean;
 		focused?: boolean;
 		isNear?: boolean;
 		onfocus: () => void;
@@ -39,7 +37,6 @@
 	<div class="piece__mat">
 		<DrawingImg
 			{drawing}
-			{prefetch}
 			viewTransitionName={focused ? `piece-${drawing.id}` : undefined}
 		/>
 		{#if drawing.track}
