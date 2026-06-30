@@ -8,6 +8,8 @@
 	import { prefetchVisibleInView, requestDrawing } from '$lib/drawing/prefetch.svelte';
 	import '$lib/atelier/backgrounds.css';
 	import BackLink from '$lib/atelier/BackLink.svelte';
+	import ThemePicker from '$lib/atelier/ThemePicker.svelte';
+	import { atelierTheme, hydrateAtelierTheme } from '$lib/atelier/atelier-theme.svelte';
 	import NearCue from '$lib/atelier/NearCue.svelte';
 	import Canvas from '$lib/atelier/Canvas.svelte';
 	import { createAtelierGestures } from '$lib/atelier/gestures.svelte';
@@ -90,6 +92,7 @@
 	}
 
 	onMount(() => {
+		hydrateAtelierTheme();
 		enterSpatial();
 
 		let unobserveViewport: (() => void) | undefined;
@@ -150,8 +153,9 @@
 	/>
 </svelte:head>
 
-<div class="atelier" bind:this={atelierEl}>
+<div class="atelier" data-room-theme={atelierTheme.id} bind:this={atelierEl}>
 	<BackLink />
+	<ThemePicker />
 	<NearCue nearDrawingId={engine.armed || nearLockId ? displayNearId : null} />
 
 	<Canvas

@@ -1,0 +1,40 @@
+/**
+ * Graphite — cool neutral drafting room. Near-monochrome slate walls and a
+ * graphite-grey drafting surface echo the medium itself; the warm cream of the
+ * paper reads vividly against the cool neutral. Steel hairline instead of brass.
+ */
+.atelier[data-room-theme='graphite'] {
+	--lib-wall-deep: #14171a;
+	--lib-wall-mid: #262b30;
+	--lib-wall-light: #3c434a;
+	--lib-wainscot: #181c1f;
+	--lib-rail-gold: rgba(150, 166, 182, 0.14);
+	--lib-skylight: rgba(202, 216, 230, 0.08);
+	--lib-room-vignette: rgba(0, 0, 0, 0.6);
+	--lib-edge-shadow: rgba(0, 0, 0, 0.46);
+	--lib-spine-faint: rgba(0, 0, 0, 0.08);
+	--lib-panel-faint: rgba(0, 0, 0, 0.1);
+	--lib-panel-faint-h: rgba(0, 0, 0, 0.07);
+	--lib-floor-shadow: rgba(0, 0, 0, 0.56);
+
+	--lib-mahogany-deep: #181b1e;
+	--lib-mahogany: #2b3035;
+	--lib-mahogany-light: #454c53;
+	--lib-leather-deep: #282d30;
+	--lib-leather-mid: #363c40;
+	--lib-leather: #40474c;
+	--lib-leather-light: #4e565c;
+	--lib-pad-vignette: rgba(0, 0, 0, 0.5);
+	--lib-gold: rgba(154, 170, 186, 0.2);
+	--lib-gold-hairline: rgba(154, 170, 186, 0.13);
+	--lib-gold-inset: rgba(154, 170, 186, 0.07);
+	--lib-gold-glow: rgba(154, 170, 186, 0.05);
+	--lib-lamp: rgba(226, 236, 246, 0.1);
+	--lib-lamp-soft: rgba(226, 236, 246, 0.06);
+	--lib-grain-a: rgba(0, 0, 0, 0.05);
+	--lib-grain-b: rgba(0, 0, 0, 0.06);
+	--lib-desk-shadow-outer: rgba(0, 0, 0, 0.6);
+	--lib-desk-shadow-mid: rgba(0, 0, 0, 0.3);
+	--lib-desk-shadow-inset: rgba(0, 0, 0, 0.46);
+	--lib-text: #dfe3e6;
+}
