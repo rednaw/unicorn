@@ -4,8 +4,10 @@ export const ATELIER_ZOOM = {
 	fitPadding: 0.95,
 	focusFill: 0.9,
 	focusStep: 0.22,
-	dblTapFactor: 1.7,
-	wheelExp: 0.0018,
+	/** Ctrl/meta + wheel, or mouse-wheel notches (LINE mode) — see gestures `onWheel`. */
+	wheelExp: 0.0025,
+	/** Trackpad pinch (ctrl/meta + DOM_DELTA_PIXEL) — steeper than wheel notches. */
+	wheelPinchExp: 0.006,
 	keyboardStep: 1.15,
 	keyboardPan: 90
 } as const;
@@ -14,8 +16,6 @@ export const ATELIER_GESTURES = {
 	panThresholdMouse: 6,
 	panThresholdTouch: 8,
 	panThresholdPiece: 18,
-	dblTapWindowMs: 300,
-	dblTapSlopPx: 36,
 	inertiaMinVelocity: 0.08,
 	inertiaStopVelocity: 0.02,
 	inertiaDecay: 0.94,
@@ -52,6 +52,3 @@ export const ATELIER_PREFETCH = {
 	/** Full-res JPEGs are large — one at a time keeps the main thread and network usable on 3G. */
 	fullMaxConcurrent: 1
 } as const;
-
-/** Elements that should not start a canvas pan. */
-export const ATELIER_INTERACTIVE_SELECTOR = '.piece, .back';

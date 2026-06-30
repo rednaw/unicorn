@@ -1,6 +1,7 @@
 import { drawings } from '$lib/content';
-import { ATELIER_GESTURES, ATELIER_INTERACTIVE_SELECTOR, ATELIER_ZOOM } from './constants';
+import { ATELIER_GESTURES, ATELIER_ZOOM } from './constants';
 import { drawingAtCanvasPoint } from './drawing-geometry';
+import { suppressNextPieceButtonClick } from './piece-activation';
 import { viewportToCanvas } from './view-math';
 import type { AtelierView } from './view.svelte';
 
@@ -8,7 +9,7 @@ type InteractionMode = 'idle' | 'pending-pan' | 'panning' | 'pinching';
 
 type PinchState = { midX: number; midY: number; dist: number; left: number; top: number };
 
-	export type AtelierGestureDeps = {
+export type AtelierGestureDeps = {
 	unlock: () => void | Promise<void>;
 	armSpatial: () => void;
 	releaseNearLock: () => void;
@@ -36,18 +37,25 @@ export function createAtelierGestures(view: AtelierView, deps: AtelierGestureDep
 	let vx = 0;
 	let vy = 0;
 
-	let lastTapTime = 0;
-	let lastTapX = 0;
-	let lastTapY = 0;
-
 	function panThreshold() {
-		if (primaryPointerType !== 'touch') return ATELIER_GESTURES.panThresholdMouse;
-		return startedOnPiece ? ATELIER_GESTURES.panThresholdPiece : ATELIER_GESTURES.panThresholdTouch;
+		if (startedOnPiece) return ATELIER_GESTURES.panThresholdPiece;
+		return primaryPointerType === 'touch'
+			? ATELIER_GESTURES.panThresholdTouch
+			: ATELIER_GESTURES.panThresholdMouse;
 	}
 
 	function engage() {
 		deps.armSpatial();
 		deps.releaseNearLock();
+	}
+
+	function focusPiece(id: string) {
+		engage();
+		const drawing = drawings.find((d) => d.id === id);
+		if (drawing) {
+			suppressNextPieceButtonClick();
+			view.focusDrawing(drawing);
+		}
 	}
 
 	function prefetchAtViewport(viewportX: number, viewportY: number) {
@@ -171,34 +179,27 @@ export function createAtelierGestures(view: AtelierView, deps: AtelierGestureDep
 			view.dragging = false;
 			interactionMode = 'idle';
 			primaryPointerId = null;
+
 			if (wasPanning) {
 				view.startInertia(lastMove, { x: vx, y: vy });
-			} else if (
-				primaryPointerType === 'touch' &&
-				!(e.target as HTMLElement).closest(ATELIER_INTERACTIVE_SELECTOR)
-			) {
-				const now = performance.now();
-				const vp = deps.viewport();
-				if (!vp) return;
-				const { left, top } = viewportOrigin(vp);
-				if (
-					now - lastTapTime < ATELIER_GESTURES.dblTapWindowMs &&
-					Math.hypot(e.clientX - lastTapX, e.clientY - lastTapY) < ATELIER_GESTURES.dblTapSlopPx
-				) {
-					engage();
-					view.zoomAtViewport(
-						e.clientX - left,
-						e.clientY - top,
-						ATELIER_ZOOM.dblTapFactor
-					);
-					prefetchAtViewport(e.clientX - left, e.clientY - top);
-					lastTapTime = 0;
-				} else {
-					lastTapTime = now;
-					lastTapX = e.clientX;
-					lastTapY = e.clientY;
-				}
+				startedOnPiece = false;
+				return;
 			}
+
+			const moved = Math.hypot(e.clientX - dragStart.x, e.clientY - dragStart.y);
+			const vp = deps.viewport();
+			if (vp && moved < ATELIER_GESTURES.panThresholdPiece) {
+				const { left, top } = viewportOrigin(vp);
+				const viewportX = e.clientX - left;
+				const viewportY = e.clientY - top;
+				const canvas = viewportToCanvas(view.getView(), viewportX, viewportY);
+				const hitId = drawingAtCanvasPoint(drawings, canvas.x, canvas.y, (d) =>
+					view.drawingPos(d)
+				);
+				if (hitId) focusPiece(hitId);
+			}
+
+			startedOnPiece = false;
 		} else if (pointers.size === 1) {
 			const [p] = pointers.values();
 			const current = view.getView();
@@ -209,6 +210,16 @@ export function createAtelierGestures(view: AtelierView, deps: AtelierGestureDep
 			view.dragging = false;
 			interactionMode = 'pending-pan';
 		}
+	}
+
+	function wheelZooms(e: WheelEvent): boolean {
+		if (e.ctrlKey || e.metaKey) return true;
+		// Mouse wheel notches (LINE) → zoom at cursor. Trackpad two-finger scroll
+		// (PIXEL, no modifier) → pan — same split as Maps/Figma-style canvas UIs.
+		return (
+			e.deltaMode === WheelEvent.DOM_DELTA_LINE &&
+			Math.abs(e.deltaY) >= Math.abs(e.deltaX)
+		);
 	}
 
 	function onWheel(e: WheelEvent) {
@@ -230,29 +241,17 @@ export function createAtelierGestures(view: AtelierView, deps: AtelierGestureDep
 		const dx = e.deltaX * deltaUnit;
 		const dy = e.deltaY * deltaUnit;
 
-		if (e.ctrlKey || e.metaKey) {
+		if (wheelZooms(e)) {
 			const current = view.getView();
-			view.applyZoomAt(cx, cy, current.zoom * Math.exp(-dy * ATELIER_ZOOM.wheelExp));
+			const exp =
+				e.deltaMode === WheelEvent.DOM_DELTA_PIXEL
+					? ATELIER_ZOOM.wheelPinchExp
+					: ATELIER_ZOOM.wheelExp;
+			view.applyZoomAt(cx, cy, current.zoom * Math.exp(-dy * exp));
 			prefetchAtViewport(cx, cy);
 		} else {
 			view.panBy(-dx, -dy);
 		}
-	}
-
-	function onDblClick(e: MouseEvent) {
-		if ((e.target as HTMLElement).closest(ATELIER_INTERACTIVE_SELECTOR)) return;
-		deps.unlock();
-		engage();
-		view.stopInertia();
-		const vp = e.currentTarget as HTMLElement;
-		const { left, top } = vp.getBoundingClientRect();
-		const current = view.getView();
-		view.applyZoomAt(
-			e.clientX - left,
-			e.clientY - top,
-			current.zoom * ATELIER_ZOOM.dblTapFactor
-		);
-		prefetchAtViewport(e.clientX - left, e.clientY - top);
 	}
 
 	function onKeyDown(e: KeyboardEvent) {
@@ -324,7 +323,6 @@ export function createAtelierGestures(view: AtelierView, deps: AtelierGestureDep
 		onPointerMove,
 		onPointerUp,
 		onWheel,
-		onDblClick,
 		onKeyDown,
 		onTouchMove
 	};

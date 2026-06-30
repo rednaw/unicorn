@@ -29,7 +29,6 @@
 	onpointermove={gestures.onPointerMove}
 	onpointerup={gestures.onPointerUp}
 	onpointercancel={gestures.onPointerUp}
-	ondblclick={gestures.onDblClick}
 	class:atelier__viewport--dragging={view.dragging}
 >
 	<div

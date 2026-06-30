@@ -4,6 +4,7 @@
 	import { audioIndexForDrawing, DEFAULT_DRAWING_WIDTH } from '$lib/content';
 	import { HMV_PLAQUE } from './hmv-plaque';
 	import DrawingImg from './DrawingImg.svelte';
+	import { shouldSuppressPieceButtonClick } from './piece-activation';
 
 	let {
 		drawing,
@@ -30,7 +31,10 @@
 	style:top="{pos.y}px"
 	style:width="{drawing.width ?? DEFAULT_DRAWING_WIDTH}px"
 	style:--rot="{drawing.rotation ?? 0}deg"
-	onclick={onfocus}
+	onclick={() => {
+		if (shouldSuppressPieceButtonClick()) return;
+		onfocus();
+	}}
 	aria-label={drawing.track ? `${drawing.title} — ${drawing.track.title}` : drawing.title}
 	aria-pressed={isNear}
 >
