@@ -25,27 +25,53 @@
 		right: max(1rem, env(safe-area-inset-right, 0px));
 		z-index: 110;
 		transform: translateY(var(--browser-chrome-top, 0px));
+		/* Stays out of the way until hovered/focused — it's a temporary dev control. */
+		opacity: 0.22;
+		transition: opacity 220ms ease;
+	}
+
+	.theme-picker:hover,
+	.theme-picker:focus-within {
+		opacity: 1;
 	}
 
 	.theme-picker__label {
 		display: flex;
 		align-items: center;
 		gap: 0.4rem;
-		padding: 0.35rem 0.55rem 0.35rem 0.65rem;
+		padding: 0.3rem 0.5rem 0.3rem 0.6rem;
 		border-radius: 9999px;
+		border: 1px solid transparent;
+		background: transparent;
+		font-family: var(--font-sans);
+		font-size: 0.66rem;
+		color: var(--lib-text, #1d1a16);
+		transition: background 220ms ease, border-color 220ms ease;
+	}
+
+	.theme-picker:hover .theme-picker__label,
+	.theme-picker:focus-within .theme-picker__label {
 		background: rgba(255, 255, 255, 0.75);
-		border: 1px solid rgba(0, 0, 0, 0.12);
+		border-color: rgba(0, 0, 0, 0.12);
+		color: #1d1a16;
 		backdrop-filter: blur(10px);
 		-webkit-backdrop-filter: blur(10px);
-		font-family: var(--font-sans);
-		font-size: 0.68rem;
-		color: #1d1a16;
 	}
 
 	.theme-picker__tag {
 		letter-spacing: 0.12em;
 		text-transform: uppercase;
 		opacity: 0.55;
+	}
+
+	/* Label text hidden at rest — a faint dot is enough; full control on reveal. */
+	.theme-picker:not(:hover):not(:focus-within) .theme-picker__tag {
+		width: 0.4rem;
+		height: 0.4rem;
+		overflow: hidden;
+		border-radius: 9999px;
+		background: currentColor;
+		text-indent: -999px;
 	}
 
 	.theme-picker__select {
@@ -57,6 +83,13 @@
 		cursor: pointer;
 		padding: 0;
 		max-width: 9rem;
+	}
+
+	/* Collapse the select at rest so only the dot shows. */
+	.theme-picker:not(:hover):not(:focus-within) .theme-picker__select {
+		width: 0;
+		max-width: 0;
+		opacity: 0;
 	}
 
 	.theme-picker__select:focus-visible {
