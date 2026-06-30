@@ -1,0 +1,36 @@
+/** Neutral gallery — warm charcoal walls, kraft-paper pad. */
+.atelier[data-room-theme='charcoal'] {
+	--lib-wall-deep: #1d1b19;
+	--lib-wall-mid: #36322e;
+	--lib-wall-light: #55504a;
+	--lib-wainscot: #1a1816;
+	--lib-rail-gold: rgba(255, 255, 255, 0.08);
+	--lib-skylight: rgba(255, 248, 240, 0.08);
+	--lib-room-vignette: rgba(0, 0, 0, 0.6);
+	--lib-edge-shadow: rgba(0, 0, 0, 0.48);
+	--lib-spine-faint: rgba(0, 0, 0, 0.08);
+	--lib-panel-faint: rgba(0, 0, 0, 0.1);
+	--lib-panel-faint-h: rgba(0, 0, 0, 0.07);
+	--lib-floor-shadow: rgba(0, 0, 0, 0.58);
+
+	--lib-mahogany-deep: #211e1b;
+	--lib-mahogany: #36322e;
+	--lib-mahogany-light: #544e47;
+	--lib-leather-deep: #8c7a68;
+	--lib-leather-mid: #b3a392;
+	--lib-leather: #c6b9a8;
+	--lib-leather-light: #d8cdbe;
+	--lib-pad-vignette: rgba(0, 0, 0, 0.34);
+	--lib-gold: rgba(255, 255, 255, 0.1);
+	--lib-gold-hairline: rgba(255, 255, 255, 0.07);
+	--lib-gold-inset: rgba(255, 255, 255, 0.04);
+	--lib-gold-glow: rgba(255, 255, 255, 0.03);
+	--lib-lamp: rgba(255, 248, 240, 0.16);
+	--lib-lamp-soft: rgba(255, 248, 240, 0.09);
+	--lib-grain-a: rgba(0, 0, 0, 0.05);
+	--lib-grain-b: rgba(0, 0, 0, 0.06);
+	--lib-desk-shadow-outer: rgba(0, 0, 0, 0.62);
+	--lib-desk-shadow-mid: rgba(0, 0, 0, 0.32);
+	--lib-desk-shadow-inset: rgba(0, 0, 0, 0.3);
+	--lib-text: #e8e4dc;
+}

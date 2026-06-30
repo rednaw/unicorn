@@ -3,7 +3,7 @@ import { DEFAULT_DRAWING_WIDTH, DRAWING_SLOT_PADDING_X, type Drawing } from '$li
 /** Mat chrome — keep in sync with `DrawingPiece.svelte`. */
 export const PIECE_MAT = { top: 14, side: 14, bottom: 14, plaque: 54 } as const;
 
-/** Must stay in sync with `.atelier__inner::after { inset }` in `library.css`. */
+/** Must stay in sync with `.atelier__inner::after { inset }` in `backgrounds/shared.css`. */
 export const LEATHER_PAD_INSET = 44;
 
 /** Full piece slot including image, mat padding, and optional audio plaque. */

@@ -1,0 +1,36 @@
+/** Mediterranean plaster — warm off-white walls, terracotta leather pad. */
+.atelier[data-room-theme='plaster'] {
+	--lib-wall-deep: #b8a484;
+	--lib-wall-mid: #d6c7ac;
+	--lib-wall-light: #f0e9dd;
+	--lib-wainscot: #ac9876;
+	--lib-rail-gold: rgba(150, 92, 64, 0.2);
+	--lib-skylight: rgba(255, 250, 240, 0.45);
+	--lib-room-vignette: rgba(74, 44, 26, 0.32);
+	--lib-edge-shadow: rgba(74, 44, 26, 0.2);
+	--lib-spine-faint: rgba(74, 44, 26, 0.05);
+	--lib-panel-faint: rgba(74, 44, 26, 0.07);
+	--lib-panel-faint-h: rgba(74, 44, 26, 0.05);
+	--lib-floor-shadow: rgba(74, 44, 26, 0.3);
+
+	--lib-mahogany-deep: #432b1c;
+	--lib-mahogany: #5c3d28;
+	--lib-mahogany-light: #774e34;
+	--lib-leather-deep: #5e2e20;
+	--lib-leather-mid: #874636;
+	--lib-leather: #9c5a4a;
+	--lib-leather-light: #b06c5b;
+	--lib-pad-vignette: rgba(48, 20, 10, 0.46);
+	--lib-gold: rgba(200, 160, 100, 0.24);
+	--lib-gold-hairline: rgba(200, 160, 100, 0.15);
+	--lib-gold-inset: rgba(200, 160, 100, 0.08);
+	--lib-gold-glow: rgba(200, 160, 100, 0.06);
+	--lib-lamp: rgba(255, 240, 220, 0.24);
+	--lib-lamp-soft: rgba(255, 240, 220, 0.14);
+	--lib-grain-a: rgba(60, 30, 20, 0.055);
+	--lib-grain-b: rgba(60, 30, 20, 0.065);
+	--lib-desk-shadow-outer: rgba(60, 30, 20, 0.42);
+	--lib-desk-shadow-mid: rgba(60, 30, 20, 0.22);
+	--lib-desk-shadow-inset: rgba(60, 30, 20, 0.3);
+	--lib-text: #2a2218;
+}

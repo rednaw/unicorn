@@ -1,57 +1,36 @@
 /**
- * Bibliotheek — Victorian library / study (Downton-adjacent).
+ * Shared atelier room structure — colors come from `data-room-theme` token files.
  *
- * Two surfaces:
- *   .atelier        — room around the table (walls, wainscoting, shelf shadow)
- *   .atelier__inner  — mahogany desk rim + burgundy leather writing pad
+ *   .atelier        — walls, wainscoting, shelf shadow
+ *   .atelier__inner  — desk rim + writing pad
  */
 
 .atelier {
-	/* —— wall & trim —— */
-	--lib-wall-deep: #141a12;
-	--lib-wall-mid: #2e362c;
-	--lib-wall-light: #4a5542;
-	--lib-wall-highlight: #5c6654;
-	--lib-wainscot: #222a1e;
-	--lib-rail-gold: rgba(212, 175, 95, 0.14);
-
-	/* —— desk & leather —— */
-	--lib-mahogany-deep: #2a1810;
-	--lib-mahogany: #3d2818;
-	--lib-mahogany-light: #5a3d2c;
-	--lib-leather-deep: #3a1a20;
-	--lib-leather-mid: #4a2228;
-	--lib-leather: #5c2832;
-	--lib-leather-light: #6e3440;
-	--lib-gold: rgba(212, 175, 95, 0.22);
-	--lib-gold-hairline: rgba(212, 175, 95, 0.12);
-	--lib-lamp: rgba(255, 220, 180, 0.09);
-	--lib-text: #e2dcc8;
-
 	color: var(--lib-text);
 	background-color: var(--lib-wall-deep);
 
-	/* Layer stack (bottom → top) */
 	background-image:
-		/* window / skylight — warm falloff from above */
-		radial-gradient(ellipse 95% 55% at 50% -8%, rgba(255, 232, 190, 0.11), transparent 58%),
-		/* side bookcase shadows — darker at left & right edges */
+		radial-gradient(ellipse 95% 55% at 50% -8%, var(--lib-skylight), transparent 58%),
+		/* corner vignette — pools light toward the desk, sinks the room corners into shadow */
+		radial-gradient(
+			ellipse 105% 78% at 50% 40%,
+			transparent 42%,
+			var(--lib-room-vignette, transparent) 100%
+		),
 		linear-gradient(
 			90deg,
-			rgba(0, 0, 0, 0.38) 0%,
+			var(--lib-edge-shadow) 0%,
 			transparent 14%,
 			transparent 86%,
-			rgba(0, 0, 0, 0.38) 100%
+			var(--lib-edge-shadow) 100%
 		),
-		/* faint vertical book-spine rhythm at room edges */
 		repeating-linear-gradient(
 			90deg,
 			transparent,
 			transparent 11px,
-			rgba(0, 0, 0, 0.07) 11px,
-			rgba(0, 0, 0, 0.07) 12px
+			var(--lib-spine-faint) 11px,
+			var(--lib-spine-faint) 12px
 		),
-		/* wainscoting cap — horizontal rail */
 		linear-gradient(
 			to bottom,
 			transparent 0%,
@@ -60,29 +39,25 @@
 			var(--lib-rail-gold) calc(100% - 11.35rem),
 			transparent calc(100% - 11.35rem)
 		),
-		/* wainscoting panel fill (lower wall) */
 		linear-gradient(
 			to bottom,
 			transparent calc(100% - 11.5rem),
 			var(--lib-wainscot) calc(100% - 11.5rem)
 		),
-		/* wallpaper panel seams — vertical */
 		repeating-linear-gradient(
 			90deg,
 			transparent,
 			transparent 5.5rem,
-			rgba(0, 0, 0, 0.09) 5.5rem,
-			rgba(0, 0, 0, 0.09) calc(5.5rem + 1px)
+			var(--lib-panel-faint) 5.5rem,
+			var(--lib-panel-faint) calc(5.5rem + 1px)
 		),
-		/* wallpaper panel seams — horizontal */
 		repeating-linear-gradient(
 			0deg,
 			transparent,
 			transparent 3rem,
-			rgba(0, 0, 0, 0.06) 3rem,
-			rgba(0, 0, 0, 0.06) calc(3rem + 1px)
+			var(--lib-panel-faint-h) 3rem,
+			var(--lib-panel-faint-h) calc(3rem + 1px)
 		),
-		/* sage wall body */
 		linear-gradient(
 			168deg,
 			var(--lib-wall-light) 0%,
@@ -91,36 +66,40 @@
 		);
 }
 
-/* Floor shadow where wall meets unseen floor */
 .atelier::before {
 	content: '';
 	position: absolute;
 	inset: auto 0 0 0;
 	height: 5rem;
 	pointer-events: none;
-	background: linear-gradient(to top, rgba(0, 0, 0, 0.45), transparent);
+	background: linear-gradient(to top, var(--lib-floor-shadow), transparent);
 }
 
-/* —— desk surface (canvas) —— */
 .atelier__inner {
 	position: relative;
 	background-color: var(--lib-leather);
 	background-image:
 		radial-gradient(ellipse 75% 55% at 48% 22%, var(--lib-lamp), transparent 62%),
-		radial-gradient(ellipse 120% 80% at 50% 35%, rgba(255, 220, 200, 0.06), transparent 55%),
+		radial-gradient(ellipse 120% 80% at 50% 35%, var(--lib-lamp-soft), transparent 55%),
 		repeating-linear-gradient(
 			97deg,
 			transparent,
 			transparent 3px,
-			rgba(0, 0, 0, 0.045) 3px,
-			rgba(0, 0, 0, 0.045) 4px
+			var(--lib-grain-a) 3px,
+			var(--lib-grain-a) 4px
 		),
 		repeating-linear-gradient(
 			88deg,
 			transparent,
 			transparent 14px,
-			rgba(0, 0, 0, 0.055) 14px,
-			rgba(0, 0, 0, 0.055) 15px
+			var(--lib-grain-b) 14px,
+			var(--lib-grain-b) 15px
+		),
+		/* pad-edge vignette — lifts the centre where work sits, darkens toward the rim */
+		radial-gradient(
+			ellipse 90% 80% at 50% 42%,
+			transparent 38%,
+			var(--lib-pad-vignette, transparent) 100%
 		),
 		linear-gradient(
 			172deg,
@@ -129,17 +108,16 @@
 			var(--lib-leather-deep) 100%
 		);
 	box-shadow:
-		0 16px 56px rgba(0, 0, 0, 0.5),
-		0 4px 16px rgba(0, 0, 0, 0.25),
+		0 16px 56px var(--lib-desk-shadow-outer),
+		0 4px 16px var(--lib-desk-shadow-mid),
 		inset 0 0 0 22px var(--lib-mahogany-deep),
 		inset 0 0 0 24px var(--lib-mahogany),
 		inset 0 0 0 26px var(--lib-mahogany-light),
 		inset 0 0 0 27px rgba(0, 0, 0, 0.35),
 		inset 0 0 0 28px var(--lib-gold-hairline),
-		inset 0 0 100px rgba(0, 0, 0, 0.38);
+		inset 0 0 100px var(--lib-desk-shadow-inset);
 }
 
-/* inner gold tooling frame on the leather pad */
 .atelier__inner::after {
 	content: '';
 	position: absolute;
@@ -148,11 +126,10 @@
 	border-radius: 1px;
 	pointer-events: none;
 	box-shadow:
-		inset 0 0 0 1px rgba(212, 175, 95, 0.06),
-		0 0 24px rgba(212, 175, 95, 0.04);
+		inset 0 0 0 1px var(--lib-gold-inset),
+		0 0 24px var(--lib-gold-glow);
 }
 
-/* corner fleurons — subtle gilt at pad corners */
 .atelier__inner::before {
 	content: '';
 	position: absolute;
