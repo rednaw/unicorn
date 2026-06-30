@@ -30,6 +30,8 @@ export const ATELIER_AUDIO = {
 	nearThreshold: 0.05,
 	/** Gain must reach this before `<audio>` starts — avoids silent playback. */
 	playThreshold: 0.08,
+	/** Keep playing until gain falls below this (hysteresis — stops edge-of-range restarts). */
+	pauseThreshold: 0.04,
 	/** `setTargetAtTime` time constant for gain/pan ramps (seconds). */
 	rampTimeSec: 0.08
 } as const;
