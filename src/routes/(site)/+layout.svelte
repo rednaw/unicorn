@@ -38,7 +38,7 @@
 	}
 
 	.site--hall {
-		background: #fbfaf6;
+		background: var(--color-hall-paper);
 		color: #1d1a16;
 		display: flex;
 		flex-direction: column;

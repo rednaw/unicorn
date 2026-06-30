@@ -32,8 +32,7 @@ export function visibleDrawings(
 	view: ViewTransform,
 	viewport: ViewportRect,
 	layoutMode: AtelierLayoutMode,
-	posFor: (d: Drawing) => { x: number; y: number } = (d) =>
-		layoutPos(d.id, layoutMode, d.pos)
+	posFor: (d: Drawing) => { x: number; y: number } = (d) => layoutPos(d, layoutMode)
 ): VisibleDrawing[] {
 	if (viewport.width === 0) return [];
 

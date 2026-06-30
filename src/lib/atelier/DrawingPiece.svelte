@@ -60,6 +60,7 @@
 	.piece {
 		position: absolute;
 		transform: rotate(var(--rot, 0deg));
+		z-index: 1;
 	}
 
 	.piece--drawing {

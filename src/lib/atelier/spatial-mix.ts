@@ -24,7 +24,7 @@ export type SpatialMixResult = {
 function listenPoints(list: Drawing[], mode: AtelierLayoutMode) {
 	return list.map((d) => ({
 		id: d.id,
-		...drawingListenPoint(d, layoutPos(d.id, mode, d.pos))
+		...drawingListenPoint(d, layoutPos(d, mode))
 	}));
 }
 

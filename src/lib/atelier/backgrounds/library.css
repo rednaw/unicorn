@@ -103,13 +103,11 @@
 
 /* —— desk surface (canvas) —— */
 .atelier__inner {
+	position: relative;
 	background-color: var(--lib-leather);
 	background-image:
-		/* desk lamp pool */
 		radial-gradient(ellipse 75% 55% at 48% 22%, var(--lib-lamp), transparent 62%),
-		/* leather highlight */
 		radial-gradient(ellipse 120% 80% at 50% 35%, rgba(255, 220, 200, 0.06), transparent 55%),
-		/* fine grain */
 		repeating-linear-gradient(
 			97deg,
 			transparent,
@@ -117,7 +115,6 @@
 			rgba(0, 0, 0, 0.045) 3px,
 			rgba(0, 0, 0, 0.045) 4px
 		),
-		/* broader leather creases */
 		repeating-linear-gradient(
 			88deg,
 			transparent,
@@ -125,15 +122,12 @@
 			rgba(0, 0, 0, 0.055) 14px,
 			rgba(0, 0, 0, 0.055) 15px
 		),
-		/* pad colour depth */
 		linear-gradient(
 			172deg,
 			var(--lib-leather-light) 0%,
 			var(--lib-leather-mid) 48%,
 			var(--lib-leather-deep) 100%
 		);
-
-	/* mahogany rim + cast shadow + leather vignette + gold hairline */
 	box-shadow:
 		0 16px 56px rgba(0, 0, 0, 0.5),
 		0 4px 16px rgba(0, 0, 0, 0.25),
