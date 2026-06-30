@@ -233,19 +233,6 @@ export function createAtelierView(maxZoom: number) {
 		hasUserNavigatedView = true;
 	}
 
-	function zoomAtViewport(viewportX: number, viewportY: number, factor: number) {
-		const next = zoomAtPoint(getView(), viewportX, viewportY, zoom * factor, minZoom, maxZoom);
-		if (prefersReducedMotion()) {
-			applyView(next);
-			syncClamp();
-			hasUserNavigatedView = true;
-		} else {
-			stopInertia();
-			animateView(next.tx, next.ty, next.zoom);
-			hasUserNavigatedView = true;
-		}
-	}
-
 	function focusTargetZoom(itemW: number, itemH: number, fill: number) {
 		if (metrics.width === 0) return zoom;
 		return fitZoomForItem(viewportRect(), itemW, itemH, fill, minZoom, maxZoom);
@@ -298,7 +285,6 @@ export function createAtelierView(maxZoom: number) {
 		panBy,
 		setPan,
 		zoomTo,
-		zoomAtViewport,
 		focusDrawing,
 		stopInertia,
 		startInertia,
