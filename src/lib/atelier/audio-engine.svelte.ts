@@ -35,6 +35,8 @@ export function createAudioEngine() {
 	let canPan = false;
 	/** Lazily-created nodes keyed by audio index — only tracks the visitor approaches exist. */
 	const nodes = new Map<number, TrackNodes>();
+	/** iOS: indices that received a gesture play/pause once — never re-prime (that rewinds). */
+	const primedIndices = new Set<number>();
 
 	function initAudio(): void {
 		if (engine.ready || typeof window === 'undefined') return;
@@ -102,10 +104,8 @@ export function createAudioEngine() {
 			src.start();
 		}
 
-		const toPrime = indicesFor(primeDrawingIds);
-		// Re-prime when everything is paused (gesture refresh) so a freshly-near track works on iOS.
-		const allPaused = [...nodes.values()].every((n) => n.el.paused);
-		if (toPrime.length && (firstUnlock || allPaused)) {
+		const toPrime = indicesFor(primeDrawingIds).filter((i) => !primedIndices.has(i));
+		if (toPrime.length) {
 			await primeTracks(toPrime);
 		}
 	}
@@ -135,6 +135,7 @@ export function createAudioEngine() {
 						try {
 							n.el.currentTime = 0;
 						} catch {}
+						primedIndices.add(i);
 					})
 					.catch(() => {});
 			})
@@ -172,7 +173,7 @@ export function createAudioEngine() {
 	function applyMix(mix: SpatialMixResult): void {
 		if (!ctx) return;
 		const now = ctx.currentTime;
-		const { rampTimeSec, playThreshold } = ATELIER_AUDIO;
+		const { rampTimeSec, playThreshold, pauseThreshold } = ATELIER_AUDIO;
 
 		const dominantId = engine.armed ? mix.dominantAudioDrawingId : null;
 		const dominantIndex = dominantId == null ? -1 : audioIndexForDrawing(dominantId);
@@ -185,11 +186,15 @@ export function createAudioEngine() {
 				n.pauseAt = null;
 				n.gain.gain.setTargetAtTime(dominantMix.volume, now, rampTimeSec);
 				n.panner?.pan.setTargetAtTime(dominantMix.pan, now, rampTimeSec);
-				const audible = engine.unlocked && dominantMix.volume >= playThreshold;
-				if (audible && ctx.state === 'running') {
+				const canPlay = engine.unlocked && ctx.state === 'running';
+				if (canPlay) {
 					if (n.el.paused) {
-						if (n.el.ended) n.el.currentTime = 0;
-						void n.el.play().catch(() => {});
+						if (dominantMix.volume >= playThreshold) {
+							if (n.el.ended) n.el.currentTime = 0;
+							void n.el.play().catch(() => {});
+						}
+					} else if (dominantMix.volume < pauseThreshold) {
+						n.el.pause();
 					}
 				} else if (!n.el.paused) {
 					n.el.pause();
