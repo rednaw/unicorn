@@ -1,4 +1,5 @@
 import type { Drawing } from '$lib/content';
+import { maxSharpZoomForDrawing } from '$lib/content-derive';
 import {
 	computeAtelierCanvas,
 	layoutPos,
@@ -6,20 +7,30 @@ import {
 	type AtelierLayoutMode
 } from './atelier-layout';
 import { ATELIER_ANIM, ATELIER_GESTURES, ATELIER_ZOOM } from './constants';
-import { drawingListenPoint, pieceBounds } from './drawing-geometry';
+import { drawingAtCanvasPoint, drawingListenPoint, pieceBounds } from './drawing-geometry';
 import { prefersReducedMotion, smoothstep } from './math';
 import {
 	centreOnCanvas,
 	clampView,
 	fitViewToCanvas,
 	fitZoomForItem,
+	viewportToCanvas,
 	zoomAtPoint,
 	type ViewTransform,
 	type ViewportRect
 } from './view-math';
 import { EMPTY_VIEWPORT, type ViewportMetrics } from './viewport-metrics';
 
-export function createAtelierView(maxZoom: number) {
+export function createAtelierView(drawings: Drawing[]) {
+	const peakMaxZoom = Math.max(...drawings.map(maxSharpZoomForDrawing));
+
+	function maxZoomAt(viewportX: number, viewportY: number): number {
+		const canvas = viewportToCanvas(getView(), viewportX, viewportY);
+		const id = drawingAtCanvasPoint(drawings, canvas.x, canvas.y, drawingPos);
+		if (!id) return peakMaxZoom;
+		const d = drawings.find((x) => x.id === id);
+		return d ? maxSharpZoomForDrawing(d) : peakMaxZoom;
+	}
 	function readInitialViewport(): ViewportMetrics {
 		if (typeof window === 'undefined') return EMPTY_VIEWPORT;
 		return {
@@ -191,7 +202,9 @@ export function createAtelierView(maxZoom: number) {
 	}
 
 	function applyZoomAt(viewportX: number, viewportY: number, nextZoom: number) {
-		applyView(zoomAtPoint(getView(), viewportX, viewportY, nextZoom, minZoom, maxZoom));
+		applyView(
+			zoomAtPoint(getView(), viewportX, viewportY, nextZoom, minZoom, maxZoomAt(viewportX, viewportY))
+		);
 		syncClamp();
 		hasUserNavigatedView = true;
 	}
@@ -233,7 +246,7 @@ export function createAtelierView(maxZoom: number) {
 		hasUserNavigatedView = true;
 	}
 
-	function focusTargetZoom(itemW: number, itemH: number, fill: number) {
+	function focusTargetZoom(itemW: number, itemH: number, fill: number, maxZoom: number) {
 		if (metrics.width === 0) return zoom;
 		return fitZoomForItem(viewportRect(), itemW, itemH, fill, minZoom, maxZoom);
 	}
@@ -241,8 +254,9 @@ export function createAtelierView(maxZoom: number) {
 	function focusDrawing(d: Drawing, onArrive?: () => void) {
 		const { width, height } = pieceBounds(d);
 		const { x: cx, y: cy } = drawingListenPoint(d, drawingPos(d));
-		const fitTarget = focusTargetZoom(width, height, ATELIER_ZOOM.focusFill);
-		const steppedTarget = Math.min(maxZoom, zoom + ATELIER_ZOOM.focusStep);
+		const cap = maxSharpZoomForDrawing(d);
+		const fitTarget = focusTargetZoom(width, height, ATELIER_ZOOM.focusFill, cap);
+		const steppedTarget = Math.min(cap, zoom + ATELIER_ZOOM.focusStep);
 		zoomTo(cx, cy, Math.max(fitTarget, steppedTarget), true, ATELIER_ANIM.focusDurationMs, onArrive);
 	}
 

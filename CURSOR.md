@@ -6,7 +6,7 @@
 
 ## Don't break
 
-- Respect `maxSharpZoomForDrawing()` / `SHARP_DPR` — never cap zoom or leave thumbs as the final zoomed image to fix Lighthouse.
+- Respect `maxSharpZoomForDrawing()` / `SHARP_DPR` — never cap zoom globally by the smallest piece. Zoom ceiling is **per drawing** at the pinch/wheel anchor (fallback: peak across all pieces on empty floor).
 - Full-res JPEGs load lazy via the prefetch coordinator (`drawing/prefetch.svelte.ts`): native `<img>` (no blob cache), serial queue (`fullMaxConcurrent: 1`), triggered by viewport **coverage** (`ATELIER_PREFETCH.fullResCoverage`). Call `requestDrawing(id, intent)` — never fetch drawing URLs outside `DrawingImg`.
 - Pan/zoom stays on `translate` + `scale`; no heavy filters on zoomed art.
 - Gestures stay smooth while spatial audio runs.
