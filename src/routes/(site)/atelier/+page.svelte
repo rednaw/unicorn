@@ -4,7 +4,7 @@
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
-	import { drawings, artist, atelierMaxZoom } from '$lib/content';
+	import { drawings, artist } from '$lib/content';
 	import { prefetchVisibleInView, requestDrawing } from '$lib/drawing/prefetch.svelte';
 	import '$lib/atelier/backgrounds.css';
 	import BackLink from '$lib/atelier/BackLink.svelte';
@@ -23,7 +23,7 @@
 	let atelierEl = $state<HTMLDivElement>();
 	let viewport = $state<HTMLDivElement>();
 
-	const view = createAtelierView(atelierMaxZoom());
+	const view = createAtelierView(drawings);
 	const spatial = createSpatialAudioLoop(view);
 
 	const displayNearId = $derived(
