@@ -9,17 +9,13 @@
 	const DOOR_HEIGHT = 1024;
 	const doorSketch = `${base}/hall/door-ajar-sketch.webp`;
 
-	function prefetchEntryDrawing() {
-		requestDrawing(entryDrawingId, 'entry');
-	}
-
 	async function onDoorClick(e: MouseEvent) {
 		e.preventDefault();
 		initAudio();
-		// Prime the entry track within this gesture so it can play once inside the atelier (iOS).
+		// Prime entry track in this gesture (iOS); atelier still opens on fit-all overview.
 		await unlock([entryDrawingId]);
-		prefetchEntryDrawing();
-		await goto(`${base}/atelier/?focus=${entryDrawingId}`);
+		requestDrawing(entryDrawingId, 'entry');
+		await goto(`${base}/atelier/`);
 	}
 </script>
 
@@ -39,17 +35,20 @@
 </svelte:head>
 
 <section class="threshold" aria-label="Voor de deur">
-	<a class="threshold__colofon" href="{base}/credits/">colofon</a>
-
-	<a
-		class="threshold__frame"
-		href="{base}/atelier/?focus={entryDrawingId}"
-		aria-label="Naar binnen — van dichtbij"
-		onpointerdown={prefetchEntryDrawing}
-		onclick={onDoorClick}
-	>
+	<div class="threshold__stage">
+		<div class="threshold__visual" aria-hidden="true">
 			{@render doorImage()}
-	</a>
+		</div>
+		<a
+			class="threshold__frame"
+			href="{base}/atelier/"
+			aria-label="Naar binnen"
+			onclick={onDoorClick}
+		></a>
+		<a class="threshold__colofon" href="{base}/credits/">
+			<span class="threshold__colofon-label">colofon</span>
+		</a>
+	</div>
 </section>
 
 <style>
@@ -58,15 +57,45 @@
 		flex: 1 1 auto;
 		min-height: 0;
 		overflow: hidden;
-		padding-inline: max(0.75rem, env(safe-area-inset-left, 0px))
-			max(0.75rem, env(safe-area-inset-right, 0px));
+		display: flex;
+		align-items: stretch;
+		justify-content: center;
+		/* Match sketch paper if cover reveals an edge */
+		background: var(--color-hall-paper);
+	}
+
+	.threshold__stage {
+		position: relative;
+		flex: 1 1 auto;
+		min-width: 0;
+		min-height: 0;
+		overflow: hidden;
+		/* Invisible door hit layer notch — matches colofon 48px + inset */
+		--colofon-corner: 4.5rem;
+	}
+
+	.threshold__visual {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		z-index: 0;
 	}
 
 	.threshold__colofon {
 		position: absolute;
 		right: max(0.75rem, env(safe-area-inset-right, 0px));
-		bottom: 0.65rem;
+		bottom: max(0.65rem, env(safe-area-inset-bottom, 0px));
 		z-index: 3;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-width: 48px;
+		min-height: 48px;
+		text-decoration: none;
+		color: inherit;
+	}
+
+	.threshold__colofon-label {
 		padding: 0.2rem 0.45rem;
 		border-radius: 2px;
 		font-family: var(--font-sans);
@@ -77,75 +106,73 @@
 		background: rgba(26, 24, 20, 0.42);
 		backdrop-filter: blur(6px);
 		-webkit-backdrop-filter: blur(6px);
-		text-decoration: none;
+		pointer-events: none;
 		transition: background 200ms ease, color 200ms ease;
 	}
 
-	.threshold__colofon:hover,
-	.threshold__colofon:focus-visible {
+	.threshold__colofon:hover .threshold__colofon-label,
+	.threshold__colofon:focus-visible .threshold__colofon-label {
 		color: #fff;
 		background: rgba(26, 24, 20, 0.58);
-		outline: none;
 	}
 
 	.threshold__colofon:focus-visible {
+		outline: none;
+	}
+
+	.threshold__colofon:focus-visible .threshold__colofon-label {
 		text-decoration: underline;
 		text-underline-offset: 0.2em;
 	}
 
 	.threshold__frame {
 		position: absolute;
-		inset-block: 0;
-		left: 50%;
-		transform: translateX(-50%);
-		aspect-ratio: 1536 / 1024;
-		width: auto;
+		inset: 0;
+		z-index: 2;
 		display: block;
 		color: inherit;
 		text-decoration: none;
+		cursor: pointer;
+		clip-path: polygon(
+			0 0,
+			100% 0,
+			100% calc(100% - var(--colofon-corner)),
+			calc(100% - var(--colofon-corner)) calc(100% - var(--colofon-corner)),
+			calc(100% - var(--colofon-corner)) 100%,
+			0 100%
+		);
 	}
 
 	.threshold__sketch {
 		display: block;
 		width: 100%;
 		height: 100%;
-		object-fit: contain;
+		object-fit: cover;
+		object-position: center center;
 		user-select: none;
 		-webkit-user-drag: none;
-		pointer-events: none;
-	}
-
-	a.threshold__frame {
-		cursor: pointer;
 		transition: filter 220ms ease;
 	}
 
-	a.threshold__frame:hover,
-	a.threshold__frame:focus-visible {
-		filter: brightness(1.04);
-		outline: none;
-	}
-
-	a.threshold__frame:focus-visible {
-		box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
-	}
-
-	/* Short landscape viewports (phones): fill width, anchor crop to floor */
-	@media (orientation: landscape) and (max-height: 31.25rem) {
-		.threshold {
-			padding-inline: env(safe-area-inset-left, 0px) env(safe-area-inset-right, 0px);
-		}
-
-		.threshold__frame {
-			inset: 0;
-			width: 100%;
-			height: 100%;
-			transform: none;
-			aspect-ratio: auto;
-		}
-
+	@media (prefers-reduced-motion: reduce) {
 		.threshold__sketch {
-			object-fit: cover;
+			transition-duration: 0.01ms;
+		}
+	}
+
+	.threshold__stage:has(.threshold__frame:hover) .threshold__sketch,
+	.threshold__stage:has(.threshold__frame:focus-visible) .threshold__sketch {
+		filter: brightness(1.04);
+	}
+
+	.threshold__frame:focus-visible {
+		outline: 2px solid rgba(0, 0, 0, 0.35);
+		outline-offset: -6px;
+	}
+
+	/* Landscape (phone + laptop): anchor crop to the floor */
+	@media (orientation: landscape) {
+		.threshold__sketch {
 			object-position: center bottom;
 		}
 	}

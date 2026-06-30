@@ -6,7 +6,7 @@ studio view where works sit on a pannable canvas with proximity-based audio.
 
 | Route       | Idea                                                       |
 | ----------- | ---------------------------------------------------------- |
-| `/`         | Threshold — door sketch; click to enter the atelier (Maskers) |
+| `/`         | Threshold — door sketch; click to enter the atelier (fit-all overview) |
 | `/atelier/` | Studio — pan/zoom canvas, spatial audio near each drawing  |
 | `/credits/` | Colofon — rights and asset credits                         |
 
@@ -65,8 +65,8 @@ See `static/CREDITS.md` for sources and licensing.
 1. Drop new files into `/static/drawings/`, `/static/audio/`, etc.
    (they are stored via Git LFS — patterns live in `.gitattributes`).
 2. Run `pnpm assets:thumbs` to generate the `-thumb.webp` placeholders.
-3. Edit `src/lib/content.ts` — add or update entries in the `drawings` array
-   (paths, titles, metadata, atelier placement, and an optional `track`).
+3. Edit `src/lib/content.ts` — add or update entries in `atelier.drawings`
+   (paths, titles, metadata, `portrait` / `landscape` placement, and an optional `track`).
 
 The shape is:
 
@@ -74,14 +74,16 @@ The shape is:
 type DrawingTrack = { id; title; composer; src }
 type Drawing = {
   id; title; year; medium; src; thumb; srcWidth; srcHeight; alt;
-  rotation?; pos?; width?; track?
+  portrait: { x; y }; landscape: { x; y };
+  rotation?; width?; track?
 }
 ```
 
 Audio is embedded directly on a drawing via its optional `track`: when present,
 that recording plays with proximity-based gain/pan as you approach the work in
-the atelier. Drawings without a `track` are silent. `pos`, `rotation`, and
-`width` define placement on the atelier canvas.
+the atelier. Drawings without a `track` are silent. `portrait` and `landscape`
+set absolute floor coordinates; `resolveLayoutMode` in `atelier-layout.ts` picks
+which pair is active (portrait phones vs wider viewports).
 
 ## Architecture
 
@@ -99,8 +101,8 @@ src/
       atelier/+page.svelte  # fullscreen studio canvas
   lib/
     content.ts              # atelier data + public API (drawings, tracks, lookups)
-    content-types.ts        # Drawing / Table / Atelier types + constants
-    content-derive.ts       # pure derivations (flatten, audio list, sharp zoom)
+    content-types.ts        # Drawing / Atelier types + constants
+    content-derive.ts       # pure derivations (audio list, sharp zoom)
     drawing/
       prefetch.svelte.ts    # full-res coordinator (native <img>, serial queue)
     atelier/                # studio canvas, gestures, spatial audio
@@ -121,10 +123,10 @@ when the same name exists on both the outgoing and incoming page.
 
 The old home page was a grid: each thumbnail carried `piece-<id>`, so clicking a
 work morphed it into the matching mat in the atelier. The door home page no longer
-shows drawing thumbnails, so navigation to `/atelier/?focus=maskers` gets a
-**whole-page crossfade** only — not a morph into Maskers. To restore the morph,
-something on `/` would need the matching `view-transition-name` (e.g. a hidden or
-decorative element tied to the entry drawing).
+shows drawing thumbnails, so navigation to `/atelier/` gets a **whole-page crossfade**
+only — not a morph into a specific piece. To restore the morph, something on `/`
+would need the matching `view-transition-name` (e.g. a hidden or decorative element
+tied to the entry drawing).
 
 ## Stack
 

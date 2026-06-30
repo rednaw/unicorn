@@ -17,7 +17,7 @@ export function pieceBounds(drawing: Drawing) {
 }
 
 /** Centre of the mat — spatial audio origin and zoom focus. */
-export function drawingListenPoint(drawing: Drawing, pos = drawing.pos) {
+export function drawingListenPoint(drawing: Drawing, pos = drawing.landscape) {
 	const { width, height } = pieceBounds(drawing);
 	const x = pos?.x ?? 0;
 	const y = pos?.y ?? 0;
@@ -25,7 +25,7 @@ export function drawingListenPoint(drawing: Drawing, pos = drawing.pos) {
 }
 
 /** Axis-aligned bounds after mat rotation (transform-origin: centre). */
-export function rotatedPieceBounds(drawing: Drawing, pos = drawing.pos) {
+export function rotatedPieceBounds(drawing: Drawing, pos = drawing.landscape) {
 	const { width, height } = pieceBounds(drawing);
 	const x = pos?.x ?? 0;
 	const y = pos?.y ?? 0;
@@ -50,7 +50,7 @@ export function drawingAtCanvasPoint(
 	drawings: Drawing[],
 	canvasX: number,
 	canvasY: number,
-	posFor: (d: Drawing) => { x: number; y: number } = (d) => d.pos ?? { x: 0, y: 0 }
+	posFor: (d: Drawing) => { x: number; y: number } = (d) => d.landscape ?? { x: 0, y: 0 }
 ): string | null {
 	for (const d of drawings) {
 		const { width, height } = pieceBounds(d);

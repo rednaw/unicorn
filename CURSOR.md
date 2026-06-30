@@ -23,4 +23,4 @@ Lighthouse complaints (LCP, cache TTL on GitHub Pages, `ssr = false` on atelier)
 
 ## Scale
 
-More drawings and recordings are coming — **multiple tables** (clusters on one continuous floor), not just one scattered layout. Design for that: lazy full-res, coverage-triggered prefetch, serial JPEG queue, and spatial audio must stay smooth as piece count grows. Never load every full-res JPEG on entry.
+More drawings and recordings are coming. Each drawing carries **`portrait` and `landscape` floor coordinates** in `content.ts`; `atelier-layout.ts` picks the active set from viewport shape. Keep lazy full-res, coverage-triggered prefetch, the serial JPEG queue, and spatial audio smooth as piece count grows. Never load every full-res JPEG on entry.

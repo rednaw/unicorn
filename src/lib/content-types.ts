@@ -5,8 +5,8 @@ export type DrawingTrack = {
 	src: string;
 };
 
-/** Authoring shape — `pos` is relative to the parent table's centre. */
-export type TableDrawing = {
+/** Floor placement — absolute coordinates on the atelier canvas. */
+export type Drawing = {
 	id: string;
 	title: string;
 	year: string;
@@ -17,25 +17,19 @@ export type TableDrawing = {
 	srcWidth: number;
 	srcHeight: number;
 	rotation?: number;
-	pos: { x: number; y: number };
+	/** Portrait floor position. */
+	portrait: { x: number; y: number };
+	/** Landscape floor position. */
+	landscape: { x: number; y: number };
 	width?: number;
 	track?: DrawingTrack;
 };
 
-/** Flattened floor placement — `pos` is absolute on the atelier canvas. */
-export type Drawing = TableDrawing;
-
 export type DrawingWithTrack = Drawing & { track: DrawingTrack };
-
-export type Table = {
-	id: string;
-	center: { x: number; y: number };
-	drawings: TableDrawing[];
-};
 
 export type Atelier = {
 	entryDrawingId: string;
-	tables: Table[];
+	drawings: Drawing[];
 };
 
 /** Horizontal mat padding on atelier pieces (14px × 2) — sync with `DrawingPiece.svelte`. */

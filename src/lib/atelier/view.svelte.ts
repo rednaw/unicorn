@@ -38,7 +38,7 @@ export function createAtelierView(maxZoom: number) {
 	const initialMetrics = readInitialViewport();
 	let metrics = $state<ViewportMetrics>(initialMetrics);
 	let layoutMode = $state<AtelierLayoutMode>(
-		initialMetrics.width > 0 ? resolveLayoutMode(initialMetrics) : 'scattered'
+		initialMetrics.width > 0 ? resolveLayoutMode(initialMetrics) : 'landscape'
 	);
 
 	let inertiaRaf = 0;
@@ -67,7 +67,7 @@ export function createAtelierView(maxZoom: number) {
 	}
 
 	function drawingPos(drawing: Drawing) {
-		return layoutPos(drawing.id, layoutMode, drawing.pos);
+		return layoutPos(drawing, layoutMode);
 	}
 
 	function syncLayoutMode(): boolean {
