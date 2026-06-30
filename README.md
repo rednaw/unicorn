@@ -7,7 +7,7 @@ studio view where works sit on a pannable canvas with proximity-based audio.
 | Route       | Idea                                                       |
 | ----------- | ---------------------------------------------------------- |
 | `/`         | Threshold — door sketch; click to enter the atelier (fit-all overview) |
-| `/atelier/` | Studio — pan/zoom canvas, spatial audio near each drawing  |
+| `/atelier/` | Studio — pan/zoom canvas, spatial audio near each drawing (fit-all on entry) |
 | `/credits/` | Colofon — rights and asset credits                         |
 
 ## Prerequisites
@@ -30,9 +30,10 @@ and run `git lfs install` once before cloning or pulling.
 Common commands (inside the container terminal):
 
 ```sh
-pnpm dev          # already started on container launch
-pnpm check        # type-check
-pnpm build        # production build → build/
+pnpm dev            # already started on container launch
+pnpm check          # type-check
+pnpm build          # production build → build/
+pnpm assets:thumbs  # regenerate -thumb.webp after adding JPEGs
 ```
 
 `node_modules/` lives in the project folder (installed by the container's pnpm) so
@@ -85,6 +86,15 @@ the atelier. Drawings without a `track` are silent. `portrait` and `landscape`
 set absolute floor coordinates; `resolveLayoutMode` in `atelier-layout.ts` picks
 which pair is active (portrait phones vs wider viewports).
 
+### Atelier interaction
+
+- **Tap or click** a drawing to focus it; **drag** or two-finger scroll to pan.
+- **Mouse wheel** or pinch zooms at the cursor; **`0`** / **`r`** returns to the full-floor overview.
+- Full-resolution JPEGs load on demand when a piece covers enough of the viewport (not all at once).
+- At most **one** recording plays at a time, with volume/pan tied to proximity.
+
+Agent-oriented constraints and file map: [`CURSOR.md`](./CURSOR.md).
+
 ## Architecture
 
 ```
@@ -116,17 +126,9 @@ static/
   Dockerfile, devcontainer.json
 ```
 
-Cross-route navigation uses the View Transitions API (see `+layout.svelte` and
-`layout.css`). The atelier assigns `view-transition-name: piece-<id>` to the
-**focused** drawing (`DrawingPiece.svelte`). That enables a shared-element morph
-when the same name exists on both the outgoing and incoming page.
-
-The old home page was a grid: each thumbnail carried `piece-<id>`, so clicking a
-work morphed it into the matching mat in the atelier. The door home page no longer
-shows drawing thumbnails, so navigation to `/atelier/` gets a **whole-page crossfade**
-only — not a morph into a specific piece. To restore the morph, something on `/`
-would need the matching `view-transition-name` (e.g. a hidden or decorative element
-tied to the entry drawing).
+Cross-route navigation uses the View Transitions API (`+layout.svelte`, `layout.css`).
+The door home page crossfades into the atelier; piece-level morphs need matching
+`view-transition-name: piece-<id>` on both routes.
 
 ## Stack
 

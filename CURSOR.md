@@ -7,13 +7,16 @@
 ## Don't break
 
 - Respect `maxSharpZoomForDrawing()` / `SHARP_DPR` — never cap zoom or leave thumbs as the final zoomed image to fix Lighthouse.
-- Full-res JPEGs load lazy via the prefetch coordinator (`drawing/prefetch.svelte.ts`): native `<img>` (no blob cache), one full-res at a time, triggered by viewport coverage. Call `requestDrawing(id, intent)` — never fetch drawing URLs directly outside `DrawingImg`.
+- Full-res JPEGs load lazy via the prefetch coordinator (`drawing/prefetch.svelte.ts`): native `<img>` (no blob cache), serial queue (`fullMaxConcurrent: 1`), triggered by viewport **coverage** (`ATELIER_PREFETCH.fullResCoverage`). Call `requestDrawing(id, intent)` — never fetch drawing URLs outside `DrawingImg`.
 - Pan/zoom stays on `translate` + `scale`; no heavy filters on zoomed art.
 - Gestures stay smooth while spatial audio runs.
+- Audio is **solo-near**: at most one track audible; lazy `ensureTrack` on proximity; `unlock(primeIds)` during user gestures for iOS autoplay.
 
 ## UX feel
 
 It should feel **high-end**: pan, pinch, and zoom stay locked to the finger with no stutter; focus animations ease cleanly; audio and overlays track the view without hitch. Jank, input lag, or visible “pop-in” of a softer image mid-gesture breaks the illusion — fix those before chasing Lighthouse scores.
+
+**Input model:** tap/click a piece → focus (~90% fill); mouse wheel / pinch → zoom at cursor; trackpad two-finger scroll → pan; drag → pan; `0` / `r` → fit-all overview. No double-tap or double-click zoom.
 
 ## Performance (metrics)
 
@@ -24,3 +27,17 @@ Lighthouse complaints (LCP, cache TTL on GitHub Pages, `ssr = false` on atelier)
 ## Scale
 
 More drawings and recordings are coming. Each drawing carries **`portrait` and `landscape` floor coordinates** in `content.ts`; `atelier-layout.ts` picks the active set from viewport shape. Keep lazy full-res, coverage-triggered prefetch, the serial JPEG queue, and spatial audio smooth as piece count grows. Never load every full-res JPEG on entry.
+
+## Where to edit
+
+| Change | Files |
+|--------|--------|
+| Drawing data, placement, tracks | `src/lib/content.ts` |
+| Types, sharp-zoom math | `content-types.ts`, `content-derive.ts` |
+| Layout mode (portrait vs landscape) | `atelier-layout.ts` |
+| Pan/zoom/focus | `view.svelte.ts`, `gestures.svelte.ts` |
+| Full-res loading policy | `drawing/prefetch.svelte.ts`, `visible-drawings.ts`, `constants.ts` (`ATELIER_PREFETCH`) |
+| Spatial audio | `audio-engine.svelte.ts`, `spatial-audio-loop.svelte.ts`, `spatial-mix.ts` |
+| Tunables (zoom, gestures, audio, prefetch) | `atelier/constants.ts` |
+
+Tunables live in `constants.ts` — adjust there rather than scattering magic numbers.
