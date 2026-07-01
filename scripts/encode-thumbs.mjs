@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * Generate gallery/atelier placeholder thumbs from original JPEGs.
- * Reads source filenames from src/lib/content.ts (drawingPaths lines).
+ * Build-time WebP thumbs from drawing JPEG masters in static/drawings/.
+ * Outputs are gitignored; CI and local build run this before `vite build`.
  *
  * image001.jpg → image001-thumb.webp  (960 px long edge, WebP)
  *
@@ -41,6 +41,11 @@ function thumbName(file) {
 	return `${base}-thumb.webp`;
 }
 
+function needsEncode(jpgPath, thumbPath) {
+	if (!existsSync(thumbPath)) return true;
+	return statSync(jpgPath).mtimeMs > statSync(thumbPath).mtimeMs;
+}
+
 function kb(path) {
 	return Math.round(statSync(path).size / 1024);
 }
@@ -55,11 +60,14 @@ async function makeThumb(inputPath, outputPath) {
 
 async function main() {
 	if (!existsSync(DRAWINGS_DIR)) {
-		throw new Error(`Drawings directory not found: ${DRAWINGS_DIR}`);
+		console.log('encode-thumbs: static/drawings/ missing (skip)');
+		return;
 	}
 
 	const sources = loadSourceFiles();
-	let ok = 0;
+	let encoded = 0;
+	let skipped = 0;
+	let missing = 0;
 
 	for (const { id, file } of sources) {
 		const input = join(DRAWINGS_DIR, file);
@@ -67,22 +75,32 @@ async function main() {
 
 		if (!existsSync(input)) {
 			console.warn(`skip ${id}: missing ${input}`);
+			missing++;
+			continue;
+		}
+
+		if (!needsEncode(input, output)) {
+			skipped++;
 			continue;
 		}
 
 		await makeThumb(input, output);
 		console.log(`✓ ${thumbName(file)}  ←  ${file}  (${kb(output)} KB)`);
-		ok++;
+		encoded++;
 	}
 
-	if (ok === 0) {
-		throw new Error('No thumbs generated — are originals in static/drawings/?');
+	if (encoded === 0 && skipped > 0) {
+		console.log(`encode-thumbs: ${skipped} thumb(s) up to date`);
+	} else if (encoded > 0) {
+		console.log(`\n${encoded} thumb(s) → ${DRAWINGS_DIR}`);
+	} else if (missing === sources.length) {
+		console.warn('encode-thumbs: no jpg found — pull LFS or add originals');
 	}
-
-	console.log(`\n${ok} thumb(s) → ${DRAWINGS_DIR}`);
 }
 
-main().catch((err) => {
+try {
+	await main();
+} catch (err) {
 	console.error(err.message ?? err);
 	process.exit(1);
-});
+}

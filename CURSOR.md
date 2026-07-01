@@ -50,6 +50,7 @@ More drawings and recordings are coming. Each drawing carries **`portrait` and `
 | Full-res loading policy | `drawing/prefetch.svelte.ts`, `visible-drawings.ts`, `constants.ts` (`ATELIER_PREFETCH`) |
 | Spatial audio | `audio-engine.svelte.ts`, `audio-format.ts`, `spatial-audio-loop.svelte.ts`, `spatial-mix.ts` |
 | Audio encode (build) | `scripts/encode-audio.mjs` |
+| Drawing thumb encode (build) | `scripts/encode-thumbs.mjs` |
 | Tunables (zoom, gestures, audio, prefetch) | `atelier/constants.ts` |
 
 Tunables live in `constants.ts` — adjust there rather than scattering magic numbers.
