@@ -5,7 +5,7 @@ import {
 } from './atelier-themes';
 
 /** Shared room theme — set via ThemePicker (temporary). */
-export const atelierTheme = $state<{ id: AtelierThemeId }>({ id: 'washi' });
+export const atelierTheme = $state<{ id: AtelierThemeId }>({ id: 'graphite' });
 
 let hydrated = false;
 
