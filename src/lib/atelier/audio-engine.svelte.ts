@@ -1,3 +1,4 @@
+import { pickAudioSrc } from '$lib/audio-format';
 import { audioDrawings, audioIndexForDrawing } from '$lib/content';
 import { ATELIER_AUDIO } from './constants';
 import type { SpatialMixResult } from './spatial-mix';
@@ -56,7 +57,7 @@ export function createAudioEngine() {
 		const d = audioDrawings[index];
 		if (!d) return null;
 
-		const el = new Audio(d.track.src);
+		const el = new Audio(pickAudioSrc(d.track.src));
 		el.preload = 'metadata';
 		el.loop = false;
 		const source = ctx.createMediaElementSource(el);

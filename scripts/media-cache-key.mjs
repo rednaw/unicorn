@@ -9,7 +9,7 @@ const root = resolve(import.meta.dirname, '..');
 /** Paths served under SW media routes — keep in sync with `scripts/sw.template.js`. */
 const MEDIA_DIRS = ['static/drawings', 'static/audio', 'static/hall'];
 
-const MEDIA_EXT = new Set(['.jpg', '.jpeg', '.webp', '.png', '.m4a', '.ogg']);
+const MEDIA_EXT = new Set(['.jpg', '.jpeg', '.webp', '.png', '.m4a', '.webm', '.ogg']);
 
 async function walkMediaFiles(dir) {
 	const abs = resolve(root, dir);
