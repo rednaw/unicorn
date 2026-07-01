@@ -58,7 +58,7 @@
 		backdrop-filter: blur(10px);
 		-webkit-backdrop-filter: blur(10px);
 		pointer-events: none;
-		z-index: 40;
+		z-index: 50;
 		max-width: min(92vw, 22rem);
 		min-width: min(92vw, 16rem);
 		min-height: 4.75rem;

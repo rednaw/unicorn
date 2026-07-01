@@ -2,6 +2,10 @@ export const ATELIER_ZOOM = {
 	initial: 0.7,
 	min: 0.25,
 	fitPadding: 0.95,
+	/** Portrait overview — zoom out a touch more so the desk clears top chrome. */
+	fitPaddingPortrait: 0.86,
+	/** Room above the leather pad for the back control (px, portrait fit-all only). */
+	fitInsetTopPortrait: 56,
 	focusFill: 0.9,
 	focusStep: 0.22,
 	/** Ctrl/meta + wheel, or mouse-wheel notches (LINE mode) — see gestures `onWheel`. */

@@ -154,9 +154,11 @@
 </svelte:head>
 
 <div class="atelier" data-room-theme={atelierTheme.id} bind:this={atelierEl}>
-	<BackLink />
-	<ThemePicker />
-	<NearCue nearDrawingId={engine.armed || nearLockId ? displayNearId : null} />
+	<div class="atelier__chrome">
+		<BackLink />
+		<ThemePicker />
+		<NearCue nearDrawingId={engine.armed || nearLockId ? displayNearId : null} />
+	</div>
 
 	<Canvas
 		{view}
@@ -177,5 +179,18 @@
 		font-family: var(--font-serif);
 		touch-action: none;
 		overscroll-behavior: none;
+	}
+
+	/* Fixed HUD above the pannable canvas (back, theme picker, near cue). */
+	.atelier__chrome {
+		position: relative;
+		z-index: 20;
+		pointer-events: none;
+	}
+
+	.atelier__chrome :global(.back),
+	.atelier__chrome :global(.theme-picker),
+	.atelier__chrome :global(.theme-picker *) {
+		pointer-events: auto;
 	}
 </style>

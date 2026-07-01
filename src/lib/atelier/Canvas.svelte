@@ -53,6 +53,7 @@
 	.atelier__viewport {
 		position: absolute;
 		inset: 0;
+		z-index: 0;
 		touch-action: none;
 		cursor: grab;
 		user-select: none;

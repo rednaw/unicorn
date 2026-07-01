@@ -46,15 +46,20 @@ export function fitViewToCanvas(
 	viewport: ViewportRect,
 	minZoom: number,
 	canvas: { width: number; height: number },
-	fitPadding = 0.95
+	fitPadding = 0.95,
+	insets: { top?: number; bottom?: number } = {}
 ): ViewTransform {
+	const top = insets.top ?? 0;
+	const bottom = insets.bottom ?? 0;
+	const availW = viewport.width;
+	const availH = Math.max(1, viewport.height - top - bottom);
 	const fit =
-		Math.min(viewport.width / canvas.width, viewport.height / canvas.height) * fitPadding;
+		Math.min(availW / canvas.width, availH / canvas.height) * fitPadding;
 	const zoom = Math.max(minZoom, fit);
 	return {
 		zoom,
 		tx: (viewport.width - canvas.width * zoom) / 2,
-		ty: (viewport.height - canvas.height * zoom) / 2
+		ty: top + (availH - canvas.height * zoom) / 2
 	};
 }
 
