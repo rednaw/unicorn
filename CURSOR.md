@@ -25,6 +25,16 @@ Lighthouse complaints (LCP, cache TTL on GitHub Pages, `ssr = false` on atelier)
 
 **Litmus test:** can someone still zoom into pencil texture at max sharp zoom? If no, stop.
 
+## Reach (devices & browsers)
+
+**Broad support is a requirement** — the core path must work on common mobile Safari, Chrome, and Firefox; slow networks and budget phones included.
+
+- **Baseline platform:** native `<img>` / `<audio>`, SvelteKit tap preload (`data-sveltekit-preload-data`), Web Audio with gesture unlock. No feature may *require* a Chrome-only API.
+- **Enhancements, not dependencies:** service worker media cache (revisit speed), view transitions (crossfade degrades gracefully). The atelier must remain usable if SW is absent or storage is blocked.
+- **Avoid:** Speculation Rules prerender/prefetch, HLS/DASH/MSE, and other Chromium-first shortcuts unless paired with a universal fallback that carries the real experience.
+- **Audio:** Voice Memo **m4a** masters in git (LFS); **WebM Opus** generated at build (`scripts/encode-audio.mjs`, gitignored). Runtime picks via `pickAudioSrc()` in `audio-format.ts` — WebKit → m4a, else webm when both decode.
+- **When evaluating a new technique:** if it mainly shows up in Chrome DevTools or mainly helps desktop Chrome, treat it as optional polish — not the default architecture.
+
 ## Scale
 
 More drawings and recordings are coming. Each drawing carries **`portrait` and `landscape` floor coordinates** in `content.ts`; `atelier-layout.ts` picks the active set from viewport shape. Keep lazy full-res, coverage-triggered prefetch, the serial JPEG queue, and spatial audio smooth as piece count grows. Never load every full-res JPEG on entry.
@@ -38,7 +48,8 @@ More drawings and recordings are coming. Each drawing carries **`portrait` and `
 | Layout mode (portrait vs landscape) | `atelier-layout.ts` |
 | Pan/zoom/focus | `view.svelte.ts`, `gestures.svelte.ts` |
 | Full-res loading policy | `drawing/prefetch.svelte.ts`, `visible-drawings.ts`, `constants.ts` (`ATELIER_PREFETCH`) |
-| Spatial audio | `audio-engine.svelte.ts`, `spatial-audio-loop.svelte.ts`, `spatial-mix.ts` |
+| Spatial audio | `audio-engine.svelte.ts`, `audio-format.ts`, `spatial-audio-loop.svelte.ts`, `spatial-mix.ts` |
+| Audio encode (build) | `scripts/encode-audio.mjs` |
 | Tunables (zoom, gestures, audio, prefetch) | `atelier/constants.ts` |
 
 Tunables live in `constants.ts` — adjust there rather than scattering magic numbers.

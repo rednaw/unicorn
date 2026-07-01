@@ -25,3 +25,6 @@ vite.config.ts.timestamp-*
 
 # Local perf captures (Lighthouse / DevTools HAR exports)
 *.har
+
+# Opus/WebM siblings — generated from m4a at build (scripts/encode-audio.mjs)
+static/audio/*.webm
