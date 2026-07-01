@@ -33,7 +33,7 @@ Common commands (inside the container terminal):
 pnpm dev            # already started on container launch
 pnpm check          # type-check
 pnpm build          # production build → build/
-pnpm assets:thumbs  # regenerate -thumb.webp after adding JPEGs
+pnpm assets:thumbs  # regenerate -thumb.webp from jpg (also runs before dev/build)
 pnpm assets:audio   # regenerate .webm from m4a (also runs before dev/build)
 ```
 
@@ -56,7 +56,7 @@ the workflow.
 
 The site uses the artist's own drawings and piano recordings.
 
-- `/static/drawings/*.jpg` — drawing pre-scans (final scans TBD)
+- `/static/drawings/*.jpg` — drawing masters (final scans TBD); `-thumb.webp` generated at build, not committed
 - `/static/hall/` — door sketch for the home page (`door-ajar-sketch.webp`)
 - `/static/audio/` — performances (m4a masters; `.webm` generated at build, not committed)
 
@@ -65,10 +65,9 @@ See `static/CREDITS.md` for sources and licensing.
 ### Add or replace assets
 
 1. Drop new files into `/static/drawings/`, `/static/audio/`, etc.
-   (drawings and **m4a** audio are stored via Git LFS — patterns live in `.gitattributes`).
-2. Run `pnpm assets:thumbs` to generate the `-thumb.webp` placeholders.
-3. Run `pnpm assets:audio` (or `pnpm build`) to generate Opus `.webm` siblings from m4a.
-4. Edit `src/lib/content.ts` — add or update entries in `atelier.drawings`
+   (**jpg** drawings and **m4a** audio are stored via Git LFS — patterns live in `.gitattributes`).
+2. Run `pnpm assets:thumbs` or `pnpm assets:audio` (or `pnpm build`) to generate derived webp/webm.
+3. Edit `src/lib/content.ts` — add or update entries in `atelier.drawings`
    (paths, titles, metadata, `portrait` / `landscape` placement, and an optional `track`).
 
 The shape is:

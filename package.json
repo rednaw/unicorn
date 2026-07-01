@@ -6,13 +6,13 @@
   "packageManager": "pnpm@10.12.1",
   "scripts": {
     "dev": "vite dev",
-    "predev": "node scripts/encode-audio.mjs",
-    "build": "node scripts/encode-audio.mjs && vite build && node scripts/emit-sw.mjs",
+    "predev": "node scripts/encode-audio.mjs && node scripts/encode-thumbs.mjs",
+    "build": "node scripts/encode-audio.mjs && node scripts/encode-thumbs.mjs && vite build && node scripts/emit-sw.mjs",
     "preview": "vite preview",
     "prepare": "svelte-kit sync || true",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-    "assets:thumbs": "node scripts/assets-thumbs.mjs",
+    "assets:thumbs": "node scripts/encode-thumbs.mjs",
     "assets:audio": "node scripts/encode-audio.mjs"
   },
   "devDependencies": {
