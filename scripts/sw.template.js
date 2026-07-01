@@ -1,6 +1,6 @@
 /**
  * Service worker — cache-first for atelier media (drawings, hall, audio).
- * Cache name is stamped at build time from SvelteKit's version.json.
+ * Cache name is stamped at build time from a hash of static media (drawings, audio, hall).
  */
 const CACHE = 'unicorn-media-__CACHE_VERSION__';
 const MEDIA = /\/(drawings|audio|hall)\//;
