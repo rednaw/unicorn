@@ -173,9 +173,20 @@ export function createAtelierView(drawings: Drawing[]) {
 	let lastFitWidth = 0;
 	let lastFitHeight = 0;
 
+	function fitAllView() {
+		const isPortrait = layoutMode === 'portrait';
+		return fitViewToCanvas(
+			viewportRect(),
+			minZoom,
+			canvasSize(),
+			isPortrait ? ATELIER_ZOOM.fitPaddingPortrait : ATELIER_ZOOM.fitPadding,
+			isPortrait ? { top: ATELIER_ZOOM.fitInsetTopPortrait } : {}
+		);
+	}
+
 	function resetView() {
 		if (metrics.width === 0) return;
-		applyView(fitViewToCanvas(viewportRect(), minZoom, canvasSize(), ATELIER_ZOOM.fitPadding));
+		applyView(fitAllView());
 		syncClamp();
 		hasUserNavigatedView = false;
 		lastFitWidth = metrics.width;

@@ -11,7 +11,7 @@
 		position: fixed;
 		top: calc(env(safe-area-inset-top, 0px) + 1rem);
 		left: max(1rem, env(safe-area-inset-left, 0px));
-		z-index: 110;
+		z-index: 120;
 		display: grid;
 		place-items: center;
 		width: 2.25rem;

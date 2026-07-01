@@ -23,7 +23,7 @@
 		position: fixed;
 		top: calc(env(safe-area-inset-top, 0px) + 1rem);
 		right: max(1rem, env(safe-area-inset-right, 0px));
-		z-index: 110;
+		z-index: 120;
 		transform: translateY(var(--browser-chrome-top, 0px));
 		/* Stays out of the way until hovered/focused — it's a temporary dev control. */
 		opacity: 0.22;
