@@ -1,5 +1,4 @@
-/** Japanese light — warm paper walls, hinoki rim, washi pad (default). */
-.atelier:not([data-room-theme]),
+/** Japanese light — warm paper walls, hinoki rim, washi pad. */
 .atelier[data-room-theme='washi'] {
 	--lib-wall-deep: #cabb9e;
 	--lib-wall-mid: #e3d7c1;

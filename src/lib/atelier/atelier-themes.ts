@@ -1,8 +1,8 @@
 export const ATELIER_THEME_STORAGE_KEY = 'atelier-room-theme';
 
 export const ATELIER_THEMES = [
-	{ id: 'washi', label: 'Washi & hinoki' },
-	{ id: 'graphite', label: 'Graphite' }
+	{ id: 'graphite', label: 'Graphite' },
+	{ id: 'washi', label: 'Washi & hinoki' }
 ] as const;
 
 export type AtelierThemeId = (typeof ATELIER_THEMES)[number]['id'];
@@ -14,9 +14,9 @@ export function isAtelierThemeId(value: string): value is AtelierThemeId {
 }
 
 export function readStoredAtelierTheme(): AtelierThemeId {
-	if (typeof localStorage === 'undefined') return 'washi';
+	if (typeof localStorage === 'undefined') return 'graphite';
 	const stored = localStorage.getItem(ATELIER_THEME_STORAGE_KEY);
-	return stored && isAtelierThemeId(stored) ? stored : 'washi';
+	return stored && isAtelierThemeId(stored) ? stored : 'graphite';
 }
 
 export function storeAtelierTheme(id: AtelierThemeId): void {
