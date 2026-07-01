@@ -1,13 +1,31 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { base } from '$app/paths';
 	import { goto } from '$app/navigation';
 	import { artist, entryDrawingId } from '$lib/content';
-	import { requestDrawing } from '$lib/drawing/prefetch.svelte';
+	import { requestDrawing, warmAllDrawingThumbs } from '$lib/drawing/prefetch.svelte';
 	import { initAudio, unlock } from '$lib/atelier/audio-engine.svelte';
 
 	const DOOR_WIDTH = 1536;
 	const DOOR_HEIGHT = 1024;
 	const doorSketch = `${base}/hall/door-ajar-sketch.webp`;
+
+	let doorImg = $state<HTMLImageElement>();
+	let thumbsQueued = false;
+
+	function afterNextPaint(fn: () => void) {
+		requestAnimationFrame(() => requestAnimationFrame(fn));
+	}
+
+	function onDoorRendered() {
+		if (thumbsQueued) return;
+		thumbsQueued = true;
+		afterNextPaint(() => warmAllDrawingThumbs());
+	}
+
+	onMount(() => {
+		if (doorImg?.complete) onDoorRendered();
+	});
 
 	async function onDoorClick(e: MouseEvent) {
 		e.preventDefault();
@@ -22,10 +40,14 @@
 {#snippet doorImage()}
 	<img
 		class="threshold__sketch"
+		bind:this={doorImg}
 		src={doorSketch}
 		width={DOOR_WIDTH}
 		height={DOOR_HEIGHT}
 		alt=""
+		decoding="async"
+		fetchpriority="high"
+		onload={onDoorRendered}
 	/>
 {/snippet}
 

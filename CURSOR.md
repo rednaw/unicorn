@@ -8,7 +8,7 @@
 
 - Respect `maxSharpZoomForDrawing()` / `SHARP_DPR` — never cap zoom globally by the smallest piece. Zoom ceiling is **per drawing** at the pinch/wheel anchor (fallback: peak across all pieces on empty floor).
 - Full-res JPEGs load lazy via the prefetch coordinator (`drawing/prefetch.svelte.ts`): native `<img>` (no blob cache), serial queue (`fullMaxConcurrent: 1`), triggered by viewport **coverage** (`ATELIER_PREFETCH.fullResCoverage`). Call `requestDrawing(id, intent)` — never fetch drawing URLs outside `DrawingImg`.
-- Media revisit cache: `sw.js` (drawings, hall, audio) via Cache API — cache key hashes media files (`scripts/media-cache-key.mjs`); code-only deploys keep the bucket. Audio handles Range requests for `<audio>` streaming.
+- Media revisit cache: `sw.js` (drawings, hall, audio) via Cache API — cache key hashes media files (`scripts/media-cache-key.mjs`); code-only deploys keep the bucket. **Install precache:** hall webp + drawing thumbs from `content.ts`; full JPEGs and audio stay lazy on fetch. Home warms thumbs after the door paints (HTTP cache) for the window before SW install completes. Audio handles Range requests for `<audio>` streaming.
 - Pan/zoom stays on `translate` + `scale`; no heavy filters on zoomed art.
 - Gestures stay smooth while spatial audio runs.
 - Audio is **solo-near**: at most one track audible; lazy `ensureTrack` on proximity; `unlock(primeIds)` during user gestures for iOS autoplay.

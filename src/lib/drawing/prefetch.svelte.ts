@@ -17,10 +17,15 @@ function drawingById(id: string) {
 	return drawings.find((d) => d.id === id);
 }
 
-function warmThumb(url: string): void {
+const thumbsWarmed = new Set<string>();
+
+function warmThumb(url: string, priority: 'high' | 'low' | 'auto' = 'high'): void {
 	if (typeof window === 'undefined') return;
+	if (thumbsWarmed.has(url)) return;
+	thumbsWarmed.add(url);
 	const img = new Image();
-	img.fetchPriority = 'high';
+	img.fetchPriority = priority;
+	img.decoding = 'async';
 	img.src = url;
 }
 
@@ -60,6 +65,13 @@ function enqueueFull(id: string, src: string): void {
 	if (fullQueue.some((j) => j.id === id)) return;
 	fullQueue.push({ id, src });
 	drainFullQueue();
+}
+
+/** Warm gallery thumbs in the HTTP cache — covers the gap before SW install precache finishes. */
+export function warmAllDrawingThumbs(priority: 'high' | 'low' | 'auto' = 'low'): void {
+	for (const drawing of drawings) {
+		warmThumb(drawing.thumb, priority);
+	}
 }
 
 /** Single entry point for warming drawing assets — callers pass id + intent, not URLs. */

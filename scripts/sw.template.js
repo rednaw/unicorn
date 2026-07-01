@@ -3,10 +3,19 @@
  * Cache name is stamped at build time from a hash of static media (drawings, audio, hall).
  */
 const CACHE = 'unicorn-media-__CACHE_VERSION__';
+const PRECACHE_URLS = __PRECACHE_URLS__;
 const MEDIA = /\/(drawings|audio|hall)\//;
 
-self.addEventListener('install', () => {
-	self.skipWaiting();
+self.addEventListener('install', (event) => {
+	event.waitUntil(
+		(async () => {
+			if (PRECACHE_URLS.length > 0) {
+				const cache = await caches.open(CACHE);
+				await Promise.allSettled(PRECACHE_URLS.map((url) => cache.add(url)));
+			}
+			await self.skipWaiting();
+		})()
+	);
 });
 
 self.addEventListener('activate', (event) => {
