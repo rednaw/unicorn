@@ -8,6 +8,7 @@
 
 - Respect `maxSharpZoomForDrawing()` / `SHARP_DPR` — never cap zoom globally by the smallest piece. Zoom ceiling is **per drawing** at the pinch/wheel anchor (fallback: peak across all pieces on empty floor).
 - Full-res JPEGs load lazy via the prefetch coordinator (`drawing/prefetch.svelte.ts`): native `<img>` (no blob cache), serial queue (`fullMaxConcurrent: 1`), triggered by viewport **coverage** (`ATELIER_PREFETCH.fullResCoverage`). Call `requestDrawing(id, intent)` — never fetch drawing URLs outside `DrawingImg`.
+- Media revisit cache: `sw.js` (drawings, hall, audio) via Cache API — version bumps with each build (`scripts/emit-sw.mjs`). Audio handles Range requests for `<audio>` streaming.
 - Pan/zoom stays on `translate` + `scale`; no heavy filters on zoomed art.
 - Gestures stay smooth while spatial audio runs.
 - Audio is **solo-near**: at most one track audible; lazy `ensureTrack` on proximity; `unlock(primeIds)` during user gestures for iOS autoplay.
