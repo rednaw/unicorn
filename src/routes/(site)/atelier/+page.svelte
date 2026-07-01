@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
-	import { base } from '$app/paths';
 	import { browser } from '$app/environment';
+	import { base } from '$app/paths';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { drawings, artist } from '$lib/content';
