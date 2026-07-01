@@ -1,10 +1,8 @@
 /**
- * Graphite — cool neutral drafting room (default). Near-monochrome slate walls and a
- * graphite-grey drafting surface echo the medium itself; the warm cream of the
- * paper reads vividly against the cool neutral. Steel hairline instead of brass.
+ * Graphite — cool neutral drafting room. Near-monochrome slate walls and a
+ * graphite-grey drafting surface; warm paper reads against the cool neutral.
  */
-.atelier:not([data-room-theme]),
-.atelier[data-room-theme='graphite'] {
+.atelier {
 	--lib-wall-deep: #14171a;
 	--lib-wall-mid: #262b30;
 	--lib-wall-light: #3c434a;
