@@ -8,8 +8,6 @@
 	import { prefetchVisibleInView, requestDrawing } from '$lib/drawing/prefetch.svelte';
 	import '$lib/atelier/backgrounds.css';
 	import BackLink from '$lib/atelier/BackLink.svelte';
-	import ThemePicker from '$lib/atelier/ThemePicker.svelte';
-	import { atelierTheme, hydrateAtelierTheme } from '$lib/atelier/atelier-theme.svelte';
 	import NearCue from '$lib/atelier/NearCue.svelte';
 	import Canvas from '$lib/atelier/Canvas.svelte';
 	import { createAtelierGestures } from '$lib/atelier/gestures.svelte';
@@ -106,7 +104,6 @@
 	});
 
 	onMount(() => {
-		hydrateAtelierTheme();
 		enterSpatial();
 
 		let unobserveViewport: (() => void) | undefined;
@@ -167,10 +164,9 @@
 	/>
 </svelte:head>
 
-<div class="atelier" data-room-theme={atelierTheme.id} bind:this={atelierEl}>
+<div class="atelier" bind:this={atelierEl}>
 	<div class="atelier__chrome">
 		<BackLink onBack={goBack} />
-		<ThemePicker />
 		<NearCue nearDrawingId={engine.armed || nearLockId ? displayNearId : null} />
 	</div>
 
@@ -195,16 +191,14 @@
 		overscroll-behavior: none;
 	}
 
-	/* Fixed HUD above the pannable canvas (back, theme picker, near cue). */
+	/* Fixed HUD above the pannable canvas (back, near cue). */
 	.atelier__chrome {
 		position: relative;
 		z-index: 20;
 		pointer-events: none;
 	}
 
-	.atelier__chrome :global(.back),
-	.atelier__chrome :global(.theme-picker),
-	.atelier__chrome :global(.theme-picker *) {
+	.atelier__chrome :global(.back) {
 		pointer-events: auto;
 	}
 </style>
