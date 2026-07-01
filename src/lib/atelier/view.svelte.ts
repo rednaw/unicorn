@@ -193,6 +193,29 @@ export function createAtelierView(drawings: Drawing[]) {
 		lastFitHeight = metrics.height;
 	}
 
+	function isAtFitAll(): boolean {
+		if (metrics.width === 0) return true;
+		const target = fitAllView();
+		const v = getView();
+		return (
+			Math.abs(v.tx - target.tx) < 2 &&
+			Math.abs(v.ty - target.ty) < 2 &&
+			Math.abs(v.zoom - target.zoom) < 0.01
+		);
+	}
+
+	function resetViewAnimated(onDone?: () => void) {
+		if (metrics.width === 0) {
+			onDone?.();
+			return;
+		}
+		const target = fitAllView();
+		animateView(target.tx, target.ty, target.zoom, ATELIER_ANIM.viewDurationMs, () => {
+			hasUserNavigatedView = false;
+			onDone?.();
+		});
+	}
+
 	function onViewportResize() {
 		if (metrics.width === 0) return;
 		const modeChanged = syncLayoutMode();
@@ -305,6 +328,8 @@ export function createAtelierView(drawings: Drawing[]) {
 		setMetrics,
 		syncClamp,
 		resetView,
+		isAtFitAll,
+		resetViewAnimated,
 		onViewportResize,
 		applyZoomAt,
 		panBy,

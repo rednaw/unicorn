@@ -1,10 +1,18 @@
 <script lang="ts">
 	import { base } from '$app/paths';
+
+	let { onBack }: { onBack?: () => void } = $props();
 </script>
 
-<a class="back" href="{base}/" aria-label="Terug">
-	<span aria-hidden="true">←</span>
-</a>
+{#if onBack}
+	<button type="button" class="back" onclick={onBack} aria-label="Terug">
+		<span aria-hidden="true">←</span>
+	</button>
+{:else}
+	<a class="back" href="{base}/" aria-label="Terug">
+		<span aria-hidden="true">←</span>
+	</a>
+{/if}
 
 <style>
 	.back {
@@ -29,6 +37,13 @@
 		/* transform for browser-chrome offset — excluded from CLS (unlike top/bottom). */
 		transform: translateY(var(--browser-chrome-top, 0px));
 		transition: opacity 200ms ease, transform 200ms ease, background 200ms ease;
+	}
+
+	button.back {
+		appearance: none;
+		cursor: pointer;
+		padding: 0;
+		font: inherit;
 	}
 
 	.back:hover,

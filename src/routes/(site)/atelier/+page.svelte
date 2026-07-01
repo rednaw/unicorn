@@ -70,15 +70,6 @@
 		return ids;
 	}
 
-	const gestures = createAtelierGestures(view, {
-		unlock: () => unlock(nearbyAudioIds()),
-		armSpatial,
-		releaseNearLock,
-		onPrefetchDrawing: (id) => requestDrawing(id, 'full'),
-		onEscape: () => goto(`${base}/`),
-		viewport: () => viewport
-	});
-
 	function focusDrawingById(id: string) {
 		unlock([id]);
 		focusedId = id;
@@ -90,6 +81,29 @@
 		if (drawing) view.focusDrawing(drawing, armSpatial);
 		else armSpatial();
 	}
+
+	function goBack() {
+		view.stopInertia();
+		if (view.isAtFitAll()) {
+			void goto(`${base}/`);
+			return;
+		}
+		focusedId = null;
+		nearLockId = null;
+		view.resetViewAnimated(() => {
+			scheduleViewportPrefetch();
+			armSpatial();
+		});
+	}
+
+	const gestures = createAtelierGestures(view, {
+		unlock: () => unlock(nearbyAudioIds()),
+		armSpatial,
+		releaseNearLock,
+		onPrefetchDrawing: (id) => requestDrawing(id, 'full'),
+		onEscape: goBack,
+		viewport: () => viewport
+	});
 
 	onMount(() => {
 		hydrateAtelierTheme();
@@ -155,7 +169,7 @@
 
 <div class="atelier" data-room-theme={atelierTheme.id} bind:this={atelierEl}>
 	<div class="atelier__chrome">
-		<BackLink />
+		<BackLink onBack={goBack} />
 		<ThemePicker />
 		<NearCue nearDrawingId={engine.armed || nearLockId ? displayNearId : null} />
 	</div>
