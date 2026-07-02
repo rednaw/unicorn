@@ -1,9 +1,7 @@
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
-	import { browser } from '$app/environment';
 	import { base } from '$app/paths';
 	import { goto } from '$app/navigation';
-	import { page } from '$app/state';
 	import { drawings, artist } from '$lib/content';
 	import { prefetchVisibleInView, requestDrawing } from '$lib/drawing/prefetch.svelte';
 	import { ATELIER_PREFETCH } from '$lib/atelier/constants';
@@ -18,9 +16,9 @@
 	import { observeViewport } from '$lib/atelier/viewport-metrics';
 	import { enterSpatial, leaveSpatial, unlock, armSpatial, engine } from '$lib/atelier/audio-engine.svelte';
 
-	let focusedId = $state<string | null>(browser ? page.url.searchParams.get('focus') : null);
-	/** Deep-link: `/atelier/?focus=<drawingId>` — pins HUD / HMV until the visitor pans or zooms. */
-	let nearLockId = $state<string | null>(browser ? page.url.searchParams.get('focus') : null);
+	let focusedId = $state<string | null>(null);
+	/** After piece focus, pin NearCue on that work until the visitor pans or zooms. */
+	let nearCuePinned = $state(false);
 	let atelierEl = $state<HTMLDivElement>();
 	let viewport = $state<HTMLDivElement>();
 
@@ -28,13 +26,14 @@
 	const spatial = createSpatialAudioLoop(view);
 
 	const displayNearId = $derived(
-		nearLockId ?? spatial.dominantAudioDrawingId ?? spatial.nearDrawingId
+		nearCuePinned && focusedId
+			? focusedId
+			: (spatial.dominantAudioDrawingId ?? spatial.nearDrawingId)
 	);
 
 	let settleTimer: ReturnType<typeof setTimeout> | undefined;
 
 	function scheduleViewportPrefetch() {
-		if (!browser) return;
 		clearTimeout(settleTimer);
 		settleTimer = setTimeout(() => {
 			if (view.metrics.width === 0) return;
@@ -55,8 +54,8 @@
 		scheduleViewportPrefetch();
 	});
 
-	function releaseNearLock() {
-		nearLockId = null;
+	function releaseNearCuePin() {
+		nearCuePinned = false;
 	}
 
 	/** Tracks the visitor is at/approaching — primed on gesture so lazy elements can play (iOS). */
@@ -72,7 +71,7 @@
 	function focusDrawingById(id: string) {
 		unlock([id]);
 		focusedId = id;
-		nearLockId = id;
+		nearCuePinned = true;
 		requestDrawing(id, 'full');
 		const drawing = drawings.find((d) => d.id === id);
 		// Arm audio only once the view settles on the target — playing during the
@@ -88,7 +87,7 @@
 			return;
 		}
 		focusedId = null;
-		nearLockId = null;
+		nearCuePinned = false;
 		view.resetViewAnimated(() => {
 			scheduleViewportPrefetch();
 			armSpatial();
@@ -98,7 +97,7 @@
 	const gestures = createAtelierGestures(view, {
 		unlock: () => unlock(nearbyAudioIds()),
 		armSpatial,
-		releaseNearLock,
+		releaseNearCuePin,
 		onPrefetchDrawing: (id) => requestDrawing(id, 'full'),
 		onFocusPiece: focusDrawingById,
 		onEscape: goBack,
@@ -116,7 +115,6 @@
 			if (!viewport || !atelierEl) return;
 			viewportEl = viewport;
 
-			// Fit from window metrics (already in view) — no DOM geometry read on load.
 			view.onViewportResize();
 
 			unobserveViewport = observeViewport(viewport, (metrics) => {
@@ -130,14 +128,7 @@
 			});
 
 			spatial.start();
-
-			if (focusedId) {
-				requestAnimationFrame(() => {
-					if (focusedId) focusDrawingById(focusedId);
-				});
-			} else {
-				scheduleViewportPrefetch();
-			}
+			scheduleViewportPrefetch();
 
 			viewport.addEventListener('wheel', gestures.onWheel, { passive: false });
 			viewport.addEventListener('touchmove', gestures.onTouchMove, { passive: false });
@@ -146,8 +137,8 @@
 		window.addEventListener('keydown', gestures.onKeyDown);
 		return () => {
 			clearTimeout(settleTimer);
-			unobserveBrowserChrome?.();
 			unobserveViewport?.();
+			unobserveBrowserChrome?.();
 			viewportEl?.removeEventListener('wheel', gestures.onWheel);
 			viewportEl?.removeEventListener('touchmove', gestures.onTouchMove);
 			window.removeEventListener('keydown', gestures.onKeyDown);
@@ -169,7 +160,7 @@
 <div class="atelier" bind:this={atelierEl}>
 	<div class="atelier__chrome">
 		<BackLink onBack={goBack} />
-		<NearCue nearDrawingId={engine.armed || nearLockId ? displayNearId : null} />
+		<NearCue nearDrawingId={engine.armed || nearCuePinned ? displayNearId : null} />
 	</div>
 
 	<Canvas

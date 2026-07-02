@@ -12,7 +12,7 @@ type PinchState = { midX: number; midY: number; dist: number; left: number; top:
 export type AtelierGestureDeps = {
 	unlock: () => void | Promise<void>;
 	armSpatial: () => void;
-	releaseNearLock: () => void;
+	releaseNearCuePin: () => void;
 	onPrefetchDrawing: (id: string) => void;
 	onFocusPiece: (id: string) => void;
 	onEscape: () => void;
@@ -47,7 +47,7 @@ export function createAtelierGestures(view: AtelierView, deps: AtelierGestureDep
 
 	function engage() {
 		deps.armSpatial();
-		deps.releaseNearLock();
+		deps.releaseNearCuePin();
 	}
 
 	function focusPiece(id: string) {
