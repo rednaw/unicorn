@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { base } from '$app/paths';
+	import { asset } from '$app/paths';
 	import type { Drawing } from '$lib/content';
 	import { DEFAULT_DRAWING_WIDTH } from '$lib/content';
 	import { HMV_PLAQUE } from './hmv-plaque';
@@ -48,7 +48,7 @@
 					class="piece__hmv"
 					class:piece__hmv--singing={isNear}
 					style:--hmv-width="{HMV_PLAQUE.cssWidth}px"
-					src="{base}{HMV_PLAQUE.src}"
+					src={asset(HMV_PLAQUE.src)}
 					alt=""
 					width={HMV_PLAQUE.srcWidth}
 					height={HMV_PLAQUE.srcHeight}

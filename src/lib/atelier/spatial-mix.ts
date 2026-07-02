@@ -1,4 +1,4 @@
-import { audioDrawings, drawings, type Drawing } from '$lib/content';
+import { audioDrawings, audioIndexForDrawing, drawings, type Drawing } from '$lib/content';
 import { layoutPos, type AtelierLayoutMode } from './atelier-layout';
 import { ATELIER_AUDIO } from './constants';
 import { drawingListenPoint } from './drawing-geometry';
@@ -83,5 +83,25 @@ export function computeSpatialMix(
 		nearDrawingId: near ? nearDrawingId : null,
 		nearLevel: zoomGate > 0 ? nearLevel : 0,
 		dominantAudioDrawingId
+	};
+}
+
+/** While a piece is tap-focused, keep its track dominant until the visitor pans/zooms. */
+export function applyPinnedAudioFocus(mix: SpatialMixResult, drawingId: string): SpatialMixResult {
+	const audioIndex = audioIndexForDrawing(drawingId);
+	if (audioIndex < 0) return mix;
+
+	const { playThreshold } = ATELIER_AUDIO;
+	const pinned = mix.drawings.find((d) => d.audioIndex === audioIndex);
+	const volume = Math.max(pinned?.volume ?? 0, playThreshold);
+
+	return {
+		...mix,
+		dominantAudioDrawingId: drawingId,
+		nearDrawingId: drawingId,
+		nearLevel: Math.max(mix.nearLevel, volume),
+		drawings: mix.drawings.map((d) =>
+			d.audioIndex === audioIndex ? { ...d, volume } : d
+		)
 	};
 }

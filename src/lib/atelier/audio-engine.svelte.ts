@@ -7,20 +7,18 @@ type TrackNodes = {
 	el: HTMLAudioElement;
 	gain: GainNode;
 	panner: StereoPannerNode | null;
-	/** When set, pause the element once this timestamp passes (lets the gain fade out first). */
-	pauseAt: number | null;
 };
 
-/** Grace period before a faded-out (non-dominant) track is paused, so the ramp is audible. */
-const FADE_OUT_PAUSE_SEC = ATELIER_AUDIO.fadeOutPauseSec;
-
 /**
- * because the autoplay/iOS unlock happens on the home door-click and must carry into the
- * atelier through the *same* `AudioContext` — SvelteKit's client-side navigation keeps the
- * document (and context) alive, so a fresh per-page instance would lose the unlock.
+ * Shared Web Audio graph for the whole visit (door → atelier).
  *
- * Tracks are created lazily by proximity (`ensureTrack`) and only the dominant one is audible
- * (solo-near), so a floor of many recordings never downloads every `<audio>` upfront.
+ * State:
+ *   ready    — AudioContext exists
+ *   unlocked — at least one user gesture ran unlock() (autoplay / iOS)
+ *   armed    — spatial mix may be audible (explore or tap-focus)
+ *
+ * Playback: solo-near — only the dominant track gets gain; never pause() during mix
+ * (Chromium incognito blocks play() after pause until a new gesture).
  */
 function createAudioEngine() {
 	const engine = $state({
@@ -57,7 +55,7 @@ function createAudioEngine() {
 		if (!d) return null;
 
 		const el = new Audio(pickAudioSrc(d.track.src));
-		el.preload = 'metadata';
+		el.preload = 'auto';
 		el.loop = false;
 		const source = ctx.createMediaElementSource(el);
 		const gain = ctx.createGain();
@@ -70,7 +68,7 @@ function createAudioEngine() {
 			source.connect(gain).connect(ctx.destination);
 		}
 		el.pause();
-		const track: TrackNodes = { el, gain, panner, pauseAt: null };
+		const track: TrackNodes = { el, gain, panner };
 		nodes.set(index, track);
 		return track;
 	}
@@ -104,9 +102,15 @@ function createAudioEngine() {
 			src.start();
 		}
 
-		const toPrime = indicesFor(primeDrawingIds).filter((i) => !primedIndices.has(i));
+		const indices = indicesFor(primeDrawingIds);
+		const toPrime = indices.filter((i) => !primedIndices.has(i));
 		if (toPrime.length) {
 			await primeTracks(toPrime);
+		}
+		// Already-primed tracks skip primeTracks — still need play() in *this* gesture
+		// or Chromium incognito will kill programmatic resume after buffer/policy timeout.
+		if (indices.length) {
+			await assertPlayback(indices);
 		}
 	}
 
@@ -142,6 +146,17 @@ function createAudioEngine() {
 		);
 	}
 
+	/** Play during the unlock gesture without rewinding — (re)binds autoplay for lazy tracks. */
+	async function assertPlayback(indices: number[]): Promise<void> {
+		await Promise.all(
+			indices.map((i) => {
+				const n = ensureTrack(i);
+				if (!n) return Promise.resolve();
+				return n.el.play().catch(() => {});
+			})
+		);
+	}
+
 	function enterSpatial(): void {
 		initAudio();
 		engine.armed = false;
@@ -166,38 +181,31 @@ function createAudioEngine() {
 	}
 
 	/**
-	 * Solo-near: drive only the dominant (loudest-by-proximity) track audible; ramp every other
-	 * existing track to silence and pause it after a short fade. Non-dominant tracks are never
-	 * created here, so only pieces the visitor reaches ever fetch their recording.
+	 * Solo-near: drive only the dominant track audible; ramp others to silence via gain.
+	 * Never pause `<audio>` here — after pause(), Chromium incognito blocks play() until
+	 * a new gesture even when gain/volume recovers. pauseAllTracks() on leave only.
 	 */
 	function applyMix(mix: SpatialMixResult): void {
 		if (!ctx) return;
 		const now = ctx.currentTime;
-		const { rampTimeSec, playThreshold, pauseThreshold } = ATELIER_AUDIO;
+		const { rampTimeSec, playThreshold } = ATELIER_AUDIO;
 
 		const dominantId = engine.armed ? mix.dominantAudioDrawingId : null;
 		const dominantIndex = dominantId == null ? -1 : audioIndexForDrawing(dominantId);
 		const dominantMix =
 			dominantIndex >= 0 ? mix.drawings.find((d) => d.audioIndex === dominantIndex) : undefined;
 
+		const canPlay = engine.unlocked && ctx.state === 'running';
+
 		if (dominantMix) {
 			const n = ensureTrack(dominantIndex);
 			if (n) {
-				n.pauseAt = null;
-				n.gain.gain.setTargetAtTime(dominantMix.volume, now, rampTimeSec);
+				const audibility = canPlay ? dominantMix.volume : 0;
+				n.gain.gain.setTargetAtTime(audibility, now, rampTimeSec);
 				n.panner?.pan.setTargetAtTime(dominantMix.pan, now, rampTimeSec);
-				const canPlay = engine.unlocked && ctx.state === 'running';
-				if (canPlay) {
-					if (n.el.paused) {
-						if (dominantMix.volume >= playThreshold) {
-							if (n.el.ended) n.el.currentTime = 0;
-							void n.el.play().catch(() => {});
-						}
-					} else if (dominantMix.volume < pauseThreshold) {
-						n.el.pause();
-					}
-				} else if (!n.el.paused) {
-					n.el.pause();
+				if (canPlay && n.el.paused && dominantMix.volume >= playThreshold) {
+					if (n.el.ended) n.el.currentTime = 0;
+					void n.el.play().catch(() => {});
 				}
 			}
 		}
@@ -205,21 +213,12 @@ function createAudioEngine() {
 		for (const [index, n] of nodes) {
 			if (index === dominantIndex && dominantMix) continue;
 			n.gain.gain.setTargetAtTime(0, now, rampTimeSec);
-			if (n.el.paused) {
-				n.pauseAt = null;
-			} else if (n.pauseAt == null) {
-				n.pauseAt = now + FADE_OUT_PAUSE_SEC;
-			} else if (now >= n.pauseAt) {
-				n.el.pause();
-				n.pauseAt = null;
-			}
 		}
 	}
 
 	function pauseAllTracks(): void {
 		for (const n of nodes.values()) {
 			if (!n.el.paused) n.el.pause();
-			n.pauseAt = null;
 		}
 		if (ctx) {
 			const now = ctx.currentTime;
