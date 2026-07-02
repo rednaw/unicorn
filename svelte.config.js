@@ -18,6 +18,11 @@ const config = {
 			directives: {
 				'default-src': ['self'],
 				'script-src': ['self'],
+				// Svelte SSR event delegation: on*="this.__e=event" (nonces/hashes on script-src do not apply).
+				'script-src-attr': [
+					'unsafe-hashes',
+					'sha256-7dQwUgLau1NFCCGjfn9FsYptB6ZtWxJin6VohGIu20I='
+				],
 				'worker-src': ['self'],
 				// Svelte scoped styles + view transitions inject <style> blocks.
 				'style-src': ['self', 'unsafe-inline'],
