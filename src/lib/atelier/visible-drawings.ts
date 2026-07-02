@@ -28,7 +28,7 @@ function rectsIntersect(
 }
 
 /** Drawings intersecting the viewport, nearest-first (canvas centre distance). */
-export function visibleDrawings(
+function visibleDrawings(
 	view: ViewTransform,
 	viewport: ViewportRect,
 	layoutMode: AtelierLayoutMode,
@@ -74,8 +74,8 @@ export function prefetchIntentsForView(
 	viewport: ViewportRect,
 	layoutMode: AtelierLayoutMode,
 	posFor: (d: Drawing) => { x: number; y: number }
-): { id: string; intent: 'sharp' }[] {
+): { id: string; intent: 'full' }[] {
 	return visibleDrawings(view, viewport, layoutMode, posFor)
 		.filter(({ coverage }) => coverage >= ATELIER_PREFETCH.fullResCoverage)
-		.map(({ drawing }) => ({ id: drawing.id, intent: 'sharp' as const }));
+		.map(({ drawing }) => ({ id: drawing.id, intent: 'full' as const }));
 }

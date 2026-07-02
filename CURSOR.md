@@ -2,55 +2,40 @@
 
 ## Atelier first
 
-**Crisp high-res pan and zoom on large drawings is paramount** — including audio indicators (HMV plaque, near cue) and anything else on the canvas later. Gallery (`/`) optimizes for fast thumbs; don't trade one for the other silently.
+Crisp pan/zoom on **full-res drawings** is paramount — HMV plaque, near cue, anything on the canvas. Home (`/`) is a fast door sketch; don't trade atelier sharpness for metrics.
+
+**Litmus:** still sharp at max zoom? If no, stop. Lighthouse / GH Pages TTL are secondary.
 
 ## Don't break
 
-- Respect `maxSharpZoomForDrawing()` / `SHARP_DPR` — never cap zoom globally by the smallest piece. Zoom ceiling is **per drawing** at the pinch/wheel anchor (fallback: peak across all pieces on empty floor).
-- Full-res JPEGs load lazy via the prefetch coordinator (`drawing/prefetch.svelte.ts`): native `<img>` (no blob cache), serial queue (`fullMaxConcurrent: 1`), triggered by viewport **coverage** (`ATELIER_PREFETCH.fullResCoverage`). Call `requestDrawing(id, intent)` — never fetch drawing URLs outside `DrawingImg`.
-- Media revisit cache: `sw.js` (drawings, hall, audio) via Cache API — cache key hashes media files (`scripts/media-cache-key.mjs`); code-only deploys keep the bucket. **Install precache:** hall webp + drawing thumbs from `content.ts`; full JPEGs and audio stay lazy on fetch. Home warms thumbs after the door paints (HTTP cache) for the window before SW install completes. Audio handles Range requests for `<audio>` streaming.
-- Pan/zoom stays on `translate` + `scale`; no heavy filters on zoomed art.
-- Gestures stay smooth while spatial audio runs.
-- Audio is **solo-near**: at most one track audible; lazy `ensureTrack` on proximity; `unlock(primeIds)` during user gestures for iOS autoplay.
+- **Zoom:** `maxSharpZoomForDrawing()` per piece — never a global cap from the smallest drawing.
+- **Images:** full-res only via `requestDrawing(id, intent)` → `DrawingImg`. Native `<img>`, serial queue, coverage gate (`ATELIER_PREFETCH`). No blob cache, no fetching drawing URLs elsewhere.
+- **Motion:** pan/zoom on `translate` + `scale` only; no heavy filters on zoomed art. Gestures must stay smooth while spatial audio runs.
+- **Audio:** solo-near; lazy tracks; `unlock(primeIds)` on user gestures (iOS). m4a masters (LFS) + WebM at build; `pickAudioSrc()` at runtime.
+- **SW:** revisit cache for drawings/hall/audio; media-hash bucket; precache hall webp + thumbs only. Core path works without SW.
 
-## UX feel
+**Input:** tap piece → focus; wheel/pinch → zoom at cursor; drag / two-finger → pan; `0`/`r` → fit-all. No double-tap zoom.
 
-It should feel **high-end**: pan, pinch, and zoom stay locked to the finger with no stutter; focus animations ease cleanly; audio and overlays track the view without hitch. Jank, input lag, or visible “pop-in” of a softer image mid-gesture breaks the illusion — fix those before chasing Lighthouse scores.
+## Reach
 
-**Input model:** tap/click a piece → focus (~90% fill); mouse wheel / pinch → zoom at cursor; trackpad two-finger scroll → pan; drag → pan; `0` / `r` → fit-all overview. No double-tap or double-click zoom.
-
-## Performance (metrics)
-
-Lighthouse complaints (LCP, cache TTL on GitHub Pages, `ssr = false` on atelier) are real but **secondary** to the feel above. Optimize load order, preload, and right-sized assets — not sharpness.
-
-**Litmus test:** can someone still zoom into pencil texture at max sharp zoom? If no, stop.
-
-## Reach (devices & browsers)
-
-**Broad support is a requirement** — the core path must work on common mobile Safari, Chrome, and Firefox; slow networks and budget phones included.
-
-- **Baseline platform:** native `<img>` / `<audio>`, SvelteKit tap preload (`data-sveltekit-preload-data`), Web Audio with gesture unlock. No feature may *require* a Chrome-only API.
-- **Enhancements, not dependencies:** service worker media cache (revisit speed), view transitions (crossfade degrades gracefully). The atelier must remain usable if SW is absent or storage is blocked.
-- **Avoid:** Speculation Rules prerender/prefetch, HLS/DASH/MSE, and other Chromium-first shortcuts unless paired with a universal fallback that carries the real experience.
-- **Audio:** Voice Memo **m4a** masters in git (LFS); **WebM Opus** generated at build (`scripts/encode-audio.mjs`, gitignored). Runtime picks via `pickAudioSrc()` in `audio-format.ts` — WebKit → m4a, else webm when both decode.
-- **When evaluating a new technique:** if it mainly shows up in Chrome DevTools or mainly helps desktop Chrome, treat it as optional polish — not the default architecture.
+Safari, Chrome, Firefox — slow networks, budget phones. Native `<img>` / `<audio>`, Web Audio + gesture unlock. SW and view transitions are enhancements, not requirements. No Chrome-only APIs (Speculation Rules, HLS/MSE, etc.) without a universal fallback.
 
 ## Scale
 
-More drawings and recordings are coming. Each drawing carries **`portrait` and `landscape` floor coordinates** in `content.ts`; `atelier-layout.ts` picks the active set from viewport shape. Keep lazy full-res, coverage-triggered prefetch, the serial JPEG queue, and spatial audio smooth as piece count grows. Never load every full-res JPEG on entry.
+More drawings/recordings coming. `portrait` / `landscape` coords in `content.ts`; never load all full-res JPEGs on entry.
 
 ## Where to edit
 
 | Change | Files |
 |--------|--------|
-| Drawing data, placement, tracks | `src/lib/content.ts` |
-| Types, sharp-zoom math | `content-types.ts`, `content-derive.ts` |
-| Layout mode (portrait vs landscape) | `atelier-layout.ts` |
+| Content, placement, tracks | `src/lib/content.ts` |
+| Types, sharp zoom | `content-types.ts`, `content-derive.ts` |
+| Layout mode | `atelier-layout.ts` |
 | Pan/zoom/focus | `view.svelte.ts`, `gestures.svelte.ts` |
-| Full-res loading policy | `drawing/prefetch.svelte.ts`, `visible-drawings.ts`, `constants.ts` (`ATELIER_PREFETCH`) |
+| Prefetch | `drawing/prefetch.svelte.ts`, `visible-drawings.ts` |
 | Spatial audio | `audio-engine.svelte.ts`, `audio-format.ts`, `spatial-audio-loop.svelte.ts`, `spatial-mix.ts` |
-| Audio encode (build) | `scripts/encode-audio.mjs` |
-| Drawing thumb encode (build) | `scripts/encode-thumbs.mjs` |
-| Tunables (zoom, gestures, audio, prefetch) | `atelier/constants.ts` |
+| Tunables | `atelier/constants.ts` |
+| Encode (build) | `scripts/encode-audio.mjs`, `encode-thumbs.mjs`, `content-drawings.mjs` |
+| Service worker | `scripts/sw.template.js`, `service-worker.mjs`, `media-cache-key.mjs` |
 
-Tunables live in `constants.ts` — adjust there rather than scattering magic numbers.
+Workflow and architecture: `README.md`.

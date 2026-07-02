@@ -12,10 +12,9 @@ type TrackNodes = {
 };
 
 /** Grace period before a faded-out (non-dominant) track is paused, so the ramp is audible. */
-const FADE_OUT_PAUSE_SEC = 0.3;
+const FADE_OUT_PAUSE_SEC = ATELIER_AUDIO.fadeOutPauseSec;
 
 /**
- * Spatial audio engine. Built as a factory but used as one shared instance (`audioEngine`)
  * because the autoplay/iOS unlock happens on the home door-click and must carry into the
  * atelier through the *same* `AudioContext` — SvelteKit's client-side navigation keeps the
  * document (and context) alive, so a fresh per-page instance would lose the unlock.
@@ -23,7 +22,7 @@ const FADE_OUT_PAUSE_SEC = 0.3;
  * Tracks are created lazily by proximity (`ensureTrack`) and only the dominant one is audible
  * (solo-near), so a floor of many recordings never downloads every `<audio>` upfront.
  */
-export function createAudioEngine() {
+function createAudioEngine() {
 	const engine = $state({
 		ready: false,
 		unlocked: false,
@@ -258,18 +257,14 @@ export function createAudioEngine() {
 	};
 }
 
-export type AudioEngine = ReturnType<typeof createAudioEngine>;
-
 /** Shared instance — see `createAudioEngine` for why this is a singleton rather than per-page. */
 const audioEngine = createAudioEngine();
 
 export const engine = audioEngine.engine;
 export const initAudio = audioEngine.initAudio;
-export const ensureTrack = audioEngine.ensureTrack;
 export const unlock = audioEngine.unlock;
 export const enterSpatial = audioEngine.enterSpatial;
 export const armSpatial = audioEngine.armSpatial;
 export const applyMix = audioEngine.applyMix;
-export const pauseAllTracks = audioEngine.pauseAllTracks;
 export const setNear = audioEngine.setNear;
 export const leaveSpatial = audioEngine.leaveSpatial;

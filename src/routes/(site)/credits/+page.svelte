@@ -56,7 +56,7 @@
 		</p>
 	</section>
 
-  <section class="credits__section  credits__section--last">
+	<section class="credits__section credits__section--last">
 		<h2>Rechten</h2>
 		<p>
 			© 2023–2026 {artist.name}. Alle rechten voorbehouden.

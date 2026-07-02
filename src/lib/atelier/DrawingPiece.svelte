@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { base } from '$app/paths';
 	import type { Drawing } from '$lib/content';
-	import { audioIndexForDrawing, DEFAULT_DRAWING_WIDTH } from '$lib/content';
+	import { DEFAULT_DRAWING_WIDTH } from '$lib/content';
 	import { HMV_PLAQUE } from './hmv-plaque';
 	import DrawingImg from './DrawingImg.svelte';
 	import { shouldSuppressPieceButtonClick } from './piece-activation';
@@ -26,7 +26,6 @@
 	class="piece piece--drawing"
 	class:piece--has-audio={!!drawing.track}
 	data-drawing-id={drawing.id}
-	data-audio-index={drawing.track ? audioIndexForDrawing(drawing.id) : undefined}
 	style:left="{pos.x}px"
 	style:top="{pos.y}px"
 	style:width="{drawing.width ?? DEFAULT_DRAWING_WIDTH}px"
@@ -48,6 +47,7 @@
 				<img
 					class="piece__hmv"
 					class:piece__hmv--singing={isNear}
+					style:--hmv-width="{HMV_PLAQUE.cssWidth}px"
 					src="{base}{HMV_PLAQUE.src}"
 					alt=""
 					width={HMV_PLAQUE.srcWidth}
@@ -120,7 +120,7 @@
 
 	.piece__hmv {
 		display: block;
-		width: 44px;
+		width: var(--hmv-width);
 		height: auto;
 		aspect-ratio: 1200 / 898;
 		object-fit: cover;

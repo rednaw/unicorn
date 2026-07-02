@@ -32,7 +32,7 @@
 		initAudio();
 		// Prime entry track in this gesture (iOS); atelier still opens on fit-all overview.
 		await unlock([entryDrawingId]);
-		requestDrawing(entryDrawingId, 'entry');
+		requestDrawing(entryDrawingId, 'thumb');
 		await goto(`${base}/atelier/`);
 	}
 </script>

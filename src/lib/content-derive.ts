@@ -22,7 +22,3 @@ export function maxSharpZoomForDrawing(d: Drawing): number {
 	const inner = (d.width ?? DEFAULT_DRAWING_WIDTH) - DRAWING_SLOT_PADDING_X;
 	return d.srcWidth / (inner * SHARP_DPR);
 }
-
-export function atelierMaxZoom(flat: Drawing[]): number {
-	return Math.min(...flat.map(maxSharpZoomForDrawing));
-}

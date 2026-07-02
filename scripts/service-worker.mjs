@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { computeMediaCacheKey, listPrecacheUrls } from './media-cache-key.mjs';
 
 const root = resolve(import.meta.dirname, '..');
@@ -13,7 +14,7 @@ export function renderServiceWorker(cacheKey, precacheUrls = []) {
 		.replace('__PRECACHE_URLS__', JSON.stringify(precacheUrls));
 }
 
-/** Serve `sw.js` in dev; production build still emits via `emit-sw.mjs` after adapter. */
+/** Serve `sw.js` in dev; production build emits via CLI after adapter. */
 export function serviceWorkerPlugin() {
 	return {
 		name: 'service-worker',
@@ -40,4 +41,9 @@ export async function emitServiceWorker(outDir = 'build') {
 	console.log(
 		`wrote ${outPath} (cache: unicorn-media-${key}, ${fileCount} media files, ${precacheUrls.length} precache)`
 	);
+}
+
+/** CLI entry — `node scripts/service-worker.mjs` after `vite build`. */
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+	await emitServiceWorker();
 }
