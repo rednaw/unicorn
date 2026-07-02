@@ -6,6 +6,7 @@
 	import { page } from '$app/state';
 	import { drawings, artist } from '$lib/content';
 	import { prefetchVisibleInView, requestDrawing } from '$lib/drawing/prefetch.svelte';
+	import { ATELIER_PREFETCH } from '$lib/atelier/constants';
 	import '$lib/atelier/backgrounds.css';
 	import BackLink from '$lib/atelier/BackLink.svelte';
 	import NearCue from '$lib/atelier/NearCue.svelte';
@@ -18,7 +19,7 @@
 	import { enterSpatial, leaveSpatial, unlock, armSpatial, engine } from '$lib/atelier/audio-engine.svelte';
 
 	let focusedId = $state<string | null>(browser ? page.url.searchParams.get('focus') : null);
-	/** Pins HUD / HMV to gallery focus until the visitor pans or zooms. */
+	/** Deep-link: `/atelier/?focus=<drawingId>` — pins HUD / HMV until the visitor pans or zooms. */
 	let nearLockId = $state<string | null>(browser ? page.url.searchParams.get('focus') : null);
 	let atelierEl = $state<HTMLDivElement>();
 	let viewport = $state<HTMLDivElement>();
@@ -43,7 +44,7 @@
 				view.layoutMode,
 				(d) => view.drawingPos(d)
 			);
-		}, 200);
+		}, ATELIER_PREFETCH.settleMs);
 	}
 
 	$effect(() => {
@@ -157,7 +158,7 @@
 </script>
 
 <svelte:head>
-	<title>De kamer — {artist.name}</title>
+	<title>{artist.name}</title>
 	<meta
 		name="description"
 		content="Tekeningen op tafel — zoom, pan en ontdek de bijbehorende muziek."

@@ -1,19 +1,10 @@
 import { asset } from '$app/paths';
-import {
-	atelierMaxZoom as deriveAtelierMaxZoom,
-	audioDrawingsFrom,
-	audioIndexForDrawing as deriveAudioIndex
-} from './content-derive';
+import { audioDrawingsFrom, audioIndexForDrawing as deriveAudioIndex } from './content-derive';
 import type { Drawing } from './content-types';
 export type { Atelier, Drawing, DrawingTrack, DrawingWithTrack } from './content-types';
-export {
-	DEFAULT_DRAWING_WIDTH,
-	DRAWING_SLOT_PADDING_X,
-	SHARP_DPR
-} from './content-types';
-export { maxSharpZoomForDrawing } from './content-derive';
+export { DEFAULT_DRAWING_WIDTH, DRAWING_SLOT_PADDING_X } from './content-types';
 
-const drawingPaths = (_id: string, file: string) => {
+const drawingPaths = (file: string) => {
 	const baseName = file.replace(/\.[^.]+$/, '');
 	return {
 		src: asset(`/drawings/${file}`),
@@ -21,13 +12,7 @@ const drawingPaths = (_id: string, file: string) => {
 	};
 };
 
-export const artist = {
-	name: 'RvA',
-	tagline: 'tekeningen en muziek'
-};
-
-/** Site content — absolute floor coordinates per breakpoint. */
-export const atelier = {
+const atelier = {
 	entryDrawingId: 'maskers',
 	drawings: [
 		{
@@ -36,7 +21,7 @@ export const atelier = {
 			year: '2023',
 			medium: 'potlood op papier',
 			alt: 'Vier Venetiaanse maskers, getekend in potlood',
-			...drawingPaths('maskers', 'image003.jpg'),
+			...drawingPaths('image003.jpg'),
 			srcWidth: 2956,
 			srcHeight: 4398,
 			rotation: -4,
@@ -56,7 +41,7 @@ export const atelier = {
 			year: '2023',
 			medium: 'potlood op papier',
 			alt: 'Potloodstudie van een klassieke buste in profiel',
-			...drawingPaths('buste-profiel', 'image002.jpg'),
+			...drawingPaths('image002.jpg'),
 			srcWidth: 3100,
 			srcHeight: 4471,
 			rotation: 3,
@@ -70,7 +55,7 @@ export const atelier = {
 			year: '2023',
 			medium: 'potlood op papier',
 			alt: 'Gestileerd gezicht in profiel met zware schaduwen',
-			...drawingPaths('profielstudie', 'image005.jpg'),
+			...drawingPaths('image005.jpg'),
 			srcWidth: 2885,
 			srcHeight: 4413,
 			rotation: -3,
@@ -84,7 +69,7 @@ export const atelier = {
 			year: '2023',
 			medium: 'potlood op papier',
 			alt: 'Portret in driekwartprofiel met strik en jas',
-			...drawingPaths('portret-strik', 'image006.jpg'),
+			...drawingPaths('image006.jpg'),
 			srcWidth: 3057,
 			srcHeight: 4398,
 			rotation: 4,
@@ -98,7 +83,7 @@ export const atelier = {
 			year: '2023',
 			medium: 'potlood op papier',
 			alt: 'Portret van een lachende man met opgerolde mouwen',
-			...drawingPaths('lachend-portret', 'image004.jpg'),
+			...drawingPaths('image004.jpg'),
 			srcWidth: 3057,
 			srcHeight: 4441,
 			rotation: 2,
@@ -118,7 +103,7 @@ export const atelier = {
 			year: '2023',
 			medium: 'potlood op papier',
 			alt: 'Abstracte potloodstudie met horizontale banden en een verticale vorm',
-			...drawingPaths('studie-i', 'image001.jpg'),
+			...drawingPaths('image001.jpg'),
 			srcWidth: 2999,
 			srcHeight: 4441,
 			rotation: 8,
@@ -128,6 +113,11 @@ export const atelier = {
 		}
 	]
 } satisfies import('./content-types').Atelier;
+
+export const artist = {
+	name: 'RvA',
+	tagline: 'tekeningen en muziek'
+};
 
 export const entryDrawingId = atelier.entryDrawingId;
 
@@ -141,8 +131,4 @@ export const tracks = audioDrawings.map((d) => d.track);
 
 export function audioIndexForDrawing(drawingId: string): number {
 	return deriveAudioIndex(drawings, drawingId);
-}
-
-export function atelierMaxZoom(): number {
-	return deriveAtelierMaxZoom(drawings);
 }

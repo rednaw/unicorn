@@ -2,53 +2,21 @@
 /**
  * Build-time WebP thumbs from drawing JPEG masters in static/drawings/.
  * Outputs are gitignored; CI and local build run this before `vite build`.
- *
- * image001.jpg → image001-thumb.webp  (960 px long edge, WebP)
- *
- * Usage: pnpm assets:thumbs
- *        DRAWINGS_DIR=./static/drawings pnpm assets:thumbs
  */
 
-import { readFileSync, existsSync, statSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
+import { kb, needsEncode } from './build-utils.mjs';
+import { loadDrawingFiles, thumbFileName } from './content-drawings.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, '..');
 
 const DRAWINGS_DIR = process.env.DRAWINGS_DIR ?? join(root, 'static/drawings');
-const CONTENT_TS = join(root, 'src/lib/content.ts');
 const THUMB_LONG_EDGE = 960;
 const THUMB_QUALITY = 80;
-
-function loadSourceFiles() {
-	const source = readFileSync(CONTENT_TS, 'utf8');
-	const re = /\.\.\.drawingPaths\(\s*'([^']+)'\s*,\s*'([^']+)'\s*\)/g;
-	const files = [];
-	let m;
-	while ((m = re.exec(source)) !== null) {
-		files.push({ id: m[1], file: m[2] });
-	}
-	if (files.length === 0) {
-		throw new Error(`No drawingPaths(...) entries found in ${CONTENT_TS}`);
-	}
-	return files;
-}
-
-function thumbName(file) {
-	const base = file.replace(/\.[^.]+$/, '');
-	return `${base}-thumb.webp`;
-}
-
-function needsEncode(jpgPath, thumbPath) {
-	if (!existsSync(thumbPath)) return true;
-	return statSync(jpgPath).mtimeMs > statSync(thumbPath).mtimeMs;
-}
-
-function kb(path) {
-	return Math.round(statSync(path).size / 1024);
-}
 
 async function makeThumb(inputPath, outputPath) {
 	await sharp(inputPath)
@@ -64,17 +32,17 @@ async function main() {
 		return;
 	}
 
-	const sources = loadSourceFiles();
+	const sources = loadDrawingFiles();
 	let encoded = 0;
 	let skipped = 0;
 	let missing = 0;
 
-	for (const { id, file } of sources) {
+	for (const file of sources) {
 		const input = join(DRAWINGS_DIR, file);
-		const output = join(DRAWINGS_DIR, thumbName(file));
+		const output = join(DRAWINGS_DIR, thumbFileName(file));
 
 		if (!existsSync(input)) {
-			console.warn(`skip ${id}: missing ${input}`);
+			console.warn(`skip ${file}: missing ${input}`);
 			missing++;
 			continue;
 		}
@@ -85,7 +53,7 @@ async function main() {
 		}
 
 		await makeThumb(input, output);
-		console.log(`✓ ${thumbName(file)}  ←  ${file}  (${kb(output)} KB)`);
+		console.log(`✓ ${thumbFileName(file)}  ←  ${file}  (${kb(output)} KB)`);
 		encoded++;
 	}
 

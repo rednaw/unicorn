@@ -5,7 +5,7 @@ import type { AtelierLayoutMode } from '$lib/atelier/atelier-layout';
 import type { ViewTransform, ViewportRect } from '$lib/atelier/view-math';
 import type { Drawing } from '$lib/content';
 
-export type PrefetchIntent = 'thumb' | 'full' | 'entry' | 'sharp';
+export type PrefetchIntent = 'thumb' | 'full';
 
 let fullReady = $state(new Set<string>());
 const inflight = new Map<string, Promise<void>>();
@@ -80,12 +80,10 @@ export function requestDrawing(id: string, intent: PrefetchIntent): void {
 	if (!drawing) return;
 
 	switch (intent) {
-		case 'entry':
 		case 'thumb':
 			warmThumb(drawing.thumb);
 			return;
 		case 'full':
-		case 'sharp':
 			enqueueFull(id, drawing.src);
 			return;
 	}

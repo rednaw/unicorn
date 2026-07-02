@@ -33,8 +33,9 @@ Common commands (inside the container terminal):
 pnpm dev            # already started on container launch
 pnpm check          # type-check
 pnpm build          # production build → build/
-pnpm assets:thumbs  # regenerate -thumb.webp from jpg (also runs before dev/build)
-pnpm assets:audio   # regenerate .webm from m4a (also runs before dev/build)
+pnpm assets:encode  # regenerate webm + thumbs (also runs before dev/build)
+pnpm assets:thumbs  # thumbs only
+pnpm assets:audio   # webm only
 ```
 
 `node_modules/` lives in the project folder (installed by the container's pnpm) so
@@ -60,14 +61,14 @@ The site uses the artist's own drawings and piano recordings.
 - `/static/hall/` — door sketch for the home page (`door-ajar-sketch.webp`)
 - `/static/audio/` — performances (m4a masters; `.webm` generated at build, not committed)
 
-See `static/CREDITS.md` for sources and licensing.
+Credits and rights: [`/credits/`](/credits/) (rendered from `content.ts`).
 
 ### Add or replace assets
 
 1. Drop new files into `/static/drawings/`, `/static/audio/`, etc.
    (**jpg** drawings and **m4a** audio are stored via Git LFS — patterns live in `.gitattributes`).
-2. Run `pnpm assets:thumbs` or `pnpm assets:audio` (or `pnpm build`) to generate derived webp/webm.
-3. Edit `src/lib/content.ts` — add or update entries in `atelier.drawings`
+2. Run `pnpm assets:encode` (or `pnpm build`) to generate derived webp/webm.
+3. Edit `src/lib/content.ts` — add or update `drawings` entries
    (paths, titles, metadata, `portrait` / `landscape` placement, and an optional `track`).
 
 The shape is:
@@ -102,7 +103,7 @@ Agent-oriented constraints and file map: [`CURSOR.md`](./CURSOR.md).
 src/
   app.html                  # favicon links, HTML shell
   routes/
-    +layout.svelte          # global CSS import
+    +layout.svelte          # global CSS, service worker registration
     +layout.ts              # prerender + trailingSlash: 'always'
     layout.css              # Tailwind + theme tokens + view transitions
     (site)/
@@ -111,30 +112,33 @@ src/
       credits/+page.svelte  # colofon
       atelier/+page.svelte  # fullscreen studio canvas
   lib/
-    content.ts              # atelier data + public API (drawings, tracks, lookups)
+    content.ts              # site data (drawings, tracks, lookups)
     content-types.ts        # Drawing / Atelier types + constants
     content-derive.ts       # pure derivations (audio list, sharp zoom)
     drawing/
-      prefetch.svelte.ts    # full-res coordinator (native <img>, serial queue)
+      prefetch.svelte.ts    # thumb warmup + full-res coordinator
     atelier/                # studio canvas, gestures, spatial audio
       audio-engine.svelte.ts
       view.svelte.ts, gestures.svelte.ts, …
       visible-drawings.ts   # viewport hit-test + coverage-based prefetch intents
       Canvas.svelte, DrawingPiece.svelte, DrawingImg.svelte, …
+scripts/
+  encode-audio.mjs, encode-thumbs.mjs, content-drawings.mjs
+  service-worker.mjs, sw.template.js, media-cache-key.mjs
 static/
-  drawings/, hall/, audio/, .nojekyll, CREDITS.md
+  drawings/, hall/, audio/, .nojekyll
 .devcontainer/
   Dockerfile, devcontainer.json
 ```
 
 Cross-route navigation uses the View Transitions API (`+layout.svelte`, `layout.css`).
-The door home page crossfades into the atelier; piece-level morphs need matching
-`view-transition-name: piece-<id>` on both routes.
+The door home page crossfades into the atelier. Piece-level morphs use
+`view-transition-name: piece-<id>` on the focused drawing in the atelier.
 
 ## Stack
 
 - **SvelteKit 2 + Svelte 5** (runes mode)
-- **Tailwind CSS 4** with `@tailwindcss/typography`
+- **Tailwind CSS 4**
 - **Web Audio + native `<audio>`** for atelier proximity gain/pan
 - **@sveltejs/adapter-static** with `404.html` SPA fallback
 - Dev tooling in `.devcontainer/` — GitHub Actions for production builds

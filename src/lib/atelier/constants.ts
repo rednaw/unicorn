@@ -37,7 +37,9 @@ export const ATELIER_AUDIO = {
 	/** Keep playing until gain falls below this (hysteresis — stops edge-of-range restarts). */
 	pauseThreshold: 0.04,
 	/** `setTargetAtTime` time constant for gain/pan ramps (seconds). */
-	rampTimeSec: 0.08
+	rampTimeSec: 0.08,
+	/** Pause non-dominant tracks after the gain fade (seconds). */
+	fadeOutPauseSec: 0.3
 } as const;
 
 export const ATELIER_ANIM = {
@@ -54,5 +56,7 @@ export const ATELIER_PREFETCH = {
 	 */
 	fullResCoverage: 0.18,
 	/** Full-res JPEGs are large — one at a time keeps the main thread and network usable on 3G. */
-	fullMaxConcurrent: 1
+	fullMaxConcurrent: 1,
+	/** Debounce before recomputing viewport-based prefetch after pan/zoom. */
+	settleMs: 200
 } as const;

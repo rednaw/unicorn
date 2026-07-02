@@ -1,16 +1,16 @@
 // @ts-nocheck
 import { createHash } from 'node:crypto';
-import { createReadStream, readFileSync } from 'node:fs';
+import { createReadStream } from 'node:fs';
 import { readdir } from 'node:fs/promises';
 import { join, relative, resolve } from 'node:path';
+import { loadDrawingFiles, thumbPublicUrl } from './content-drawings.mjs';
 
 const root = resolve(import.meta.dirname, '..');
-const CONTENT_TS = join(root, 'src/lib/content.ts');
 
 /** Paths served under SW media routes — keep in sync with `scripts/sw.template.js`. */
 const MEDIA_DIRS = ['static/drawings', 'static/audio', 'static/hall'];
 
-const MEDIA_EXT = new Set(['.jpg', '.jpeg', '.webp', '.png', '.m4a', '.webm', '.ogg']);
+const MEDIA_EXT = new Set(['.jpg', '.jpeg', '.webp', '.m4a', '.webm']);
 
 async function walkMediaFiles(dir) {
 	const abs = resolve(root, dir);
@@ -45,19 +45,6 @@ function toPublicUrl(relPath, basePath = '') {
 	return `${base}/${relPath.replace(/^static\//, '')}`;
 }
 
-/** Gallery thumb URLs from content.ts — matches what the atelier renders. */
-function thumbUrlsFromContent(basePath = '') {
-	const source = readFileSync(CONTENT_TS, 'utf8');
-	const re = /\.\.\.drawingPaths\(\s*'([^']+)'\s*,\s*'([^']+)'\s*\)/g;
-	const urls = [];
-	let m;
-	while ((m = re.exec(source)) !== null) {
-		const baseName = m[2].replace(/\.[^.]+$/, '');
-		urls.push(toPublicUrl(`static/drawings/${baseName}-thumb.webp`, basePath));
-	}
-	return urls;
-}
-
 function hashFile(path) {
 	return new Promise((resolve, reject) => {
 		const hash = createHash('sha256');
@@ -89,5 +76,6 @@ export async function listPrecacheUrls(basePath = '') {
 	const hall = (await walkMediaFiles('static/hall'))
 		.filter((rel) => rel.endsWith('.webp'))
 		.map((rel) => toPublicUrl(rel, basePath));
-	return [...hall, ...thumbUrlsFromContent(basePath)].sort();
+	const thumbs = loadDrawingFiles().map((file) => thumbPublicUrl(file, basePath));
+	return [...hall, ...thumbs].sort();
 }

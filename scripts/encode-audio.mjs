@@ -2,15 +2,13 @@
 /**
  * Build-time Opus/WebM siblings for Voice Memo m4a masters in static/audio/.
  * Outputs are gitignored; CI and local build run this before `vite build`.
- *
- * Usage: pnpm assets:audio
- *        AUDIO_OPUS_BITRATE=96k pnpm assets:audio
  */
 
 import { spawnSync } from 'node:child_process';
-import { existsSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { kb, needsEncode } from './build-utils.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, '..');
@@ -29,15 +27,6 @@ function listM4aFiles() {
 	return readdirSync(AUDIO_DIR)
 		.filter((name) => name.toLowerCase().endsWith('.m4a'))
 		.sort();
-}
-
-function needsEncode(m4aPath, webmPath) {
-	if (!existsSync(webmPath)) return true;
-	return statSync(m4aPath).mtimeMs > statSync(webmPath).mtimeMs;
-}
-
-function kb(path) {
-	return Math.round(statSync(path).size / 1024);
 }
 
 function encodeOne(inputPath, outputPath) {

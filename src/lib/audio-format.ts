@@ -6,21 +6,16 @@ function canPlayType(mime: string): boolean {
 	return probe === 'probably' || probe === 'maybe';
 }
 
-/** WebKit browsers without Chromium/Blink — prefer Voice Memo m4a when both work. */
-export function isWebKitBrowser(): boolean {
+function isWebKitBrowser(): boolean {
 	const ua = navigator.userAgent;
 	return /AppleWebKit/i.test(ua) && !/Chrome|Chromium|Edg|OPR|SamsungBrowser/i.test(ua);
 }
 
-/** Derive the build-time WebM sibling of a committed m4a `src`. */
-export function webmSrcFromM4a(m4aSrc: string): string {
+function webmSrcFromM4a(m4aSrc: string): string {
 	return m4aSrc.replace(/\.m4a$/i, '.webm');
 }
 
-/**
- * Pick the recording URL for this browser.
- * m4a masters stay in git; webm is generated at build and ignored by git.
- */
+/** Pick the recording URL for this browser. */
 export function pickAudioSrc(m4aSrc: string): string {
 	const webmSrc = webmSrcFromM4a(m4aSrc);
 	const webm = canPlayType(WEBM_MIME);
