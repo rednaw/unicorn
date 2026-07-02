@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { base } from '$app/paths';
+	import { asset, resolve } from '$app/paths';
 	import { goto } from '$app/navigation';
 	import { artist, entryDrawingId } from '$lib/content';
 	import { requestDrawing, warmAllDrawingThumbs } from '$lib/drawing/prefetch.svelte';
@@ -8,7 +8,7 @@
 
 	const DOOR_WIDTH = 1536;
 	const DOOR_HEIGHT = 1024;
-	const doorSketch = `${base}/hall/door-ajar-sketch.webp`;
+	const doorSketch = asset('/hall/door-ajar-sketch.webp');
 
 	let doorImg = $state<HTMLImageElement>();
 	let thumbsQueued = false;
@@ -33,7 +33,7 @@
 		// Prime entry track in this gesture (iOS); atelier still opens on fit-all overview.
 		await unlock([entryDrawingId]);
 		requestDrawing(entryDrawingId, 'thumb');
-		await goto(`${base}/atelier/`);
+		await goto(resolve('/atelier/'));
 	}
 </script>
 
@@ -63,11 +63,11 @@
 		</div>
 		<a
 			class="threshold__frame"
-			href="{base}/atelier/"
+			href={resolve('/atelier/')}
 			aria-label="Naar binnen"
 			onclick={onDoorClick}
 		></a>
-		<a class="threshold__colofon" href="{base}/credits/">
+		<a class="threshold__colofon" href={resolve('/credits/')}>
 			<span class="threshold__colofon-label">colofon</span>
 		</a>
 	</div>

@@ -10,9 +10,10 @@ type InteractionMode = 'idle' | 'pending-pan' | 'panning' | 'pinching';
 type PinchState = { midX: number; midY: number; dist: number; left: number; top: number };
 
 export type AtelierGestureDeps = {
-	unlock: () => void | Promise<void>;
-	armSpatial: () => void;
-	releaseNearCuePin: () => void;
+	/** Resume AudioContext and prime tracks on a user gesture (optional tapped piece). */
+	onGestureAudio: (hintDrawingId?: string) => void | Promise<void>;
+	/** Visitor panned/zoomed — allow spatial audio and release tap-focus pin. */
+	onExplore: () => void;
 	onPrefetchDrawing: (id: string) => void;
 	onFocusPiece: (id: string) => void;
 	onEscape: () => void;
@@ -46,8 +47,7 @@ export function createAtelierGestures(view: AtelierView, deps: AtelierGestureDep
 	}
 
 	function engage() {
-		deps.armSpatial();
-		deps.releaseNearCuePin();
+		deps.onExplore();
 	}
 
 	function focusPiece(id: string) {
@@ -95,13 +95,14 @@ export function createAtelierGestures(view: AtelierView, deps: AtelierGestureDep
 
 	function onPointerDown(e: PointerEvent) {
 		if (e.button !== 0) return;
-		deps.unlock();
+		const target = e.target as HTMLElement;
+		const pieceId = target.closest('[data-drawing-id]')?.getAttribute('data-drawing-id') ?? undefined;
+		deps.onGestureAudio(pieceId);
 		view.stopInertia();
 
 		if (pointers.size === 0) {
 			const target = e.target as HTMLElement;
 			startedOnPiece = !!target.closest('.piece--drawing');
-			const pieceId = target.closest('[data-drawing-id]')?.getAttribute('data-drawing-id');
 			if (pieceId) deps.onPrefetchDrawing(pieceId);
 			if (target.closest('.back')) return;
 		}
@@ -220,7 +221,7 @@ export function createAtelierGestures(view: AtelierView, deps: AtelierGestureDep
 	}
 
 	function onWheel(e: WheelEvent) {
-		deps.unlock();
+		deps.onGestureAudio();
 		engage();
 		view.stopInertia();
 		e.preventDefault();
@@ -304,7 +305,7 @@ export function createAtelierGestures(view: AtelierView, deps: AtelierGestureDep
 		}
 
 		if (handled) {
-			deps.unlock();
+			deps.onGestureAudio();
 			engage();
 			e.preventDefault();
 			view.stopInertia();

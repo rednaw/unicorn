@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { base } from '$app/paths';
+	import { resolve } from '$app/paths';
 
 	let { onBack }: { onBack?: () => void } = $props();
 </script>
@@ -9,7 +9,7 @@
 		<span aria-hidden="true">←</span>
 	</button>
 {:else}
-	<a class="back" href="{base}/" aria-label="Terug">
+	<a class="back" href={resolve('/')} aria-label="Terug">
 		<span aria-hidden="true">←</span>
 	</a>
 {/if}
