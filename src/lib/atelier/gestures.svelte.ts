@@ -14,6 +14,7 @@ export type AtelierGestureDeps = {
 	armSpatial: () => void;
 	releaseNearLock: () => void;
 	onPrefetchDrawing: (id: string) => void;
+	onFocusPiece: (id: string) => void;
 	onEscape: () => void;
 	viewport: () => HTMLElement | undefined;
 };
@@ -50,12 +51,8 @@ export function createAtelierGestures(view: AtelierView, deps: AtelierGestureDep
 	}
 
 	function focusPiece(id: string) {
-		engage();
-		const drawing = drawings.find((d) => d.id === id);
-		if (drawing) {
-			suppressNextPieceButtonClick();
-			view.focusDrawing(drawing);
-		}
+		suppressNextPieceButtonClick();
+		deps.onFocusPiece(id);
 	}
 
 	function prefetchAtViewport(viewportX: number, viewportY: number) {
