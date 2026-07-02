@@ -100,6 +100,7 @@
 		armSpatial,
 		releaseNearLock,
 		onPrefetchDrawing: (id) => requestDrawing(id, 'full'),
+		onFocusPiece: focusDrawingById,
 		onEscape: goBack,
 		viewport: () => viewport
 	});
