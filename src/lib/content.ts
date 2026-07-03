@@ -1,5 +1,5 @@
 import { asset } from '$app/paths';
-import { audioDrawingsFrom, audioIndexForDrawing as deriveAudioIndex } from './content-derive';
+import { audioDrawingsFrom, audioIndexMapFrom } from './content-derive';
 import type { Drawing } from './content-types';
 export type { Atelier, Drawing, DrawingTrack, DrawingWithTrack } from './content-types';
 export { DEFAULT_DRAWING_WIDTH, DRAWING_SLOT_PADDING_X } from './content-types';
@@ -126,9 +126,11 @@ export const drawings: Drawing[] = atelier.drawings;
 /** Drawings that carry audio — paired with `audio-player` track list. */
 export const audioDrawings = audioDrawingsFrom(drawings);
 
+const audioIndexByDrawingId = audioIndexMapFrom(drawings);
+
 /** Flat track list (credits, etc.). */
 export const tracks = audioDrawings.map((d) => d.track);
 
 export function audioIndexForDrawing(drawingId: string): number {
-	return deriveAudioIndex(drawings, drawingId);
+	return audioIndexByDrawingId.get(drawingId) ?? -1;
 }
