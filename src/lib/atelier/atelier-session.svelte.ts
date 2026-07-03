@@ -94,6 +94,10 @@ export function createAtelierSession(opts: {
 			opts.onNavigateHome();
 			return;
 		}
+		resetToOverview();
+	}
+
+	function resetToOverview() {
 		stopListeningAudio();
 		listening.clear();
 		view.resetViewAnimated(scheduleViewportPrefetch);
@@ -103,6 +107,11 @@ export function createAtelierSession(opts: {
 		onExplore,
 		onPrefetchDrawing: (id) => requestDrawing(id, 'full'),
 		onFocusPiece: focusDrawing,
+		onResetOverview: () => {
+			view.stopInertia();
+			if (view.isAtFitAll()) return;
+			resetToOverview();
+		},
 		onEscape: goBack,
 		viewport: () => getViewport()
 	});
