@@ -27,15 +27,8 @@ export const ATELIER_GESTURES = {
 } as const;
 
 export const ATELIER_AUDIO = {
-	proxRadius: 460,
-	zoomGateLow: 0.65,
-	zoomGateHigh: 0.95,
-	panCap: 0.8,
-	nearThreshold: 0.05,
-	/** Gain must reach this before `<audio>` starts — avoids silent playback. */
-	playThreshold: 0.08,
-	/** `setTargetAtTime` time constant for gain/pan ramps (seconds). */
-	rampTimeSec: 0.08
+	/** Gain fade when switching pieces or stopping on back (milliseconds). */
+	crossfadeMs: 300
 } as const;
 
 export const ATELIER_ANIM = {

@@ -123,7 +123,7 @@ export const entryDrawingId = atelier.entryDrawingId;
 
 export const drawings: Drawing[] = atelier.drawings;
 
-/** Drawings that carry audio — index matches the spatial audio graph. */
+/** Drawings that carry audio — paired with `audio-player` track list. */
 export const audioDrawings = audioDrawingsFrom(drawings);
 
 /** Flat track list (credits, etc.). */

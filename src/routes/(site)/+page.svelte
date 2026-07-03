@@ -4,7 +4,7 @@
 	import { goto } from '$app/navigation';
 	import { artist, entryDrawingId } from '$lib/content';
 	import { requestDrawing, warmAllDrawingThumbs } from '$lib/drawing/prefetch.svelte';
-	import { initAudio, unlock } from '$lib/atelier/audio-engine.svelte';
+	import { initAudio, prepareContext } from '$lib/atelier/audio-player.svelte';
 
 	const DOOR_WIDTH = 1536;
 	const DOOR_HEIGHT = 1024;
@@ -30,8 +30,7 @@
 	async function onDoorClick(e: MouseEvent) {
 		e.preventDefault();
 		initAudio();
-		// Prime entry track in this gesture (iOS); atelier still opens on fit-all overview.
-		await unlock([entryDrawingId]);
+		await prepareContext();
 		requestDrawing(entryDrawingId, 'thumb');
 		await goto(resolve('/atelier/'));
 	}

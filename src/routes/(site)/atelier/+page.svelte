@@ -40,7 +40,7 @@
 <div class="atelier" bind:this={atelierEl}>
 	<div class="atelier__chrome">
 		<BackLink onBack={session.goBack} />
-		<NearCue nearDrawingId={session.nearCueDrawingId} />
+		<NearCue drawingId={session.hudDrawingId} ended={session.hudEnded} />
 	</div>
 
 	<Canvas
@@ -48,7 +48,7 @@
 		gestures={session.gestures}
 		bind:viewport
 		focusedId={session.focusedId}
-		nearDrawingId={session.displayNearDrawingId}
+		isPiecePlaying={session.isPlaying}
 		onFocusDrawing={session.focusDrawing}
 	/>
 </div>

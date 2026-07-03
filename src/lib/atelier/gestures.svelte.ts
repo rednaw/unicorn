@@ -10,9 +10,7 @@ type InteractionMode = 'idle' | 'pending-pan' | 'panning' | 'pinching';
 type PinchState = { midX: number; midY: number; dist: number; left: number; top: number };
 
 export type AtelierGestureDeps = {
-	/** Resume AudioContext and prime tracks on a user gesture (optional tapped piece). */
-	onGestureAudio: (hintDrawingId?: string) => void | Promise<void>;
-	/** Visitor panned/zoomed — allow spatial audio and release tap-focus pin. */
+	/** Visitor panned/zoomed — dismiss ended listening HUD; playback continues while playing. */
 	onExplore: () => void;
 	onPrefetchDrawing: (id: string) => void;
 	onFocusPiece: (id: string) => void;
@@ -97,7 +95,6 @@ export function createAtelierGestures(view: AtelierView, deps: AtelierGestureDep
 		if (e.button !== 0) return;
 		const target = e.target as HTMLElement;
 		const pieceId = target.closest('[data-drawing-id]')?.getAttribute('data-drawing-id') ?? undefined;
-		deps.onGestureAudio(pieceId);
 		view.stopInertia();
 
 		if (pointers.size === 0) {
@@ -221,7 +218,6 @@ export function createAtelierGestures(view: AtelierView, deps: AtelierGestureDep
 	}
 
 	function onWheel(e: WheelEvent) {
-		deps.onGestureAudio();
 		engage();
 		view.stopInertia();
 		e.preventDefault();
@@ -305,7 +301,6 @@ export function createAtelierGestures(view: AtelierView, deps: AtelierGestureDep
 		}
 
 		if (handled) {
-			deps.onGestureAudio();
 			engage();
 			e.preventDefault();
 			view.stopInertia();

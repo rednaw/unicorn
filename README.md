@@ -2,12 +2,12 @@
 
 A SvelteKit site for one artist's drawings and piano recordings.
 The **home page** is a door sketch — click through to the **atelier**, an immersive
-studio view where works sit on a pannable canvas with proximity-based audio.
+studio view where works sit on a pannable canvas — tap a drawing to listen to its recording.
 
 | Route       | Idea                                                       |
 | ----------- | ---------------------------------------------------------- |
 | `/`         | Threshold — door sketch; click to enter the atelier (fit-all overview) |
-| `/atelier/` | Studio — pan/zoom canvas, spatial audio near each drawing (fit-all on entry) |
+| `/atelier/` | Studio — pan/zoom canvas; tap a piece to play its recording (fit-all on entry) |
 | `/credits/` | Colofon — rights and asset credits                         |
 
 ## Prerequisites
@@ -82,18 +82,19 @@ type Drawing = {
 }
 ```
 
-Audio is embedded directly on a drawing via its optional `track`: when present,
-that recording plays with proximity-based gain/pan as you approach the work in
-the atelier. Drawings without a `track` are silent. `portrait` and `landscape`
+Audio is embedded directly on a drawing via its optional `track`: tap the piece in
+the atelier to play that recording (one piece at a time; resume on re-tap).
+Drawings without a `track` are silent. `portrait` and `landscape`
 set absolute floor coordinates; `resolveLayoutMode` in `atelier-layout.ts` picks
 which pair is active (portrait phones vs wider viewports).
 
 ### Atelier interaction
 
-- **Tap or click** a drawing to focus it; **drag** or two-finger scroll to pan.
-- **Mouse wheel** or pinch zooms at the cursor; **`0`** / **`r`** returns to the full-floor overview.
+- **Tap or click** a drawing to focus it and play its recording (if it has a `track`).
+- **Drag** or two-finger scroll to pan; playback continues while you explore.
+- **Mouse wheel** or pinch zooms at the cursor; **`0`** / **`r`** returns to the full-floor overview (fades out audio, preserves resume position).
 - Full-resolution JPEGs load on demand when a piece covers enough of the viewport (not all at once).
-- At most **one** recording plays at a time, with volume/pan tied to proximity.
+- At most **one** recording plays at a time; tap another audio piece to switch (crossfade).
 
 Agent-oriented constraints and file map: [`CURSOR.md`](./CURSOR.md).
 
@@ -117,8 +118,8 @@ src/
     content-derive.ts       # pure derivations (audio list, sharp zoom)
     drawing/
       prefetch.svelte.ts    # thumb warmup + full-res coordinator
-    atelier/                # studio canvas, gestures, spatial audio
-      audio-engine.svelte.ts
+    atelier/                # studio canvas, gestures, explicit listen audio
+      listening.svelte.ts, audio-player.svelte.ts
       view.svelte.ts, gestures.svelte.ts, …
       visible-drawings.ts   # viewport hit-test + coverage-based prefetch intents
       Canvas.svelte, DrawingPiece.svelte, DrawingImg.svelte, …
@@ -139,7 +140,7 @@ The door home page crossfades into the atelier. Piece-level morphs use
 
 - **SvelteKit 2 + Svelte 5** (runes mode)
 - **Tailwind CSS 4**
-- **Web Audio + native `<audio>`** for atelier proximity gain/pan
+- **Web Audio + native `<audio>`** for explicit listen playback (`audio-player.svelte.ts`)
 - **@sveltejs/adapter-static** with `404.html` SPA fallback
 - Dev tooling in `.devcontainer/` — GitHub Actions for production builds
 
