@@ -172,6 +172,8 @@ export function createAtelierView(drawings: Drawing[]) {
 	let viewFitted = false;
 	let lastFitWidth = 0;
 	let lastFitHeight = 0;
+	/** One tap-zoom per overview visit; reset on fit-all. Not tied to isAtFitAll (mobile viewport jitter). */
+	let tapZoomFromOverview = true;
 
 	function fitAllView() {
 		const isPortrait = layoutMode === 'portrait';
@@ -189,6 +191,7 @@ export function createAtelierView(drawings: Drawing[]) {
 		applyView(fitAllView());
 		syncClamp();
 		hasUserNavigatedView = false;
+		tapZoomFromOverview = true;
 		lastFitWidth = metrics.width;
 		lastFitHeight = metrics.height;
 	}
@@ -212,6 +215,7 @@ export function createAtelierView(drawings: Drawing[]) {
 		const target = fitAllView();
 		animateView(target.tx, target.ty, target.zoom, ATELIER_ANIM.viewDurationMs, () => {
 			hasUserNavigatedView = false;
+			tapZoomFromOverview = true;
 			onDone?.();
 		});
 	}
@@ -290,10 +294,10 @@ export function createAtelierView(drawings: Drawing[]) {
 		const { x: cx, y: cy } = drawingListenPoint(d, drawingPos(d));
 		const cap = maxSharpZoomForDrawing(d);
 		const fitTarget = focusTargetZoom(width, height, ATELIER_ZOOM.focusFill, cap);
-		// One tap-zoom from fit-all overview; switching pieces while zoomed only pans.
-		const targetZoom = isAtFitAll()
+		const targetZoom = tapZoomFromOverview
 			? Math.max(fitTarget, Math.min(cap, zoom + ATELIER_ZOOM.focusStep))
 			: Math.min(zoom, cap);
+		if (tapZoomFromOverview) tapZoomFromOverview = false;
 		zoomTo(cx, cy, targetZoom, true, ATELIER_ANIM.focusDurationMs, onArrive);
 	}
 
