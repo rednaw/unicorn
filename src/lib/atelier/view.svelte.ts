@@ -290,8 +290,11 @@ export function createAtelierView(drawings: Drawing[]) {
 		const { x: cx, y: cy } = drawingListenPoint(d, drawingPos(d));
 		const cap = maxSharpZoomForDrawing(d);
 		const fitTarget = focusTargetZoom(width, height, ATELIER_ZOOM.focusFill, cap);
-		const steppedTarget = Math.min(cap, zoom + ATELIER_ZOOM.focusStep);
-		zoomTo(cx, cy, Math.max(fitTarget, steppedTarget), true, ATELIER_ANIM.focusDurationMs, onArrive);
+		// One tap-zoom from fit-all overview; switching pieces while zoomed only pans.
+		const targetZoom = isAtFitAll()
+			? Math.max(fitTarget, Math.min(cap, zoom + ATELIER_ZOOM.focusStep))
+			: Math.min(zoom, cap);
+		zoomTo(cx, cy, targetZoom, true, ATELIER_ANIM.focusDurationMs, onArrive);
 	}
 
 	function dispose() {
