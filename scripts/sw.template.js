@@ -1,10 +1,10 @@
 /**
- * Service worker — cache-first for atelier media (drawings, hall, audio).
- * Cache name is stamped at build time from a hash of static media (drawings, audio, hall).
+ * Service worker — cache-first for atelier media (drawings, hall, atelier UI, audio).
+ * Cache name is stamped at build time from a hash of static media (drawings, audio, hall, atelier).
  */
 const CACHE = 'unicorn-media-__CACHE_VERSION__';
 const PRECACHE_URLS = __PRECACHE_URLS__;
-const MEDIA = /\/(drawings|audio|hall)\//;
+const MEDIA = /\/(drawings|audio|hall|atelier)\//;
 
 self.addEventListener('install', (event) => {
 	event.waitUntil(
