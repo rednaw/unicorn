@@ -113,7 +113,7 @@ src/
       credits/+page.svelte  # colofon
       atelier/+page.svelte  # fullscreen studio canvas
   lib/
-    content.ts              # site data (drawings, tracks, lookups)
+    content.ts              # site data (drawings, lookups)
     content-types.ts        # Drawing / Atelier types + constants
     content-derive.ts       # pure derivations (audio list, sharp zoom)
     drawing/

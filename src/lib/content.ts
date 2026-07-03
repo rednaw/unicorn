@@ -47,7 +47,13 @@ const atelier = {
 			rotation: 3,
 			portrait: { x: 62, y: 420 },
 			landscape: { x: 598, y: 248 },
-			width: 300
+			width: 300,
+			track: {
+				id: 'beethoven-rondo-op51-1',
+				title: 'Rondo in C majeur, op. 51 nr. 1',
+				composer: 'Ludwig van Beethoven',
+				src: asset('/audio/beethoven-rondo-in-c-majeur-opus-51-no-1.m4a')
+			}
 		},
 		{
 			id: 'profielstudie',
@@ -127,9 +133,6 @@ export const drawings: Drawing[] = atelier.drawings;
 export const audioDrawings = audioDrawingsFrom(drawings);
 
 const audioIndexByDrawingId = audioIndexMapFrom(drawings);
-
-/** Flat track list (credits, etc.). */
-export const tracks = audioDrawings.map((d) => d.track);
 
 export function audioIndexForDrawing(drawingId: string): number {
 	return audioIndexByDrawingId.get(drawingId) ?? -1;
