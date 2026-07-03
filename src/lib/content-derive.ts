@@ -10,8 +10,13 @@ export function audioDrawingsFrom(flat: Drawing[]): DrawingWithTrack[] {
 	return flat.filter((d): d is DrawingWithTrack => !!d.track);
 }
 
-export function audioIndexForDrawing(flat: Drawing[], drawingId: string): number {
-	return audioDrawingsFrom(flat).findIndex((d) => d.id === drawingId);
+/** Precomputed `drawingId` → index in `audioDrawingsFrom(flat)`. */
+export function audioIndexMapFrom(flat: Drawing[]): ReadonlyMap<string, number> {
+	const map = new Map<string, number>();
+	for (const [index, d] of audioDrawingsFrom(flat).entries()) {
+		map.set(d.id, index);
+	}
+	return map;
 }
 
 /**
