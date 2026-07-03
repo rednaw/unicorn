@@ -16,7 +16,7 @@ export function pieceBounds(drawing: Drawing) {
 	return { width, height };
 }
 
-/** Centre of the mat — spatial audio origin and zoom focus. */
+/** Centre of the mat — zoom focus anchor. */
 export function drawingListenPoint(drawing: Drawing, pos = drawing.landscape) {
 	const { width, height } = pieceBounds(drawing);
 	const x = pos?.x ?? 0;

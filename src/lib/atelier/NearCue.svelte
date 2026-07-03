@@ -1,11 +1,9 @@
 <script lang="ts">
 	import { drawings } from '$lib/content';
 
-	let { nearDrawingId }: { nearDrawingId: string | null } = $props();
+	let { drawingId, ended = false }: { drawingId: string | null; ended?: boolean } = $props();
 
-	const nearDrawing = $derived(
-		nearDrawingId ? drawings.find((d) => d.id === nearDrawingId) : undefined
-	);
+	const nearDrawing = $derived(drawingId ? drawings.find((d) => d.id === drawingId) : undefined);
 
 	const ariaLabel = $derived.by(() => {
 		if (!nearDrawing) return '';
@@ -20,6 +18,7 @@
 <div
 	class="nearcue"
 	class:nearcue--hidden={!nearDrawing}
+	class:nearcue--ended={ended && nearDrawing}
 	role={nearDrawing ? 'status' : undefined}
 	aria-hidden={!nearDrawing}
 	aria-label={nearDrawing ? ariaLabel : undefined}
@@ -68,6 +67,19 @@
 	.nearcue--hidden {
 		opacity: 0;
 		visibility: hidden;
+	}
+
+	.nearcue--ended {
+		opacity: 0.72;
+		border-color: rgba(212, 175, 95, 0.28);
+		box-shadow:
+			0 4px 16px rgba(0, 0, 0, 0.28),
+			0 0 12px rgba(212, 175, 95, 0.06);
+	}
+
+	.nearcue--ended .nearcue__composer,
+	.nearcue--ended .nearcue__piece {
+		color: rgba(245, 238, 216, 0.58);
 	}
 
 	.nearcue__drawing {

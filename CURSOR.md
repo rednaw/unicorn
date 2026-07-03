@@ -10,8 +10,8 @@ Crisp pan/zoom on **full-res drawings** is paramount — HMV plaque, near cue, a
 
 - **Zoom:** `maxSharpZoomForDrawing()` per piece — never a global cap from the smallest drawing.
 - **Images:** full-res only via `requestDrawing(id, intent)` → `DrawingImg`. Native `<img>`, serial queue, coverage gate (`ATELIER_PREFETCH`). No blob cache, no fetching drawing URLs elsewhere.
-- **Motion:** pan/zoom on `translate` + `scale` only; no heavy filters on zoomed art. Gestures must stay smooth while spatial audio runs.
-- **Audio:** solo-near; lazy tracks; `unlock(primeIds)` on user gestures (iOS). m4a masters (LFS) + WebM at build; `pickAudioSrc()` at runtime.
+- **Motion:** pan/zoom on `translate` + `scale` only; no heavy filters on zoomed art. Gestures must stay smooth during playback.
+- **Audio:** explicit listen — tap to play; one `<audio>` element; `play()` in tap gesture only; resume positions per drawing; m4a masters (LFS) + WebM at build; `pickAudioSrc()` at runtime. Design: `docs/explicit-listen-audio.md`.
 - **SW:** revisit cache for drawings/hall/audio; media-hash bucket; precache hall webp + thumbs only. Core path works without SW.
 
 **Input:** tap piece → focus; wheel/pinch → zoom at cursor; drag / two-finger → pan; `0`/`r` → fit-all. No double-tap zoom.
@@ -33,7 +33,7 @@ More drawings/recordings coming. `portrait` / `landscape` coords in `content.ts`
 | Layout mode | `atelier-layout.ts` |
 | Pan/zoom/focus | `view.svelte.ts`, `gestures.svelte.ts` |
 | Prefetch | `drawing/prefetch.svelte.ts`, `visible-drawings.ts` |
-| Spatial audio | `audio-engine.svelte.ts`, `audio-format.ts`, `spatial-audio-loop.svelte.ts`, `spatial-mix.ts` |
+| Explicit listen audio | `listening.svelte.ts`, `audio-player.svelte.ts`, `audio-format.ts` |
 | Tunables | `atelier/constants.ts` |
 | Encode (build) | `scripts/encode-audio.mjs`, `encode-thumbs.mjs`, `content-drawings.mjs` |
 | Service worker | `scripts/sw.template.js`, `service-worker.mjs`, `media-cache-key.mjs` |

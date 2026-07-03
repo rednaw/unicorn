@@ -9,14 +9,14 @@
 		gestures,
 		viewport = $bindable(),
 		focusedId,
-		nearDrawingId,
+		isPiecePlaying,
 		onFocusDrawing
 	}: {
 		view: AtelierView;
 		gestures: AtelierGestures;
 		viewport?: HTMLDivElement;
 		focusedId: string | null;
-		nearDrawingId: string | null;
+		isPiecePlaying: (id: string) => boolean;
 		onFocusDrawing: (id: string) => void;
 	} = $props();
 </script>
@@ -42,7 +42,7 @@
 				{drawing}
 				pos={view.drawingPos(drawing)}
 				focused={drawing.id === focusedId}
-				isNear={drawing.id === nearDrawingId}
+				isNear={isPiecePlaying(drawing.id)}
 				onfocus={() => onFocusDrawing(drawing.id)}
 			/>
 		{/each}
