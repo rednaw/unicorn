@@ -182,6 +182,13 @@ export function createAtelierGestures(view: AtelierView, deps: AtelierGestureDep
 			}
 
 			const moved = Math.hypot(e.clientX - dragStart.x, e.clientY - dragStart.y);
+			// Piece taps: let the <button> click focus (one path). Pointer-up hit test
+			// here would double-fire on touch after the synthesized click.
+			if (startedOnPiece && moved < ATELIER_GESTURES.panThresholdPiece) {
+				startedOnPiece = false;
+				return;
+			}
+
 			const vp = deps.viewport();
 			if (vp && moved < ATELIER_GESTURES.panThresholdPiece) {
 				const { left, top } = viewportOrigin(vp);
