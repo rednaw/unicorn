@@ -30,6 +30,8 @@ export function createAtelierGestures(view: AtelierView, deps: AtelierGestureDep
 	let primaryPointerId: number | null = null;
 	let primaryPointerType = 'mouse';
 	let startedOnPiece = false;
+	/** Piece under the primary pointerdown — viewport capture can block button click (trackpad). */
+	let pointerDownPieceId: string | null = null;
 	let pinch: PinchState | undefined;
 
 	let dragStart = { x: 0, y: 0, tx: 0, ty: 0 };
@@ -100,6 +102,7 @@ export function createAtelierGestures(view: AtelierView, deps: AtelierGestureDep
 		if (pointers.size === 0) {
 			const target = e.target as HTMLElement;
 			startedOnPiece = !!target.closest('.piece--drawing');
+			pointerDownPieceId = pieceId ?? null;
 			if (pieceId) deps.onPrefetchDrawing(pieceId);
 			if (target.closest('.back')) return;
 		}
@@ -178,30 +181,30 @@ export function createAtelierGestures(view: AtelierView, deps: AtelierGestureDep
 			if (wasPanning) {
 				view.startInertia(lastMove, { x: vx, y: vy });
 				startedOnPiece = false;
+				pointerDownPieceId = null;
 				return;
 			}
 
 			const moved = Math.hypot(e.clientX - dragStart.x, e.clientY - dragStart.y);
-			// Piece taps: let the <button> click focus (one path). Pointer-up hit test
-			// here would double-fire on touch after the synthesized click.
-			if (startedOnPiece && moved < ATELIER_GESTURES.panThresholdPiece) {
-				startedOnPiece = false;
-				return;
-			}
-
 			const vp = deps.viewport();
 			if (vp && moved < ATELIER_GESTURES.panThresholdPiece) {
-				const { left, top } = viewportOrigin(vp);
-				const viewportX = e.clientX - left;
-				const viewportY = e.clientY - top;
-				const canvas = viewportToCanvas(view.getView(), viewportX, viewportY);
-				const hitId = drawingAtCanvasPoint(drawings, canvas.x, canvas.y, (d) =>
-					view.drawingPos(d)
-				);
-				if (hitId) focusPiece(hitId);
+				if (pointerDownPieceId) {
+					// Primary path — click may not fire when viewport holds pointer capture.
+					focusPiece(pointerDownPieceId);
+				} else {
+					const { left, top } = viewportOrigin(vp);
+					const viewportX = e.clientX - left;
+					const viewportY = e.clientY - top;
+					const canvas = viewportToCanvas(view.getView(), viewportX, viewportY);
+					const hitId = drawingAtCanvasPoint(drawings, canvas.x, canvas.y, (d) =>
+						view.drawingPos(d)
+					);
+					if (hitId) focusPiece(hitId);
+				}
 			}
 
 			startedOnPiece = false;
+			pointerDownPieceId = null;
 		} else if (pointers.size === 1) {
 			const [p] = pointers.values();
 			const current = view.getView();
