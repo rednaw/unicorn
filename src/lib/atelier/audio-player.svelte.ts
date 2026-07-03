@@ -38,7 +38,8 @@ function createAudioPlayer() {
 	function ensureGraph(): void {
 		if (!ctx || el) return;
 		el = new Audio();
-		el.preload = 'auto';
+		// Metadata only until play — avoids read-ahead on long recordings.
+		el.preload = 'metadata';
 		el.loop = false;
 		const source = ctx.createMediaElementSource(el);
 		gain = ctx.createGain();
@@ -124,6 +125,7 @@ function createAudioPlayer() {
 
 		ensureContextRunning();
 		unlockContext();
+		el.preload = 'auto';
 
 		const index = audioIndexForDrawing(drawingId);
 		if (index < 0) return;
@@ -179,6 +181,8 @@ function createAudioPlayer() {
 
 		if (!sameLoaded) {
 			el.pause();
+			el.removeAttribute('src');
+			el.load();
 			let readyHandled = false;
 			const onReady = () => {
 				if (stale() || readyHandled || !el) return;
@@ -238,6 +242,9 @@ function createAudioPlayer() {
 				try {
 					el.currentTime = 0;
 				} catch {}
+				el.removeAttribute('src');
+				el.load();
+				el.preload = 'metadata';
 				setDrawingId(null);
 			} else {
 				clearActiveSession();

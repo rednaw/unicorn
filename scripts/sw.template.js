@@ -4,7 +4,14 @@
  */
 const CACHE = 'unicorn-media-__CACHE_VERSION__';
 const PRECACHE_URLS = __PRECACHE_URLS__;
-const MEDIA = /\/(drawings|audio|hall|atelier)\//;
+
+/** Static media only — extension-guarded so dev paths like `/src/lib/atelier/*.css` and the `/atelier/` HTML route are never cached. */
+const STATIC_MEDIA = /\/(drawings|audio|hall)\/[^/]+\.(?:jpe?g|webp|m4a|webm)$/i;
+const ATELIER_STATIC = /\/atelier\/[^/]+\.(?:webp|jpe?g|png|svg)$/i;
+
+function isStaticMediaPathname(pathname) {
+	return STATIC_MEDIA.test(pathname) || ATELIER_STATIC.test(pathname);
+}
 
 self.addEventListener('install', (event) => {
 	event.waitUntil(
@@ -27,6 +34,14 @@ self.addEventListener('activate', (event) => {
 					.filter((key) => key.startsWith('unicorn-media-') && key !== CACHE)
 					.map((key) => caches.delete(key))
 			);
+			// Drop entries cached under the old broad `/atelier/` path matcher.
+			const cache = await caches.open(CACHE);
+			const entries = await cache.keys();
+			await Promise.all(
+				entries
+					.filter((req) => !isStaticMediaPathname(new URL(req.url).pathname))
+					.map((req) => cache.delete(req))
+			);
 			await self.clients.claim();
 		})()
 	);
@@ -38,7 +53,8 @@ self.addEventListener('fetch', (event) => {
 
 	const url = new URL(request.url);
 	if (url.origin !== self.location.origin) return;
-	if (!MEDIA.test(url.pathname)) return;
+	if (request.mode === 'navigate') return;
+	if (!isStaticMediaPathname(url.pathname)) return;
 
 	if (url.pathname.includes('/audio/')) {
 		event.respondWith(handleAudio(request, event));
@@ -103,24 +119,29 @@ async function handleAudio(request, event) {
 	return response;
 }
 
+/**
+ * Serve a Range response from a cached full file without copying the whole
+ * recording into JS heap — Blob.slice streams from cache storage (same approach
+ * as Workbox range-requests).
+ */
 async function serveRangeFromCached(cachedResponse, request) {
 	const range = request.headers.get('range');
 	if (!range) return cachedResponse;
 
-	const buffer = await cachedResponse.arrayBuffer();
-	const size = buffer.byteLength;
 	const match = /bytes=(\d+)-(\d*)/.exec(range);
 	if (!match) return cachedResponse;
 
+	const blob = await cachedResponse.blob();
+	const size = blob.size;
 	const start = Number.parseInt(match[1], 10);
 	const end = match[2] ? Number.parseInt(match[2], 10) : size - 1;
 	if (start >= size || end >= size || start > end) {
 		return new Response(null, { status: 416, statusText: 'Range Not Satisfiable' });
 	}
 
-	const slice = buffer.slice(start, end + 1);
+	const slice = blob.slice(start, end + 1);
 	const headers = new Headers();
-	headers.set('Content-Length', String(slice.byteLength));
+	headers.set('Content-Length', String(slice.size));
 	headers.set('Content-Range', `bytes ${start}-${end}/${size}`);
 	headers.set('Accept-Ranges', 'bytes');
 	const type = cachedResponse.headers.get('Content-Type');
