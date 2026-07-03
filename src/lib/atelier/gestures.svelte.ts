@@ -14,6 +14,8 @@ export type AtelierGestureDeps = {
 	onExplore: () => void;
 	onPrefetchDrawing: (id: string) => void;
 	onFocusPiece: (id: string) => void;
+	/** Fit-all overview — stop audio, clear HUD; does not leave the atelier. */
+	onResetOverview: () => void;
 	onEscape: () => void;
 	viewport: () => HTMLElement | undefined;
 };
@@ -32,6 +34,8 @@ export function createAtelierGestures(view: AtelierView, deps: AtelierGestureDep
 	let startedOnPiece = false;
 	/** Piece under the primary pointerdown — viewport capture can block button click (trackpad). */
 	let pointerDownPieceId: string | null = null;
+	/** True once a two-finger pinch starts — suppresses tap-focus on release. */
+	let gestureHadPinch = false;
 	let pinch: PinchState | undefined;
 
 	let dragStart = { x: 0, y: 0, tx: 0, ty: 0 };
@@ -125,6 +129,7 @@ export function createAtelierGestures(view: AtelierView, deps: AtelierGestureDep
 		} else if (pointers.size === 2) {
 			view.dragging = false;
 			interactionMode = 'pinching';
+			gestureHadPinch = true;
 			startPinch();
 		}
 	}
@@ -182,12 +187,13 @@ export function createAtelierGestures(view: AtelierView, deps: AtelierGestureDep
 				view.startInertia(lastMove, { x: vx, y: vy });
 				startedOnPiece = false;
 				pointerDownPieceId = null;
+				gestureHadPinch = false;
 				return;
 			}
 
 			const moved = Math.hypot(e.clientX - dragStart.x, e.clientY - dragStart.y);
 			const vp = deps.viewport();
-			if (vp && moved < ATELIER_GESTURES.panThresholdPiece) {
+			if (vp && !gestureHadPinch && moved < ATELIER_GESTURES.panThresholdPiece) {
 				if (pointerDownPieceId) {
 					// Primary path — click may not fire when viewport holds pointer capture.
 					focusPiece(pointerDownPieceId);
@@ -205,6 +211,7 @@ export function createAtelierGestures(view: AtelierView, deps: AtelierGestureDep
 
 			startedOnPiece = false;
 			pointerDownPieceId = null;
+			gestureHadPinch = false;
 		} else if (pointers.size === 1) {
 			const [p] = pointers.values();
 			const current = view.getView();
@@ -301,7 +308,7 @@ export function createAtelierGestures(view: AtelierView, deps: AtelierGestureDep
 			case '0':
 			case 'r':
 			case 'R':
-				view.resetView();
+				deps.onResetOverview();
 				break;
 			case 'Escape':
 				deps.onEscape();
