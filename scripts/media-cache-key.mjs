@@ -8,7 +8,7 @@ import { loadDrawingFiles, thumbPublicUrl } from './content-drawings.mjs';
 const root = resolve(import.meta.dirname, '..');
 
 /** Paths served under SW media routes — keep in sync with `scripts/sw.template.js`. */
-const MEDIA_DIRS = ['static/drawings', 'static/audio', 'static/hall'];
+const MEDIA_DIRS = ['static/drawings', 'static/audio', 'static/hall', 'static/atelier'];
 
 const MEDIA_EXT = new Set(['.jpg', '.jpeg', '.webp', '.m4a', '.webm']);
 
@@ -57,7 +57,7 @@ function hashFile(path) {
 
 /**
  * Stable cache key from on-disk media bytes. Code/CSS deploys reuse the same key
- * until a file under drawings/, audio/, or hall/ changes.
+ * until a file under drawings/, audio/, hall/, or atelier/ changes.
  */
 export async function computeMediaCacheKey() {
 	const paths = await listMediaPaths();
@@ -71,11 +71,14 @@ export async function computeMediaCacheKey() {
 	return { key: manifest.digest('hex').slice(0, 16), fileCount: paths.length };
 }
 
-/** URL paths to warm on SW install — hall webp + gallery thumbs (not full JPEGs or audio). */
+/** URL paths to warm on SW install — hall + atelier webp + gallery thumbs (not full JPEGs or audio). */
 export async function listPrecacheUrls(basePath = '') {
 	const hall = (await walkMediaFiles('static/hall'))
 		.filter((rel) => rel.endsWith('.webp'))
 		.map((rel) => toPublicUrl(rel, basePath));
+	const atelier = (await walkMediaFiles('static/atelier'))
+		.filter((rel) => rel.endsWith('.webp'))
+		.map((rel) => toPublicUrl(rel, basePath));
 	const thumbs = loadDrawingFiles().map((file) => thumbPublicUrl(file, basePath));
-	return [...hall, ...thumbs].sort();
+	return [...hall, ...atelier, ...thumbs].sort();
 }

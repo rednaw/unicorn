@@ -12,7 +12,7 @@ Crisp pan/zoom on **full-res drawings** is paramount — HMV plaque, near cue, a
 - **Images:** full-res only via `requestDrawing(id, intent)` → `DrawingImg`. Native `<img>`, serial queue, coverage gate (`ATELIER_PREFETCH`). No blob cache, no fetching drawing URLs elsewhere.
 - **Motion:** pan/zoom on `translate` + `scale` only; no heavy filters on zoomed art. Gestures must stay smooth during playback.
 - **Audio:** explicit listen — tap to play; one `<audio>` element; `play()` in tap gesture only; resume positions per drawing; m4a masters (LFS) + WebM at build; `pickAudioSrc()` at runtime. Design: `docs/explicit-listen-audio.md`.
-- **SW:** revisit cache for drawings/hall/audio; media-hash bucket; precache hall webp + thumbs only. Core path works without SW.
+- **SW:** revisit cache for drawings/hall/atelier/audio; media-hash bucket; precache hall + atelier webp + thumbs. Core path works without SW.
 
 **Input:** tap piece → focus; wheel/pinch → zoom at cursor; drag / two-finger → pan; `0`/`r` → fit-all. No double-tap zoom.
 
