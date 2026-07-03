@@ -3,9 +3,6 @@ let suppressButtonClick = false;
 
 export function suppressNextPieceButtonClick() {
 	suppressButtonClick = true;
-	queueMicrotask(() => {
-		suppressButtonClick = false;
-	});
 }
 
 export function shouldSuppressPieceButtonClick(): boolean {
