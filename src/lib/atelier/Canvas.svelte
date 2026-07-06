@@ -22,9 +22,12 @@
 </script>
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
+<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 <div
 	class="atelier__viewport"
 	bind:this={viewport}
+	tabindex="0"
+	aria-label="Atelier — pijltjestoetsen of WASD verschuiven, + en − zoomen, Escape terug"
 	onpointerdown={gestures.onPointerDown}
 	onpointermove={gestures.onPointerMove}
 	onpointerup={gestures.onPointerUp}
@@ -59,6 +62,15 @@
 		user-select: none;
 		-webkit-user-select: none;
 		-webkit-touch-callout: none;
+	}
+
+	.atelier__viewport:focus {
+		outline: none;
+	}
+
+	.atelier__viewport:focus-visible {
+		outline: 2px solid rgba(212, 175, 95, 0.75);
+		outline-offset: -4px;
 	}
 
 	.atelier__viewport--dragging {

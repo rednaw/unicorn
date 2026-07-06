@@ -92,7 +92,8 @@ which pair is active (portrait phones vs wider viewports).
 
 - **Tap or click** a drawing to focus it and play its recording (if it has a `track`).
 - **Drag** or two-finger scroll to pan; playback continues while you explore.
-- **Mouse wheel** or pinch zooms at the cursor; **`0`** / **`r`** returns to the full-floor overview (fades out audio, preserves resume position).
+- **Mouse wheel** or pinch zooms at the cursor.
+- **Keyboard:** Tab to the canvas (pan/zoom) or through works; **arrow keys** / WASD pan when the canvas is focused; **+** / **−** zoom; **Escape** back (same as ←).
 - Full-resolution JPEGs load on demand when a piece covers enough of the viewport (not all at once).
 - At most **one** recording plays at a time; tap another audio piece to switch (crossfade).
 

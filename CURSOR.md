@@ -14,7 +14,7 @@ Crisp pan/zoom on **full-res drawings** is paramount — HMV plaque, near cue, a
 - **Audio:** explicit listen — tap to play; one `<audio>` element; `play()` in tap gesture only; resume positions per drawing; m4a masters (LFS) + WebM at build; `pickAudioSrc()` at runtime. Design: `docs/explicit-listen-audio.md`.
 - **SW:** revisit cache for drawings/hall/atelier/audio; media-hash bucket; precache hall + atelier webp + thumbs. Core path works without SW.
 
-**Input:** tap piece → focus; wheel/pinch → zoom at cursor; drag / two-finger → pan; `0`/`r` → fit-all. No double-tap zoom.
+**Input:** tap piece → focus; wheel/pinch → zoom at cursor; drag / two-finger → pan; Escape / ← back. No double-tap zoom.
 
 ## Reach
 

@@ -14,9 +14,6 @@ export type AtelierGestureDeps = {
 	onExplore: () => void;
 	onPrefetchDrawing: (id: string) => void;
 	onFocusPiece: (id: string) => void;
-	/** Fit-all overview — stop audio, clear HUD; does not leave the atelier. */
-	onResetOverview: () => void;
-	onEscape: () => void;
 	viewport: () => HTMLElement | undefined;
 };
 
@@ -269,6 +266,10 @@ export function createAtelierGestures(view: AtelierView, deps: AtelierGestureDep
 		// Leave browser/OS shortcuts (⌘R, ⌘0, ⌘←, …) untouched.
 		if (e.metaKey || e.ctrlKey || e.altKey) return;
 
+		const target = e.target as HTMLElement;
+		// Canvas pan/zoom — not when a piece or chrome control is focused.
+		if (target.closest('.piece--drawing, .back')) return;
+
 		const { width, height } = view.metrics;
 		let handled = true;
 
@@ -305,14 +306,6 @@ export function createAtelierGestures(view: AtelierView, deps: AtelierGestureDep
 				view.applyZoomAt(width / 2, height / 2, current.zoom / ATELIER_ZOOM.keyboardStep);
 				break;
 			}
-			case '0':
-			case 'r':
-			case 'R':
-				deps.onResetOverview();
-				break;
-			case 'Escape':
-				deps.onEscape();
-				break;
 			default:
 				handled = false;
 		}
