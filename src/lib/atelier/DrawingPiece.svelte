@@ -76,10 +76,6 @@
 		display: block;
 		transition: transform 250ms ease, box-shadow 250ms ease;
 		touch-action: manipulation;
-		/* box-shadow (not filter: drop-shadow): a filter rasterizes the large
-		   image into a GPU buffer sized by the zoomed device pixels, which blows
-		   up GPU memory as you zoom. The mats are rectangular, so this is
-		   visually identical and far cheaper. */
 		box-shadow:
 			0 18px 36px rgba(0, 0, 0, 0.22),
 			0 2px 6px rgba(0, 0, 0, 0.12);
@@ -91,6 +87,16 @@
 			0 24px 44px rgba(0, 0, 0, 0.28),
 			0 4px 10px rgba(0, 0, 0, 0.14);
 		z-index: 10;
+	}
+
+	.piece--drawing:focus {
+		outline: none;
+	}
+
+	.piece--drawing:focus-visible {
+		outline: 3px solid rgba(212, 175, 95, 0.95);
+		outline-offset: 4px;
+		z-index: 11;
 	}
 
 	.piece__mat {

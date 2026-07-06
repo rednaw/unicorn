@@ -107,12 +107,6 @@ export function createAtelierSession(opts: {
 		onExplore,
 		onPrefetchDrawing: (id) => requestDrawing(id, 'full'),
 		onFocusPiece: focusDrawing,
-		onResetOverview: () => {
-			view.stopInertia();
-			if (view.isAtFitAll()) return;
-			resetToOverview();
-		},
-		onEscape: goBack,
 		viewport: () => getViewport()
 	});
 
@@ -147,7 +141,6 @@ export function createAtelierSession(opts: {
 		}
 
 		scheduleViewportPrefetch();
-		window.addEventListener('keydown', gestures.onKeyDown);
 
 		return () => {
 			clearTimeout(settleTimer);
@@ -155,7 +148,6 @@ export function createAtelierSession(opts: {
 			unobserveBrowserChrome?.();
 			viewportEl?.removeEventListener('wheel', gestures.onWheel);
 			viewportEl?.removeEventListener('touchmove', gestures.onTouchMove);
-			window.removeEventListener('keydown', gestures.onKeyDown);
 			setOnEnded(undefined);
 			view.dispose();
 			leaveAtelier();

@@ -17,6 +17,19 @@
 	let atelierEl = $state<HTMLDivElement>();
 	let viewport = $state<HTMLDivElement>();
 
+	function onWindowKeyDown(e: KeyboardEvent) {
+		if (e.metaKey || e.ctrlKey || e.altKey) return;
+
+		if (e.key === 'Escape' || e.code === 'Escape') {
+			e.preventDefault();
+			(document.activeElement as HTMLElement | null)?.blur();
+			session.goBack();
+			return;
+		}
+
+		session.gestures.onKeyDown(e);
+	}
+
 	onMount(() => {
 		let stop: (() => void) | undefined;
 		void tick().then(() => {
@@ -28,6 +41,8 @@
 		return () => stop?.();
 	});
 </script>
+
+<svelte:window onkeydowncapture={onWindowKeyDown} />
 
 <svelte:head>
 	<title>{artist.name}</title>

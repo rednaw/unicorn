@@ -5,7 +5,7 @@
 </script>
 
 {#if onBack}
-	<button type="button" class="back" onclick={onBack} aria-label="Terug">
+	<button type="button" class="back" onclick={onBack} aria-label="Terug (Escape)">
 		<span aria-hidden="true">←</span>
 	</button>
 {:else}
