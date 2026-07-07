@@ -55,7 +55,11 @@
 <div class="atelier" bind:this={atelierEl}>
 	<div class="atelier__chrome">
 		<BackLink onBack={session.goBack} />
-		<NearCue drawingId={session.hudDrawingId} ended={session.hudEnded} />
+		<NearCue
+			drawingId={session.hudDrawingId}
+			ended={session.hudEnded}
+			visible={session.hudVisible}
+		/>
 	</div>
 
 	<Canvas

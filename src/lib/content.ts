@@ -27,7 +27,7 @@ const atelier = {
 			rotation: -4,
 			portrait: { x: 405, y: 22 },
 			landscape: { x: 120, y: 62 },
-			width: 280,
+			width: 300,
 			track: {
 				id: 'chopin-ballade-4',
 				title: 'Ballade nr. 4 in f klein, op. 52',
@@ -51,7 +51,7 @@ const atelier = {
 			track: {
 				id: 'beethoven-rondo-op51-1',
 				title: 'Rondo in C majeur, op. 51 nr. 1',
-				composer: 'Ludwig van Beethoven',
+				composer: 'Ludwig von Beethoven',
 				src: asset('/audio/beethoven-rondo-in-c-majeur-opus-51-no-1.m4a')
 			}
 		},
@@ -67,7 +67,7 @@ const atelier = {
 			rotation: -3,
 			portrait: { x: 780, y: 370 },
 			landscape: { x: 250, y: 780 },
-			width: 280
+			width: 300
 		},
 		{
 			id: 'portret-strik',
@@ -95,7 +95,7 @@ const atelier = {
 			rotation: 2,
 			portrait: { x: 398, y: 900 },
 			landscape: { x: 1200, y: 660 },
-			width: 290,
+			width: 300,
 			track: {
 				id: 'chopin-mazurka-op50-2',
 				title: 'Mazurka in As, op. 50 nr. 2',
@@ -113,9 +113,51 @@ const atelier = {
 			srcWidth: 2999,
 			srcHeight: 4441,
 			rotation: 8,
-			portrait: { x: 775, y: 1375 },
+			portrait: { x: 775, y: 1275 },
 			landscape: { x: 740, y: 830 },
-			width: 280
+			width: 300
+		},
+		{
+			id: 'stilleven',
+			title: 'Stilleven',
+			year: '2023',
+			medium: 'potlood op papier',
+			alt: 'Stilleven met plant in glas, cilinder en kom op schotel',
+			...drawingPaths('image007.jpg'),
+			srcWidth: 2986,
+			srcHeight: 4341,
+			rotation: -2,
+			portrait: { x: 55, y: 2280 },
+			landscape: { x: 40, y: 1280 },
+			width: 300
+		},
+		{
+			id: 'buste-driekwart',
+			title: 'Buste driekwart',
+			year: '2023',
+			medium: 'potlood op papier',
+			alt: 'Potloodstudie van een klassieke buste in driekwartprofiel',
+			...drawingPaths('image008.jpg'),
+			srcWidth: 2971,
+			srcHeight: 4297,
+			rotation: -5,
+			portrait: { x: 780, y: 2150 },
+			landscape: { x: 600, y: 1280 },
+			width: 300
+		},
+		{
+			id: 'portret-lang-haar',
+			title: 'Portret met lang haar',
+			year: '2023',
+			medium: 'potlood op papier',
+			alt: 'Frontaal portret met lang haar en zachte schaduwen',
+			...drawingPaths('image009.jpg'),
+			srcWidth: 2971,
+			srcHeight: 4413,
+			rotation: 3,
+			portrait: { x: 420, y: 1760 },
+			landscape: { x: 1320, y: 1280 },
+			width: 300
 		}
 	]
 } satisfies import('./content-types').Atelier;

@@ -11,6 +11,7 @@ import {
 	setOnEnded,
 	stop
 } from './audio-player.svelte';
+import { isDrawingVisibleInView } from './visible-drawings';
 import { observeViewport } from './viewport-metrics';
 import { createAtelierView } from './view.svelte';
 
@@ -103,6 +104,26 @@ export function createAtelierSession(opts: {
 		view.resetViewAnimated(scheduleViewportPrefetch);
 	}
 
+	const remoteHudVisible = $derived.by(() => {
+		const id = listening.drawingId;
+		if (!id) return false;
+		const drawing = opts.drawings.find((d) => d.id === id);
+		if (!drawing?.track) return false;
+		view.tx;
+		view.ty;
+		view.zoom;
+		view.layoutMode;
+		view.metrics.width;
+		if (view.metrics.width === 0) return false;
+		return !isDrawingVisibleInView(
+			id,
+			view.getView(),
+			view.metrics,
+			view.layoutMode,
+			(d) => view.drawingPos(d)
+		);
+	});
+
 	const gestures = createAtelierGestures(view, {
 		onExplore,
 		onPrefetchDrawing: (id) => requestDrawing(id, 'full'),
@@ -165,6 +186,9 @@ export function createAtelierSession(opts: {
 		},
 		get hudEnded() {
 			return listening.hudEnded;
+		},
+		get hudVisible() {
+			return remoteHudVisible;
 		},
 		isPlaying: (id: string) => listening.isPlaying(id),
 		focusDrawing,
