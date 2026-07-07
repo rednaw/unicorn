@@ -28,7 +28,7 @@ function rectsIntersect(
 }
 
 /** Drawings intersecting the viewport, nearest-first (canvas centre distance). */
-function visibleDrawings(
+export function visibleDrawings(
 	view: ViewTransform,
 	viewport: ViewportRect,
 	layoutMode: AtelierLayoutMode,
@@ -78,4 +78,20 @@ export function prefetchIntentsForView(
 	return visibleDrawings(view, viewport, layoutMode, posFor)
 		.filter(({ coverage }) => coverage >= ATELIER_PREFETCH.fullResCoverage)
 		.map(({ drawing }) => ({ id: drawing.id, intent: 'full' as const }));
+}
+
+/** Whether a drawing's mat intersects the current viewport (canvas space). */
+export function isDrawingVisibleInView(
+	drawingId: string,
+	view: ViewTransform,
+	viewport: ViewportRect,
+	layoutMode: AtelierLayoutMode,
+	posFor: (d: Drawing) => { x: number; y: number }
+): boolean {
+	if (viewport.width === 0) return false;
+	const drawing = drawings.find((d) => d.id === drawingId);
+	if (!drawing) return false;
+	const region = visibleCanvasRect(view, viewport);
+	const box = rotatedPieceBounds(drawing, posFor(drawing));
+	return rectsIntersect(region, box);
 }

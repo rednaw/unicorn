@@ -55,6 +55,10 @@
 					draggable="false"
 					decoding="async"
 				/>
+				<figcaption class="piece__label">
+					<span class="piece__composer">{drawing.track.composer}</span>
+					<span class="piece__track">{drawing.track.title}</span>
+				</figcaption>
 			</figure>
 		{/if}
 	</div>
@@ -120,15 +124,17 @@
 			inset 0 1px 0 rgba(255, 255, 255, 0.55),
 			inset 0 -1px 0 rgba(26, 24, 20, 0.05);
 		display: flex;
-		justify-content: center;
 		align-items: center;
+		gap: 7px;
+		min-height: 36px;
 	}
 
 	.piece__hmv {
+		flex-shrink: 0;
 		display: block;
 		width: var(--hmv-width);
 		height: auto;
-		aspect-ratio: 1200 / 898;
+		aspect-ratio: 502 / 376;
 		object-fit: cover;
 		object-position: center;
 		pointer-events: none;
@@ -152,6 +158,46 @@
 		box-shadow:
 			0 1px 3px rgba(26, 24, 20, 0.2),
 			0 0 10px rgba(212, 175, 95, 0.28);
+	}
+
+	.piece__label {
+		display: flex;
+		flex-direction: column;
+		gap: 1px;
+		min-width: 0;
+		flex: 1;
+	}
+
+	.piece__composer {
+		font-family: var(--font-sans);
+		font-size: 0.48rem;
+		font-weight: 500;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		line-height: 1.2;
+		color: rgba(26, 24, 20, 0.52);
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.piece__hmv--singing ~ .piece__label .piece__composer {
+		color: rgba(120, 88, 24, 0.82);
+	}
+
+	.piece__track {
+		font-family: var(--font-museum);
+		font-size: 0.58rem;
+		font-style: italic;
+		line-height: 1.25;
+		color: rgba(26, 24, 20, 0.78);
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.piece__hmv--singing ~ .piece__label .piece__track {
+		color: rgba(26, 24, 20, 0.92);
 	}
 
 	@media (prefers-reduced-motion: reduce) {

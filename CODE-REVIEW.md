@@ -1,215 +1,305 @@
-# Code quality review (2026-07-01)
+# Code review (2026-07-03)
 
-Systematic walkthrough of the atelier stack — gestures, focus flow, audio engine, prefetch, service worker, and encode scripts.
+Critical review of the Unicorn (RvA) codebase — atelier stack, audio, prefetch,
+service worker, content model, and ops. Replaces the earlier review docs that
+described the removed spatial-audio architecture.
 
-**Progress:** work through tiers in order; check items off as decided or shipped. Update this file when status changes.
+**Status at review time:** `pnpm check` and `pnpm build` pass. ~3k lines of
+source across 33 TS/Svelte files. Six drawings, two audio tracks.
 
-**Shipped on `main`:** #1 (unified focus path, `ad7fe81`), #3 removed (`?focus=` deep link, `0e59c2f`), CSP `script-src-attr` (`77c7ef6`).
+**Updated 2026-07-03:** Audio memory-pressure fixes shipped (SW `Blob.slice`,
+`<audio>` preload policy, buffer release on track switch / leave).
 
-**Shipped locally (pending commit / prod retest):** atelier-session orchestration, piece-focus pin, audio incognito fixes, `resolve`/`asset` path migration.
+---
 
-**Next up:** #2 (iOS inertia priming — partial A done).
+## Audio memory requirement
 
-Overall: layered architecture (`atelier-session` → view / piece-focus / spatial-audio-loop / audio-engine / gestures), thin `+page.svelte`, sensible perf choices (CSS transform pan/zoom, lazy audio, serial full-res prefetch). `pnpm check` clean.
+As the catalog grows (longer and more recordings), RAM use must stay **bounded
+by one active playback pipeline + read-ahead**, not by catalog size.
 
-### Architecture (current)
+Service worker and HTTP cache are implementation details. What matters:
+
+| Rule | Rationale |
+|------|-----------|
+| Stream compressed audio incrementally | Browser default via Range requests — do not break it |
+| Never materialize whole files in JS | `arrayBuffer()`, full-file `fetch` + blob in app code, `decodeAudioData` |
+| Load audio only on tap | Unplayed tracks ≈ 0 RAM |
+| One `<audio>` element | One decode pipeline at a time |
+| Tight preload until play | `metadata` idle; `auto` only while listening |
+| Release decode buffer on track switch / leave | Drop previous `src` when switching pieces or resetting |
+
+**Where bytes may live (all acceptable):** disk cache (SW or HTTP), network
+stream, browser decode read-ahead buffer. **Not acceptable:** copying an entire
+recording into the service worker JS heap per range request.
+
+### Shipped mitigations
+
+- **`scripts/sw.template.js`** — `serveRangeFromCached` uses `blob().slice()`
+  instead of `arrayBuffer()` (Workbox-style streaming 206 from cache storage).
+  Static-media matcher is extension-guarded so dev paths (`/src/lib/atelier/*.css`,
+  `+page.svelte`) and the `/atelier/` HTML route are never cached.
+- **`audio-player.svelte.ts`** — `preload='metadata'` by default; `'auto'` only
+  in `playDrawing`; `removeAttribute('src')` + `load()` when switching tracks
+  or on `stop({ reset: true })`.
+
+### Still to watch as catalog grows
+
+- Do not precache all audio on SW install (currently only hall/thumbs — keep it
+  that way; lazy cache on first play is fine).
+- Optional: release `src` on fade-out stop (not reset) if resume-across-pan is
+  not worth the retained decode buffer.
+
+---
+
+## Executive summary
+
+**Verdict:** Production-ready for a personal artist site at current scale. The
+atelier core is coherent and performance-aware. Main risks before the catalog
+grows: **no automated tests**, **pointer-only piece selection**, **hit testing
+that ignores visual stacking**, and **silent audio failure paths**.
+
+The explicit-listen refactor (`listening.svelte.ts` + `audio-player.svelte.ts`)
+is a clear improvement over the old spatial-audio model.
+
+---
+
+## Architecture (current)
 
 ```
-+page.svelte (shell)
-  └── createAtelierSession()
-        ├── createAtelierView()         — pan/zoom/canvas
-        ├── createPieceFocus()          — tap highlight + pin until explore
-        ├── createSpatialAudioLoop()    — RAF, displayNearDrawingId, nearCueDrawingId
-        │     └── spatial-mix.ts        — pure proximity math + applyPinnedAudioFocus
-        │     └── audio-engine          — singleton AudioContext, unlock, solo-near gain
-        └── createAtelierGestures()     — onGestureAudio + onExplore
++page.svelte → createAtelierSession()
+  ├── createAtelierView()      — pan/zoom, per-piece sharp zoom cap
+  ├── createListening()        — tap-focus + HUD phase
+  ├── audio-player (singleton) — one <audio>, gesture-owned play()
+  ├── createAtelierGestures()  — pointer/wheel/keyboard
+  └── prefetch.svelte          — serial full-res queue
 ```
 
-**Files:** `atelier-session.svelte.ts`, `piece-focus.svelte.ts`, `spatial-audio-loop.svelte.ts`, `spatial-mix.ts`, `audio-engine.svelte.ts`, `gestures.svelte.ts`.
+| Layer | Files |
+|-------|--------|
+| Page shell | `src/routes/(site)/atelier/+page.svelte` |
+| Orchestration | `src/lib/atelier/atelier-session.svelte.ts` |
+| View / pan-zoom | `src/lib/atelier/view.svelte.ts`, `view-math.ts` |
+| Gestures | `src/lib/atelier/gestures.svelte.ts` |
+| Listening session | `src/lib/atelier/listening.svelte.ts` |
+| Audio engine | `src/lib/atelier/audio-player.svelte.ts`, `audio-format.ts` |
+| Prefetch | `src/lib/drawing/prefetch.svelte.ts`, `visible-drawings.ts` |
+| Content | `src/lib/content.ts`, `content-types.ts`, `content-derive.ts` |
+| Service worker | `scripts/sw.template.js`, `service-worker.mjs` |
+
+Agent constraints and file map: [`CURSOR.md`](./CURSOR.md). Workflow and
+deployment: [`README.md`](./README.md).
 
 ---
 
-## Tier 1 — Real behavioral gaps
+## What’s working well
 
-### 1. Tap-to-focus bypasses unified focus path
+### Layering
 
-- [x] **Shipped** (`ad7fe81`) — tap routes through `onFocusPiece` → `focusDrawing`; `suppressNextPieceButtonClick` kept.
+`createAtelierSession` is a good orchestration boundary; route pages stay thin.
+Session composes view, listening, gestures, prefetch, and the audio singleton
+without circular dependencies.
 
-All piece focus (tap, keyboard) goes through `atelier-session` `focusDrawing`: `unlock([id])`, `pieceFocus.focus(id)`, immediate `armSpatial()`, full-res prefetch, view animation.
+### Performance choices
 
-- [x] **Decided:** Tap and keyboard use identical focus semantics.
+- Pan/zoom via CSS `translate` + `scale` only — correct for GPU compositing.
+- Full-res JPEGs gated by **viewport coverage** (`ATELIER_PREFETCH.fullResCoverage`), not raw zoom — scales better as the catalog grows.
+- Serial full-res decode (`fullMaxConcurrent: 1`) — sensible on slow networks.
+- Per-drawing `maxSharpZoomForDrawing()` — honors the “still sharp at max zoom?” litmus test in CURSOR.md.
+- `box-shadow` instead of `filter: drop-shadow` on pieces — avoids GPU raster blow-up when zoomed (`DrawingPiece.svelte`).
 
-**Files:** `gestures.svelte.ts`, `atelier-session.svelte.ts` (was `+page.svelte`).
+### Audio engine
 
----
+`audio-player.svelte.ts` is thoughtfully built:
 
-### 2. iOS priming gap after gesture ends
+- `playGeneration` invalidates stale async metadata handlers.
+- Resume positions per drawing when switching mid-recording.
+- Web Audio gain crossfade instead of relying on `<audio>` volume alone.
+- `pickAudioSrc()` handles WebM vs m4a per browser.
 
-- [ ] **Open** — **next**
+### Ops and security
 
-`onGestureAudio(primeDrawingIds)` runs on `pointerdown` / `wheel` / `keydown` using **current** spatial state. After release, **inertia** can land on a new dominant piece with no new gesture — lazy track created in `applyMix`, `play()` may fail on iOS.
-
-- [x] **Partial A** — `pointerdown` passes `pieceId` as hint into `onGestureAudio` / `unlock` (gestures ~line 100; session `primeDrawingIds`).
-
-**Remaining options:**
-
-- [ ] **B.** On failed `play()`, do not arm that track until the next gesture (graceful degradation).
-- [ ] **C.** Accept as edge case at 2 tracks / 6 drawings.
-
----
-
-## Tier 2 — Medium polish
-
-### 3. ~~`?focus=` deep-link~~ — removed
-
-- [x] **Shipped** (`0e59c2f`) — removed `?focus=` URL param, mount-time auto-focus, and `nearLockId`.
-
-Replaced by `createPieceFocus()` (`focusedId` + `pinnedDrawingId` until `releasePin()` on explore). Entry is always fit-all overview; piece focus is tap/keyboard only.
+- GitHub Actions with LFS, ffmpeg, frozen lockfile, Pages artifact upload.
+- CSP configured in `svelte.config.js` (including Svelte `script-src-attr` hash).
+- Static adapter with SPA fallback — appropriate for GitHub Pages.
 
 ---
 
-### 4. `audioIndexForDrawing` re-filters every RAF frame
+## Critical issues
 
-- [ ] **Open**
+### 1. No automated tests
 
-`src/lib/content-derive.ts` — `audioIndexForDrawing` calls `audioDrawingsFrom(flat).findIndex(...)` on every lookup. Called from `applyMix` every frame and from `indicesFor` on unlock.
+There are zero test files. Highest-risk logic:
 
-Trivial at 6 pieces; wasteful as the catalog grows.
+| Area | Why it matters |
+|------|----------------|
+| `drawingAtCanvasPoint` | Rotated hit boxes; wrong piece → wrong audio |
+| `playDrawing` / `stop` state machine | Crossfade, resume, stale callbacks, `fromStart` |
+| `prefetchIntentsForView` | Coverage threshold, visible-set math |
+| `maxSharpZoomForDrawing` | Regressions break the core product promise |
+| `pickAudioSrc` | Browser format selection |
 
-**Recommendation:** Precompute `Map<drawingId, audioIndex>` once in `content.ts` or `content-derive.ts`.
-
----
-
-### 5. HMV plaque outside SW media coverage
-
-- [ ] **Open**
-
-`HMV_PLAQUE.src` = `/atelier/hmv-plaque.webp` (`hmv-plaque.ts`). SW `MEDIA_DIRS` only covers `drawings`, `audio`, `hall`. Template now uses `asset(HMV_PLAQUE.src)`.
-
-**Options:**
-
-- [ ] Add `static/atelier/` to media walk
-- [ ] Move plaque under `static/hall/`
-- [ ] Leave as-is (offline plaque not important)
+**Recommendation:** Add Vitest (or similar) for pure modules first
+(`drawing-geometry`, `view-math`, `content-derive`, `audio-format`,
+`visible-drawings`). Audio player can be tested with mocked `AudioContext` /
+`HTMLAudioElement`.
 
 ---
 
-## Tier 3 — Nice to have (low urgency at current scale)
+### 2. Hit testing ignores z-order
 
-- [ ] **Constants sync** — `HMV_PLAQUE_CSS_WIDTH`, `DRAWING_SLOT_PADDING_X`, mat padding spread across files
-- [ ] **`listenPoints()` twice/frame** — `spatial-mix.ts`; irrelevant at n=6
-- [ ] **Hit test vs paint order** — array order vs z-index on overlap
-- [ ] **Background tab audio** — RAF skips `applyMix` when hidden but does not pause
-- [x] ~~**RAF while disarmed**~~ — tap-focus arms immediately; pin holds dominant via `applyPinnedAudioFocus`
-- [ ] **`DrawingImg` no `onerror`** — edge case
-- [ ] **Thumb double-warm** — home warmup + SW precache; intentional, harmless
-- [ ] **`clamp01` duplication** — `spatial-mix.ts` vs `math.ts`
-- [ ] **`content-drawings.mjs` regex** — brittle but fails loudly at build; acceptable
+`drawingAtCanvasPoint` walks `content.ts` array order and returns the **first**
+intersection. Pieces use `z-index: 1` normally and `z-index: 10` on hover, but
+hit testing does not match DOM stacking.
 
----
+Overlapping or rotated pieces can focus/play the wrong one as placements get
+denser.
 
-## Shipped outside tier list (this session)
+**Recommendation:** Iterate in reverse paint order (or track an explicit
+`zIndex` in content), matching visual stacking.
 
-### Atelier session orchestration
-
-- [x] **`createAtelierSession()`** — composes view, piece-focus, spatial loop, gestures, prefetch, mount lifecycle. `+page.svelte` is shell-only.
-
-### Audio — prod incognito tap cutoff
-
-- [x] **Gain-only `applyMix`** — no `pause()` in mix loop (`pauseThreshold` / `fadeOutPauseSec` removed from constants).
-- [x] **`assertPlayback()`** — `unlock()` calls `play()` on already-primed tracks every gesture (door-primed maskers).
-- [x] **`applyPinnedAudioFocus()`** — pinned piece stays dominant at ≥ `playThreshold` during tap-focus.
-- [x] **Immediate `armSpatial()` on tap-focus** — no deferred play past gesture window.
-- [x] **`preload = 'auto'`** on lazy `<audio>` elements.
-
-**Retest:** incognito → door → atelier → single tap maskers / lachend-portret (no pan/zoom); music should play through.
-
-### Paths API
-
-- [x] **`base` → `resolve` / `asset`** — all four `import { base } from '$app/paths'` removed (`+page.svelte`, `atelier/+page.svelte`, `BackLink.svelte`, `DrawingPiece.svelte`).
+**Files:** `src/lib/atelier/drawing-geometry.ts`, `src/lib/atelier/gestures.svelte.ts`.
 
 ---
 
-## Performance (hot paths) — mostly fine
+### 3. ~~Accessibility — canvas is pointer-first~~ — shipped
 
-Reference only — no action items.
+**Fixed:** Full keyboard support in the atelier.
 
-| Path | Assessment |
-|------|------------|
-| Pan/zoom transform | CSS `translate` + `scale` only — good |
-| `computeSpatialMix` | ~12 listen-point calcs/frame — fine at 6 drawings |
-| `drawingAtCanvasPoint` | O(n), n=6 — fine |
-| Prefetch queue | Serial, coverage-gated — good for slow networks |
-| `fullReady` Set spread | Re-renders all `DrawingImg` per completion — acceptable at 6 |
-| SW range serving | Full `arrayBuffer` per range — OK for short piano tracks |
+- **Tab order:** Terug → canvas (pan/zoom) → werken (roving `tabindex`).
+- **Canvas focused:** pijltjestoetsen / WASD pan, `+`/`−` zoom, Escape terug.
+- **Werk focused:** pijltjestoetsen / Home / End roven tussen werken (top→bottom, links→rechts); canvas schuift het werk in beeld (`revealDrawing`); Enter/Space activeert (zoom + audio).
+- **Focus rings** on viewport and piece buttons.
+
+**Files:** `Canvas.svelte`, `DrawingPiece.svelte`, `keyboard-pieces.ts`, `view.svelte.ts` (`revealDrawing`), `gestures.svelte.ts`.
 
 ---
 
-## Type safety — solid
+### 4. Silent audio failures
 
-Reference only — no action items.
+Failure paths are swallowed in `audio-player.svelte.ts`:
 
-- `strict: true`, `satisfies Atelier`, Svelte 5 runes
-- Scripts use `@ts-nocheck` — acceptable for build tooling
-- Minor: `onGestureAudio` not awaited by gesture callers (intentional fire-and-forget)
+- `void el.play().catch(() => {})`
+- Empty `catch {}` around `currentTime` assignment and `ctx.resume()`
 
----
+If playback fails (missing WebM on deploy, iOS gesture timing, corrupt file),
+the UI shows “playing” via `listening.focus()` but nothing is heard.
 
-## Test gaps (high value only)
-
-- [ ] **`spatial-mix.ts`** — zoom gate, near vs dominant, `applyPinnedAudioFocus`
-- [ ] **`view-math.ts`** — `zoomAtPoint`, `clampView`, `fitViewToCanvas`
-- [ ] **`drawing-geometry.ts`** — rotated hit test, `pieceBounds`
-- [ ] **`pickAudioSrc`** — WebKit vs Chromium (mock `canPlayType`)
-- [ ] **Focus flow integration** — tap → `session.focusDrawing` side effects (unlock, pin, arm)
-- [ ] **SW `serveRangeFromCached`** — 206/416 edge cases
+**Recommendation:** On `play()` rejection or `error` event, call
+`listening.markEnded()` or surface a non-blocking error state in `NearCue`. At
+minimum, `console.warn` in dev builds.
 
 ---
 
-## Leave alone
+### 5. ~~Service worker audio caching — memory pressure~~ — shipped
 
-- Singleton `AudioContext`, lazy tracks, solo-near mix
-- `ssr = false` on atelier
-- SW design (media-hash, thumbs-only precache, range audio)
-- Gesture wheel/trackpad split
-- `prefersReducedMotion` respected
-- Content model (`portrait`/`landscape`, optional `track`)
-- Encode scripts, CSP config (`script-src-attr` + Svelte delegation hash)
-- `box-shadow` over `filter: drop-shadow` in `DrawingPiece.svelte`
-- Current scale (6 drawings, 2 tracks)
+~~In `scripts/sw.template.js`, `serveRangeFromCached` loads the **entire cached
+audio file into an `ArrayBuffer`** to slice range responses.~~
 
----
+**Fixed:** Range responses from cache use `Blob.slice()` so the 206 body streams
+from cache storage without a full JS heap copy. Paired with `<audio>`
+`preload='metadata'` until play and `src` release on track switch / leave.
 
-## Implementation order
-
-- [x] **1. Unify focus paths** — shipped (`ad7fe81`); refactored into `atelier-session`
-- [ ] **2. iOS priming strategy** — **next** (hint on pointerdown done; inertia gap open)
-- [x] **3. Remove `?focus=` deep-link** — shipped (`0e59c2f`); `piece-focus` module
-- [ ] **4. Precompute audio index map**
-- [ ] **5. SW coverage for `/atelier/` assets**
-- [ ] **6. Tests**
+**Files:** `scripts/sw.template.js`, `src/lib/atelier/audio-player.svelte.ts`.
 
 ---
 
-## Session decisions (closed)
+## Medium issues
 
-- [x] Fix #1 only (minimal) — focus path shipped; gain-only re-applied after prod incognito repro
-- [x] Tap vs keyboard: identical focus semantics
-- [x] Remove legacy `?focus=` deep-link entirely (not validate — delete)
-- [x] Unify pin state in `piece-focus.svelte.ts` (was split `nearCuePinned` + getter into spatial loop)
-- [x] Centralize orchestration in `atelier-session.svelte.ts`
-- [x] Gestures: `onGestureAudio` + `onExplore` instead of `unlock` / `armSpatial` / `releasePin`
-- [x] Migrate deprecated `base` to `resolve` / `asset`
+### 6. Dual activation path (pointer + button)
 
-## Session decisions (open)
+Focus can arrive from:
 
-- [ ] **#2:** B or C for remaining iOS inertia priming gap?
-- [ ] **Audio retest** — confirm incognito tap cutoff fixed on prod after session audio changes
+1. Pointer-up hit test in `gestures.svelte.ts`
+2. `<button onclick>` in `DrawingPiece.svelte`
+
+`piece-activation.ts` suppresses duplicate clicks via a microtask flag. It
+works but is fragile — easy to break with a third entry point (e.g. keyboard
+focus).
+
+**Recommendation:** Single activation funnel: buttons handle activation;
+viewport pointer-up only starts pan/zoom unless the target is the button (or
+drop buttons and use one path).
 
 ---
 
-## Deferred / out of scope
+### 7. Manual content maintenance is error-prone
 
-- [x] **Audio `applyMix` gain-only** — shipped (incognito cutout from `pause()` in mix loop)
-- [x] **Pin split across page + spatial loop** — consolidated in `piece-focus` + session
-- [ ] **iPhone dev ~10s audio cutoff** — retest on `pnpm preview` / prod after full audio stack
+Each drawing requires hand-entered:
+
+- `srcWidth` / `srcHeight` (must match actual JPEG dimensions for sharp zoom)
+- `portrait` / `landscape` coordinates
+- Optional `rotation`, `width`, `track`
+
+Nothing validates that coordinates fit the computed canvas or that filenames
+exist.
+
+**Recommendation:** Extend build scripts (e.g. `content-drawings.mjs`) to probe
+image dimensions and assert file presence, similar to thumb generation.
+
+---
+
+### 8. Magic-number sync between CSS and TS
+
+`PIECE_MAT` in `drawing-geometry.ts` must stay aligned with `.piece__mat`
+padding and plaque height in `DrawingPiece.svelte`. Same for `LEATHER_PAD_INSET`
+vs `backgrounds.css`. Comments call this out; there is no compile-time guard.
+
+---
+
+### 9. Tooling gap
+
+Only `pnpm check` (svelte-check). No ESLint, Prettier, or CI lint step. Fine for
+a solo project today; will drift as edits accumulate.
+
+---
+
+## Minor observations
+
+| Topic | Note |
+|-------|------|
+| Zoom cap off-piece | `maxZoomAt` falls back to `peakMaxZoom` when the cursor is not over a drawing — you can zoom past one piece’s sharp limit while inspecting another. Probably intentional. |
+| Audio preload | `metadata` until tap; `auto` only during playback — see Audio memory requirement above. |
+| TypeScript 6.0.2 | Very new; watch for ecosystem friction. |
+| Silent pieces | Focusing a drawing without `track` still shows `NearCue` and requests full-res — coherent “look but don’t listen” behavior. |
+| View Transitions | Gracefully skipped when `prefers-reduced-motion` — good. |
+| `audioIndexForDrawing` | Precomputed `Map` in `content.ts` — no longer a per-frame cost (fixed since earlier review). |
+
+---
+
+## Priority recommendations
+
+1. **Tests** — geometry, view math, prefetch intents, audio format selection, audio player state transitions.
+2. **Hit-test stacking** — before adding overlapping placements.
+3. **Keyboard-accessible piece selection** — minimum viable for operable UX.
+4. **Surface audio errors** — instead of silent `catch`.
+5. **Build-time content validation** — image dimensions, audio file presence, coordinate bounds.
+6. **Optional:** ESLint + format in CI as the codebase grows.
+
+---
+
+## Review checklist (track progress)
+
+### Tier 1 — behavioral / reliability
+
+- [ ] Automated tests for pure modules and audio state machine
+- [ ] Hit testing respects visual z-order
+- [x] Keyboard path to focus any drawing (roving tabindex + arrows + Enter)
+- [ ] Audio play/error feedback when `play()` or load fails
+- [x] Low RAM audio: SW `Blob.slice` range serving, tight preload, buffer release on switch/leave
+
+### Tier 2 — maintainability
+
+- [ ] Single piece-activation funnel (pointer vs button)
+- [ ] Build-time validation of content.ts vs static assets
+- [ ] Lint/format in CI (optional)
+
+---
+
+## Bottom line
+
+Well-crafted, constraint-driven implementation for an immersive drawing gallery.
+The atelier stack shows real attention to sharpness, gesture feel, and mobile
+networks. Gaps are mostly **scale and resilience**: no tests, pointer-first UX,
+stacking bugs waiting on denser layouts, and silent failure modes in audio. Audio
+memory pressure for long/many recordings is addressed; fine for six pieces —
+address remaining Tier 1 before the catalog grows significantly.

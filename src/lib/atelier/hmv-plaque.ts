@@ -1,5 +1,5 @@
-/** Label width on the mat in CSS px — sync with `DrawingPiece.svelte` (`--hmv-width`). */
-export const HMV_PLAQUE_CSS_WIDTH = 44;
+/** HMV icon width on the mat label (CSS px) — sync with `DrawingPiece.svelte`. */
+export const HMV_PLAQUE_CSS_WIDTH = 28;
 
 /** Plaque WebP. Source: Wikimedia Commons (public domain). */
 export const HMV_PLAQUE = {
