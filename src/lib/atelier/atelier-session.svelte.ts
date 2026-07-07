@@ -77,12 +77,11 @@ export function createAtelierSession(opts: {
 
 	function focusDrawing(id: string) {
 		const drawing = opts.drawings.find((d) => d.id === id);
-		const replay = listening.drawingId === id && listening.phase === 'ended';
-		listening.focus(id);
+		// Silent works only reframe the view — leave any running recording playing.
 		if (drawing?.track) {
+			const replay = listening.drawingId === id && listening.phase === 'ended';
+			listening.focus(id);
 			void playDrawing(id, { fromStart: replay });
-		} else {
-			stop({ fadeMs: ATELIER_AUDIO.crossfadeMs });
 		}
 		requestDrawing(id, 'full');
 		if (drawing) view.focusDrawing(drawing, scheduleViewportPrefetch);
