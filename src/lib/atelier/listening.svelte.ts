@@ -1,4 +1,4 @@
-export type ListeningPhase = 'playing' | 'ended';
+export type ListeningPhase = 'playing' | 'paused' | 'ended';
 
 /**
  * Tap-focus session: which piece the visitor is listening to and whether
@@ -16,6 +16,18 @@ export function createListening() {
 	function markEnded() {
 		if (drawingId !== null && phase === 'playing') {
 			phase = 'ended';
+		}
+	}
+
+	function pause() {
+		if (drawingId !== null && phase === 'playing') {
+			phase = 'paused';
+		}
+	}
+
+	function resume() {
+		if (drawingId !== null && phase === 'paused') {
+			phase = 'playing';
 		}
 	}
 
@@ -46,6 +58,8 @@ export function createListening() {
 		},
 		focus,
 		markEnded,
+		pause,
+		resume,
 		clear,
 		isPlaying
 	};
