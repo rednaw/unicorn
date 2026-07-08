@@ -1,6 +1,8 @@
 export const ATELIER_ZOOM = {
 	initial: 0.7,
 	min: 0.25,
+	/** Portrait pinch-out floor — tall/narrow canvas hits `min` at overview otherwise. */
+	minPortrait: 0.13,
 	fitPadding: 0.95,
 	/** Portrait overview — zoom out a touch more so the desk clears top chrome. */
 	fitPaddingPortrait: 0.86,
