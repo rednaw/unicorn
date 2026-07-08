@@ -57,7 +57,9 @@ export function createAtelierView(drawings: Drawing[]) {
 	let vx = 0;
 	let vy = 0;
 
-	const minZoom = ATELIER_ZOOM.min;
+	function minZoom(): number {
+		return layoutMode === 'portrait' ? ATELIER_ZOOM.minPortrait : ATELIER_ZOOM.min;
+	}
 
 	function getView(): ViewTransform {
 		return { tx, ty, zoom };
@@ -177,7 +179,7 @@ export function createAtelierView(drawings: Drawing[]) {
 		const isPortrait = layoutMode === 'portrait';
 		return fitViewToCanvas(
 			viewportRect(),
-			minZoom,
+			minZoom(),
 			canvasSize(),
 			isPortrait ? ATELIER_ZOOM.fitPaddingPortrait : ATELIER_ZOOM.fitPadding,
 			isPortrait ? { top: ATELIER_ZOOM.fitInsetTopPortrait } : {}
@@ -237,7 +239,7 @@ export function createAtelierView(drawings: Drawing[]) {
 
 	function applyZoomAt(viewportX: number, viewportY: number, nextZoom: number) {
 		applyView(
-			zoomAtPoint(getView(), viewportX, viewportY, nextZoom, minZoom, maxZoomAt(viewportX, viewportY))
+			zoomAtPoint(getView(), viewportX, viewportY, nextZoom, minZoom(), maxZoomAt(viewportX, viewportY))
 		);
 		syncClamp();
 		hasUserNavigatedView = true;
@@ -282,7 +284,7 @@ export function createAtelierView(drawings: Drawing[]) {
 
 	function focusTargetZoom(itemW: number, itemH: number, fill: number, maxZoom: number) {
 		if (metrics.width === 0) return zoom;
-		return fitZoomForItem(viewportRect(), itemW, itemH, fill, minZoom, maxZoom);
+		return fitZoomForItem(viewportRect(), itemW, itemH, fill, minZoom(), maxZoom);
 	}
 
 	function focusDrawing(d: Drawing, onArrive?: () => void) {
