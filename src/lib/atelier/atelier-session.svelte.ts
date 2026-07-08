@@ -77,18 +77,51 @@ export function createAtelierSession(opts: {
 		}
 	}
 
+	/** Tap intent for an audio piece — start, switch, pause, resume, or replay. */
+	function activatePieceAudio(id: string): 'paused' | 'playing' {
+		const same = listening.drawingId === id;
+
+		if (same && listening.phase === 'playing') {
+			stop({ fadeMs: ATELIER_AUDIO.crossfadeMs });
+			listening.pause();
+			return 'paused';
+		}
+
+		if (same && listening.phase === 'paused') {
+			listening.resume();
+			void playDrawing(id);
+			return 'playing';
+		}
+
+		const fromStart = same && listening.phase === 'ended';
+		const switchingFromPlaying =
+			!same && listening.drawingId !== null && listening.phase === 'playing';
+
+		listening.focus(id);
+
+		if (switchingFromPlaying) {
+			stop({
+				fadeMs: ATELIER_AUDIO.crossfadeMs,
+				onDone: () => {
+					void playDrawing(id, { fromStart });
+				}
+			});
+		} else {
+			void playDrawing(id, { fromStart });
+		}
+		return 'playing';
+	}
+
 	function focusDrawing(id: string) {
 		const drawing = opts.drawings.find((d) => d.id === id);
 		viewFocusedId = id;
-		// Silent works only reframe the view — leave any running recording playing.
-		if (drawing?.track) {
-			const replay = listening.drawingId === id && listening.phase === 'ended';
-			listening.focus(id);
-			void playDrawing(id, { fromStart: replay });
-		}
+		const audio = drawing?.track ? activatePieceAudio(id) : null;
 		requestDrawing(id, 'full');
-		if (drawing) view.focusDrawing(drawing, scheduleViewportPrefetch);
-		else scheduleViewportPrefetch();
+		if (!drawing || audio === 'paused') {
+			if (!drawing) scheduleViewportPrefetch();
+			return;
+		}
+		view.focusDrawing(drawing, scheduleViewportPrefetch);
 	}
 
 	function goBack() {
@@ -110,8 +143,9 @@ export function createAtelierSession(opts: {
 	const remoteHudVisible = $derived.by(() => {
 		const id = listening.drawingId;
 		if (!id) return false;
+		listening.phase;
 		const drawing = opts.drawings.find((d) => d.id === id);
-		if (!drawing?.track) return false;
+		if (!drawing?.track || listening.phase !== 'playing') return false;
 		view.tx;
 		view.ty;
 		view.zoom;

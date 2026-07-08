@@ -216,15 +216,18 @@ function createAudioPlayer() {
 	}
 
 	/** Fade out then pause. Preserves resume position unless `reset` (leave atelier / fresh entry). */
-	function stop(opts: { fadeMs?: number; reset?: boolean } = {}): void {
+	function stop(opts: { fadeMs?: number; reset?: boolean; onDone?: () => void } = {}): void {
 		invalidatePendingPlay();
+		const gen = playGeneration;
 		clearStopTimer();
 		const fadeMs = opts.fadeMs ?? crossfadeMs;
 		const reset = opts.reset === true;
+		const onDone = opts.onDone;
 
 		if (!ctx || !el || !gain) {
 			if (reset) setDrawingId(null);
 			else clearActiveSession();
+			if (gen === playGeneration) onDone?.();
 			return;
 		}
 
@@ -251,6 +254,7 @@ function createAudioPlayer() {
 			}
 			gain.gain.cancelScheduledValues(ctx.currentTime);
 			gain.gain.setValueAtTime(0, ctx.currentTime);
+			if (gen === playGeneration) onDone?.();
 		};
 
 		if (el.paused || el.ended || fadeMs <= 0) {
