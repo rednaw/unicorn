@@ -31,6 +31,8 @@ export function createAtelierSession(opts: {
 	const listening = createListening();
 	const view = createAtelierView(opts.drawings);
 
+	let viewFocusedId = $state<string | null>(null);
+
 	let getViewport: () => HTMLDivElement | undefined = () => undefined;
 	let settleTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -77,6 +79,7 @@ export function createAtelierSession(opts: {
 
 	function focusDrawing(id: string) {
 		const drawing = opts.drawings.find((d) => d.id === id);
+		viewFocusedId = id;
 		// Silent works only reframe the view — leave any running recording playing.
 		if (drawing?.track) {
 			const replay = listening.drawingId === id && listening.phase === 'ended';
@@ -100,6 +103,7 @@ export function createAtelierSession(opts: {
 	function resetToOverview() {
 		stopListeningAudio();
 		listening.clear();
+		viewFocusedId = null;
 		view.resetViewAnimated(scheduleViewportPrefetch);
 	}
 
@@ -178,7 +182,7 @@ export function createAtelierSession(opts: {
 		view,
 		gestures,
 		get focusedId() {
-			return listening.focusedId;
+			return viewFocusedId;
 		},
 		get hudDrawingId() {
 			return listening.hudDrawingId;

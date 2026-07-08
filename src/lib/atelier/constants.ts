@@ -7,8 +7,6 @@ export const ATELIER_ZOOM = {
 	/** Room above the leather pad for the back control (px, portrait fit-all only). */
 	fitInsetTopPortrait: 56,
 	focusFill: 0.9,
-	/** Extra zoom on the first piece tap from fit-all overview (not repeated on piece switches). */
-	focusStep: 0.22,
 	/** Ctrl/meta + wheel, or mouse-wheel notches (LINE mode) — see gestures `onWheel`. */
 	wheelExp: 0.0025,
 	/** Trackpad pinch (ctrl/meta + DOM_DELTA_PIXEL) — steeper than wheel notches. */
