@@ -1,5 +1,5 @@
 /**
- * Shared atelier room structure — colors from `themes/graphite.css`.
+ * Shared atelier room structure — colors come from `data-room-theme` token files.
  *
  *   .atelier        — walls, wainscoting, shelf shadow
  *   .atelier__inner  — desk rim + writing pad

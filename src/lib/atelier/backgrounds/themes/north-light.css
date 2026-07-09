@@ -1,0 +1,40 @@
+/**
+ * North light — Scandinavian studio under a tall north window. Cold daylight
+ * washes the upper wall while the lower room falls into blue-grey shadow;
+ * smoked-oak rim anchors a pale ash desk. Cool range keeps graphite crisp.
+ */
+html[data-atelier-theme='north-light'] .atelier {
+	--lib-wall-deep: #6b7482;
+	--lib-wall-mid: #b4bbc6;
+	--lib-wall-light: #f2f4f7;
+	--lib-wainscot: #626b78;
+	--lib-rail-gold: rgba(110, 132, 158, 0.38);
+	--lib-skylight: rgba(255, 253, 250, 0.8);
+	--lib-room-vignette: rgba(36, 45, 61, 0.5);
+	--lib-edge-shadow: rgba(36, 45, 61, 0.36);
+	--lib-spine-faint: rgba(44, 54, 72, 0.07);
+	--lib-panel-faint: rgba(44, 54, 72, 0.1);
+	--lib-panel-faint-h: rgba(44, 54, 72, 0.06);
+	--lib-floor-shadow: rgba(30, 38, 52, 0.48);
+
+	--lib-mahogany-deep: #3a3f47;
+	--lib-mahogany: #565d68;
+	--lib-mahogany-light: #7d8592;
+	--lib-leather-deep: #9a9486;
+	--lib-leather-mid: #c6c1b6;
+	--lib-leather: #dcd7cd;
+	--lib-leather-light: #f4f1ea;
+	--lib-pad-vignette: rgba(44, 54, 72, 0.38);
+	--lib-gold: rgba(110, 132, 158, 0.38);
+	--lib-gold-hairline: rgba(110, 132, 158, 0.26);
+	--lib-gold-inset: rgba(110, 132, 158, 0.13);
+	--lib-gold-glow: rgba(110, 132, 158, 0.09);
+	--lib-lamp: rgba(255, 253, 250, 0.6);
+	--lib-lamp-soft: rgba(255, 253, 250, 0.3);
+	--lib-grain-a: rgba(70, 80, 92, 0.055);
+	--lib-grain-b: rgba(70, 80, 92, 0.065);
+	--lib-desk-shadow-outer: rgba(30, 38, 52, 0.5);
+	--lib-desk-shadow-mid: rgba(30, 38, 52, 0.26);
+	--lib-desk-shadow-inset: rgba(36, 45, 61, 0.26);
+	--lib-text: #1c1f24;
+}

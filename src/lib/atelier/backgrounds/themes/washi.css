@@ -1,0 +1,42 @@
+/**
+ * Japanese light — warm paper walls, dark hinoki-smoked rim, washi pad
+ * (default). Depth comes from range, not darkness: bright shoji glow above,
+ * walls sinking into tea-stained shadow below, and a strong pad shadow so
+ * the paper floats over the desk.
+ */
+html:not([data-atelier-theme]) .atelier,
+html[data-atelier-theme='washi'] .atelier {
+	--lib-wall-deep: #a8946e;
+	--lib-wall-mid: #ddcfb2;
+	--lib-wall-light: #fbf6ea;
+	--lib-wainscot: #a08a62;
+	--lib-rail-gold: rgba(170, 130, 80, 0.3);
+	--lib-skylight: rgba(255, 253, 246, 0.75);
+	--lib-room-vignette: rgba(86, 62, 36, 0.44);
+	--lib-edge-shadow: rgba(86, 62, 36, 0.3);
+	--lib-spine-faint: rgba(96, 72, 46, 0.06);
+	--lib-panel-faint: rgba(96, 72, 46, 0.08);
+	--lib-panel-faint-h: rgba(96, 72, 46, 0.05);
+	--lib-floor-shadow: rgba(70, 50, 30, 0.42);
+
+	--lib-mahogany-deep: #1e1810;
+	--lib-mahogany: #382c20;
+	--lib-mahogany-light: #5c4c38;
+	--lib-leather-deep: #d2c19f;
+	--lib-leather-mid: #ece0ca;
+	--lib-leather: #f6efe2;
+	--lib-leather-light: #fffdf8;
+	--lib-pad-vignette: rgba(110, 82, 48, 0.32);
+	--lib-gold: rgba(170, 130, 80, 0.28);
+	--lib-gold-hairline: rgba(170, 130, 80, 0.2);
+	--lib-gold-inset: rgba(170, 130, 80, 0.1);
+	--lib-gold-glow: rgba(170, 130, 80, 0.08);
+	--lib-lamp: rgba(255, 253, 246, 0.55);
+	--lib-lamp-soft: rgba(255, 253, 246, 0.28);
+	--lib-grain-a: rgba(110, 86, 56, 0.05);
+	--lib-grain-b: rgba(110, 86, 56, 0.06);
+	--lib-desk-shadow-outer: rgba(40, 30, 20, 0.5);
+	--lib-desk-shadow-mid: rgba(40, 30, 20, 0.26);
+	--lib-desk-shadow-inset: rgba(60, 45, 28, 0.22);
+	--lib-text: #2c241c;
+}

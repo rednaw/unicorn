@@ -1,0 +1,41 @@
+/**
+ * Nocturne — warm low-key collector's cabinet. Blackened umber walls recede
+ * fully into shadow while a strong candle-warm lamp pools hard on a cognac
+ * suede pad — the warm light flatters graphite's soft mid-grey gradients.
+ * Walnut rim, muted brass; the deepest room of the set.
+ */
+html[data-atelier-theme='nocturne'] .atelier {
+	--lib-wall-deep: #0e0b07;
+	--lib-wall-mid: #241e15;
+	--lib-wall-light: #453a29;
+	--lib-wainscot: #130f0a;
+	--lib-rail-gold: rgba(198, 158, 96, 0.2);
+	--lib-skylight: rgba(255, 224, 180, 0.07);
+	--lib-room-vignette: rgba(0, 0, 0, 0.72);
+	--lib-edge-shadow: rgba(0, 0, 0, 0.58);
+	--lib-spine-faint: rgba(0, 0, 0, 0.09);
+	--lib-panel-faint: rgba(0, 0, 0, 0.11);
+	--lib-panel-faint-h: rgba(0, 0, 0, 0.08);
+	--lib-floor-shadow: rgba(0, 0, 0, 0.66);
+
+	--lib-mahogany-deep: #150d07;
+	--lib-mahogany: #2c1d11;
+	--lib-mahogany-light: #4f3418;
+	--lib-leather-deep: #2e1e0b;
+	--lib-leather-mid: #4a3419;
+	--lib-leather: #5f4426;
+	--lib-leather-light: #7f5e38;
+	--lib-pad-vignette: rgba(6, 3, 1, 0.62);
+	--lib-gold: rgba(202, 162, 100, 0.28);
+	--lib-gold-hairline: rgba(202, 162, 100, 0.16);
+	--lib-gold-inset: rgba(202, 162, 100, 0.08);
+	--lib-gold-glow: rgba(202, 162, 100, 0.07);
+	--lib-lamp: rgba(255, 222, 176, 0.26);
+	--lib-lamp-soft: rgba(255, 222, 176, 0.13);
+	--lib-grain-a: rgba(0, 0, 0, 0.05);
+	--lib-grain-b: rgba(0, 0, 0, 0.06);
+	--lib-desk-shadow-outer: rgba(0, 0, 0, 0.7);
+	--lib-desk-shadow-mid: rgba(0, 0, 0, 0.38);
+	--lib-desk-shadow-inset: rgba(0, 0, 0, 0.58);
+	--lib-text: #e6dcc6;
+}

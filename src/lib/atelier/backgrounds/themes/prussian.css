@@ -1,0 +1,40 @@
+/**
+ * Prussian study — evening museum room. Deep blue-green walls climb from
+ * near-black into lamplit teal; brass hairlines and a tobacco-leather pad
+ * under a warm reading lamp. Cool room / warm desk keeps the paper glowing.
+ */
+html[data-atelier-theme='prussian'] .atelier {
+	--lib-wall-deep: #0a1211;
+	--lib-wall-mid: #1d302d;
+	--lib-wall-light: #39554f;
+	--lib-wainscot: #0b1312;
+	--lib-rail-gold: rgba(200, 170, 110, 0.22);
+	--lib-skylight: rgba(200, 220, 210, 0.16);
+	--lib-room-vignette: rgba(0, 0, 0, 0.68);
+	--lib-edge-shadow: rgba(0, 0, 0, 0.55);
+	--lib-spine-faint: rgba(0, 0, 0, 0.09);
+	--lib-panel-faint: rgba(0, 0, 0, 0.11);
+	--lib-panel-faint-h: rgba(0, 0, 0, 0.08);
+	--lib-floor-shadow: rgba(0, 0, 0, 0.62);
+
+	--lib-mahogany-deep: #120d09;
+	--lib-mahogany: #2a2018;
+	--lib-mahogany-light: #4a392c;
+	--lib-leather-deep: #241a0f;
+	--lib-leather-mid: #46331f;
+	--lib-leather: #5a4432;
+	--lib-leather-light: #7f6245;
+	--lib-pad-vignette: rgba(8, 5, 2, 0.6);
+	--lib-gold: rgba(200, 170, 110, 0.28);
+	--lib-gold-hairline: rgba(200, 170, 110, 0.16);
+	--lib-gold-inset: rgba(200, 170, 110, 0.08);
+	--lib-gold-glow: rgba(200, 170, 110, 0.07);
+	--lib-lamp: rgba(255, 230, 200, 0.2);
+	--lib-lamp-soft: rgba(255, 230, 200, 0.11);
+	--lib-grain-a: rgba(0, 0, 0, 0.05);
+	--lib-grain-b: rgba(0, 0, 0, 0.06);
+	--lib-desk-shadow-outer: rgba(0, 0, 0, 0.68);
+	--lib-desk-shadow-mid: rgba(0, 0, 0, 0.36);
+	--lib-desk-shadow-inset: rgba(0, 0, 0, 0.55);
+	--lib-text: #ddd8c8;
+}

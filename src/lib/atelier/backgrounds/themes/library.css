@@ -1,0 +1,36 @@
+/** Victorian library / study — sage walls, burgundy leather, mahogany rim. */
+html[data-atelier-theme='bibliotheek'] .atelier {
+	--lib-wall-deep: #0f140d;
+	--lib-wall-mid: #2e362c;
+	--lib-wall-light: #54614c;
+	--lib-wainscot: #1c241a;
+	--lib-rail-gold: rgba(212, 175, 95, 0.14);
+	--lib-skylight: rgba(255, 232, 190, 0.14);
+	--lib-room-vignette: rgba(0, 0, 0, 0.55);
+	--lib-edge-shadow: rgba(0, 0, 0, 0.42);
+	--lib-spine-faint: rgba(0, 0, 0, 0.07);
+	--lib-panel-faint: rgba(0, 0, 0, 0.09);
+	--lib-panel-faint-h: rgba(0, 0, 0, 0.06);
+	--lib-floor-shadow: rgba(0, 0, 0, 0.5);
+
+	--lib-mahogany-deep: #2a1810;
+	--lib-mahogany: #3d2818;
+	--lib-mahogany-light: #5a3d2c;
+	--lib-leather-deep: #320f16;
+	--lib-leather-mid: #4a2228;
+	--lib-leather: #5c2832;
+	--lib-leather-light: #743a46;
+	--lib-pad-vignette: rgba(0, 0, 0, 0.5);
+	--lib-gold: rgba(212, 175, 95, 0.22);
+	--lib-gold-hairline: rgba(212, 175, 95, 0.12);
+	--lib-gold-inset: rgba(212, 175, 95, 0.06);
+	--lib-gold-glow: rgba(212, 175, 95, 0.04);
+	--lib-lamp: rgba(255, 220, 180, 0.12);
+	--lib-lamp-soft: rgba(255, 220, 200, 0.07);
+	--lib-grain-a: rgba(0, 0, 0, 0.045);
+	--lib-grain-b: rgba(0, 0, 0, 0.055);
+	--lib-desk-shadow-outer: rgba(0, 0, 0, 0.55);
+	--lib-desk-shadow-mid: rgba(0, 0, 0, 0.28);
+	--lib-desk-shadow-inset: rgba(0, 0, 0, 0.45);
+	--lib-text: #e2dcc8;
+}

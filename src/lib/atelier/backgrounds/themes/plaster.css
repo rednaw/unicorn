@@ -1,0 +1,40 @@
+/**
+ * Warm plaster — Mediterranean afternoon. Sun-bleached plaster glows near the
+ * skylight and falls into baked-earth shadow at the floor; dark walnut rim
+ * frames a terracotta leather pad. Strong warm/cool of paper against clay.
+ */
+html[data-atelier-theme='plaster'] .atelier {
+	--lib-wall-deep: #96784f;
+	--lib-wall-mid: #cfbc98;
+	--lib-wall-light: #f7f0e3;
+	--lib-wainscot: #8c6f47;
+	--lib-rail-gold: rgba(150, 92, 64, 0.3);
+	--lib-skylight: rgba(255, 250, 240, 0.68);
+	--lib-room-vignette: rgba(64, 36, 20, 0.48);
+	--lib-edge-shadow: rgba(64, 36, 20, 0.34);
+	--lib-spine-faint: rgba(74, 44, 26, 0.06);
+	--lib-panel-faint: rgba(74, 44, 26, 0.09);
+	--lib-panel-faint-h: rgba(74, 44, 26, 0.06);
+	--lib-floor-shadow: rgba(54, 30, 16, 0.5);
+
+	--lib-mahogany-deep: #2e1c10;
+	--lib-mahogany: #4a2e1b;
+	--lib-mahogany-light: #6e4728;
+	--lib-leather-deep: #4e2517;
+	--lib-leather-mid: #7e4030;
+	--lib-leather: #9c5a4a;
+	--lib-leather-light: #bd7a66;
+	--lib-pad-vignette: rgba(40, 16, 8, 0.56);
+	--lib-gold: rgba(200, 160, 100, 0.3);
+	--lib-gold-hairline: rgba(200, 160, 100, 0.2);
+	--lib-gold-inset: rgba(200, 160, 100, 0.1);
+	--lib-gold-glow: rgba(200, 160, 100, 0.08);
+	--lib-lamp: rgba(255, 240, 220, 0.4);
+	--lib-lamp-soft: rgba(255, 240, 220, 0.2);
+	--lib-grain-a: rgba(60, 30, 20, 0.06);
+	--lib-grain-b: rgba(60, 30, 20, 0.07);
+	--lib-desk-shadow-outer: rgba(50, 26, 14, 0.58);
+	--lib-desk-shadow-mid: rgba(50, 26, 14, 0.3);
+	--lib-desk-shadow-inset: rgba(50, 26, 14, 0.42);
+	--lib-text: #2a2218;
+}

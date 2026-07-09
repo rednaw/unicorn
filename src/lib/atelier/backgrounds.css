@@ -1,2 +1,10 @@
 @import './backgrounds/shared.css';
+@import './backgrounds/themes/washi.css';
 @import './backgrounds/themes/graphite.css';
+@import './backgrounds/themes/library.css';
+@import './backgrounds/themes/north-light.css';
+@import './backgrounds/themes/charcoal.css';
+@import './backgrounds/themes/prussian.css';
+@import './backgrounds/themes/plaster.css';
+@import './backgrounds/themes/nocturne.css';
+@import './backgrounds/themes/salon.css';
