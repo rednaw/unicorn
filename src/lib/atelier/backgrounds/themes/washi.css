@@ -1,10 +1,9 @@
 /**
- * Japanese light — warm paper walls, dark hinoki-smoked rim, washi pad
- * (default). Depth comes from range, not darkness: bright shoji glow above,
+ * Japanese light — warm paper walls, dark hinoki-smoked rim, washi pad.
+ * Depth comes from range, not darkness: bright shoji glow above,
  * walls sinking into tea-stained shadow below, and a strong pad shadow so
  * the paper floats over the desk.
  */
-html:not([data-atelier-theme]) .atelier,
 html[data-atelier-theme='washi'] .atelier {
 	--lib-wall-deep: #a8946e;
 	--lib-wall-mid: #ddcfb2;

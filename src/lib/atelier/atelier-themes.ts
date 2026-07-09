@@ -32,9 +32,9 @@ export function applyAtelierThemeToDocument(id: AtelierThemeId): void {
 export const ATELIER_THEME_BOOTSTRAP_SCRIPT = `(function(){try{var k=${JSON.stringify(ATELIER_THEME_STORAGE_KEY)};var t=${JSON.stringify(THEME_ID_LIST)};var s=localStorage.getItem(k);if(s&&t.indexOf(s)!==-1)document.documentElement.setAttribute(${JSON.stringify(ATELIER_THEME_HTML_ATTR)},s);}catch(e){}})();`;
 
 export function readStoredAtelierTheme(): AtelierThemeId {
-	if (typeof localStorage === 'undefined') return 'washi';
+	if (typeof localStorage === 'undefined') return 'graphite';
 	const stored = localStorage.getItem(ATELIER_THEME_STORAGE_KEY);
-	return stored && isAtelierThemeId(stored) ? stored : 'washi';
+	return stored && isAtelierThemeId(stored) ? stored : 'graphite';
 }
 
 export function storeAtelierTheme(id: AtelierThemeId): void {
