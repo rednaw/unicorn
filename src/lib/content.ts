@@ -117,48 +117,48 @@ const atelier = {
 			landscape: { x: 740, y: 830 },
 			width: 300
 		},
-		{
-			id: 'stilleven',
-			title: 'Stilleven',
-			year: '2023',
-			medium: 'potlood op papier',
-			alt: 'Stilleven met plant in glas, cilinder en kom op schotel',
-			...drawingPaths('image007.jpg'),
-			srcWidth: 2986,
-			srcHeight: 4341,
-			rotation: -2,
-			portrait: { x: 55, y: 2280 },
-			landscape: { x: 40, y: 1280 },
-			width: 300
-		},
-		{
-			id: 'buste-driekwart',
-			title: 'Buste driekwart',
-			year: '2023',
-			medium: 'potlood op papier',
-			alt: 'Potloodstudie van een klassieke buste in driekwartprofiel',
-			...drawingPaths('image008.jpg'),
-			srcWidth: 2971,
-			srcHeight: 4297,
-			rotation: -5,
-			portrait: { x: 780, y: 2150 },
-			landscape: { x: 600, y: 1280 },
-			width: 300
-		},
-		{
-			id: 'portret-lang-haar',
-			title: 'Portret met lang haar',
-			year: '2023',
-			medium: 'potlood op papier',
-			alt: 'Frontaal portret met lang haar en zachte schaduwen',
-			...drawingPaths('image009.jpg'),
-			srcWidth: 2971,
-			srcHeight: 4413,
-			rotation: 3,
-			portrait: { x: 420, y: 1760 },
-			landscape: { x: 1320, y: 1280 },
-			width: 300
-		}
+		// {
+		// 	id: 'stilleven',
+		// 	title: 'Stilleven',
+		// 	year: '2023',
+		// 	medium: 'potlood op papier',
+		// 	alt: 'Stilleven met plant in glas, cilinder en kom op schotel',
+		// 	...drawingPaths('image007.jpg'),
+		// 	srcWidth: 2986,
+		// 	srcHeight: 4341,
+		// 	rotation: -2,
+		// 	portrait: { x: 55, y: 2280 },
+		// 	landscape: { x: 40, y: 1280 },
+		// 	width: 300
+		// },
+		// {
+		// 	id: 'buste-driekwart',
+		// 	title: 'Buste driekwart',
+		// 	year: '2023',
+		// 	medium: 'potlood op papier',
+		// 	alt: 'Potloodstudie van een klassieke buste in driekwartprofiel',
+		// 	...drawingPaths('image008.jpg'),
+		// 	srcWidth: 2971,
+		// 	srcHeight: 4297,
+		// 	rotation: -5,
+		// 	portrait: { x: 780, y: 2150 },
+		// 	landscape: { x: 600, y: 1280 },
+		// 	width: 300
+		// },
+		// {
+		// 	id: 'portret-lang-haar',
+		// 	title: 'Portret met lang haar',
+		// 	year: '2023',
+		// 	medium: 'potlood op papier',
+		// 	alt: 'Frontaal portret met lang haar en zachte schaduwen',
+		// 	...drawingPaths('image009.jpg'),
+		// 	srcWidth: 2971,
+		// 	srcHeight: 4413,
+		// 	rotation: 3,
+		// 	portrait: { x: 420, y: 1760 },
+		// 	landscape: { x: 1320, y: 1280 },
+		// 	width: 300
+		// }
 	]
 } satisfies import('./content-types').Atelier;
 
