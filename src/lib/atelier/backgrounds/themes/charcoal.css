@@ -1,0 +1,40 @@
+/**
+ * Charcoal studio — warm charcoal walls falling into shadow, kraft-paper pad
+ * lit by a warm work lamp. Espresso-wood rim separates desk from room; deep
+ * corner vignette pools the light where the drawings sit.
+ */
+html[data-atelier-theme='charcoal'] .atelier {
+	--lib-wall-deep: #121110;
+	--lib-wall-mid: #322e2a;
+	--lib-wall-light: #625b52;
+	--lib-wainscot: #161412;
+	--lib-rail-gold: rgba(255, 244, 225, 0.12);
+	--lib-skylight: rgba(255, 248, 240, 0.14);
+	--lib-room-vignette: rgba(0, 0, 0, 0.68);
+	--lib-edge-shadow: rgba(0, 0, 0, 0.55);
+	--lib-spine-faint: rgba(0, 0, 0, 0.09);
+	--lib-panel-faint: rgba(0, 0, 0, 0.11);
+	--lib-panel-faint-h: rgba(0, 0, 0, 0.08);
+	--lib-floor-shadow: rgba(0, 0, 0, 0.64);
+
+	--lib-mahogany-deep: #1a150f;
+	--lib-mahogany: #2e2519;
+	--lib-mahogany-light: #4c3e2c;
+	--lib-leather-deep: #7c6a56;
+	--lib-leather-mid: #ab9a86;
+	--lib-leather: #c6b9a8;
+	--lib-leather-light: #e0d6c6;
+	--lib-pad-vignette: rgba(0, 0, 0, 0.5);
+	--lib-gold: rgba(255, 244, 225, 0.14);
+	--lib-gold-hairline: rgba(255, 244, 225, 0.1);
+	--lib-gold-inset: rgba(255, 244, 225, 0.05);
+	--lib-gold-glow: rgba(255, 244, 225, 0.04);
+	--lib-lamp: rgba(255, 248, 240, 0.22);
+	--lib-lamp-soft: rgba(255, 248, 240, 0.12);
+	--lib-grain-a: rgba(0, 0, 0, 0.05);
+	--lib-grain-b: rgba(0, 0, 0, 0.06);
+	--lib-desk-shadow-outer: rgba(0, 0, 0, 0.7);
+	--lib-desk-shadow-mid: rgba(0, 0, 0, 0.38);
+	--lib-desk-shadow-inset: rgba(0, 0, 0, 0.42);
+	--lib-text: #e8e4dc;
+}

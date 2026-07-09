@@ -5,6 +5,9 @@
 	import { drawings, artist } from '$lib/content';
 	import '$lib/atelier/backgrounds.css';
 	import BackLink from '$lib/atelier/BackLink.svelte';
+	import ThemePicker from '$lib/atelier/ThemePicker.svelte';
+	import { atelierTheme, hydrateAtelierTheme } from '$lib/atelier/atelier-theme.svelte';
+	import { ATELIER_THEME_BOOTSTRAP_SCRIPT } from '$lib/atelier/atelier-themes';
 	import NearCue from '$lib/atelier/NearCue.svelte';
 	import Canvas from '$lib/atelier/Canvas.svelte';
 	import { createAtelierSession } from '$lib/atelier/atelier-session.svelte';
@@ -31,6 +34,7 @@
 	}
 
 	onMount(() => {
+		hydrateAtelierTheme();
 		let stop: (() => void) | undefined;
 		void tick().then(() => {
 			stop = session.start({
@@ -45,6 +49,7 @@
 <svelte:window onkeydowncapture={onWindowKeyDown} />
 
 <svelte:head>
+	{@html `<script>${ATELIER_THEME_BOOTSTRAP_SCRIPT}</script>`}
 	<title>{artist.name}</title>
 	<meta
 		name="description"
@@ -52,9 +57,10 @@
 	/>
 </svelte:head>
 
-<div class="atelier" bind:this={atelierEl}>
+<div class="atelier" data-room-theme={atelierTheme.id} bind:this={atelierEl}>
 	<div class="atelier__chrome">
 		<BackLink onBack={session.goBack} />
+		<ThemePicker />
 		<NearCue
 			drawingId={session.hudDrawingId}
 			ended={session.hudEnded}
@@ -83,14 +89,16 @@
 		overscroll-behavior: none;
 	}
 
-	/* Fixed HUD above the pannable canvas (back, near cue). */
+	/* Fixed HUD above the pannable canvas (back, theme picker, near cue). */
 	.atelier__chrome {
 		position: relative;
 		z-index: 20;
 		pointer-events: none;
 	}
 
-	.atelier__chrome :global(.back) {
+	.atelier__chrome :global(.back),
+	.atelier__chrome :global(.theme-picker),
+	.atelier__chrome :global(.theme-picker *) {
 		pointer-events: auto;
 	}
 </style>

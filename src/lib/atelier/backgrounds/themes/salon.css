@@ -1,0 +1,41 @@
+/**
+ * Salon rouge — old-master drawings cabinet. Oxblood walls, the classic
+ * ground for graphite and chalk studies, fall from lamplit crimson into
+ * near-black; ebonised rim, gilt hairlines, and a warm stone pad keep the
+ * paper the brightest thing in the room.
+ */
+html[data-atelier-theme='salon'] .atelier {
+	--lib-wall-deep: #170a08;
+	--lib-wall-mid: #3f1a16;
+	--lib-wall-light: #6e2e26;
+	--lib-wainscot: #1b0d0a;
+	--lib-rail-gold: rgba(214, 176, 100, 0.24);
+	--lib-skylight: rgba(255, 226, 190, 0.12);
+	--lib-room-vignette: rgba(0, 0, 0, 0.7);
+	--lib-edge-shadow: rgba(0, 0, 0, 0.56);
+	--lib-spine-faint: rgba(0, 0, 0, 0.09);
+	--lib-panel-faint: rgba(0, 0, 0, 0.11);
+	--lib-panel-faint-h: rgba(0, 0, 0, 0.08);
+	--lib-floor-shadow: rgba(0, 0, 0, 0.64);
+
+	--lib-mahogany-deep: #100b08;
+	--lib-mahogany: #241a12;
+	--lib-mahogany-light: #443122;
+	--lib-leather-deep: #8a7458;
+	--lib-leather-mid: #b3a084;
+	--lib-leather: #c9b89e;
+	--lib-leather-light: #e2d5bf;
+	--lib-pad-vignette: rgba(30, 16, 8, 0.46);
+	--lib-gold: rgba(214, 176, 100, 0.3);
+	--lib-gold-hairline: rgba(214, 176, 100, 0.17);
+	--lib-gold-inset: rgba(214, 176, 100, 0.09);
+	--lib-gold-glow: rgba(214, 176, 100, 0.07);
+	--lib-lamp: rgba(255, 232, 196, 0.24);
+	--lib-lamp-soft: rgba(255, 232, 196, 0.12);
+	--lib-grain-a: rgba(40, 20, 10, 0.05);
+	--lib-grain-b: rgba(40, 20, 10, 0.06);
+	--lib-desk-shadow-outer: rgba(0, 0, 0, 0.7);
+	--lib-desk-shadow-mid: rgba(0, 0, 0, 0.38);
+	--lib-desk-shadow-inset: rgba(30, 16, 8, 0.4);
+	--lib-text: #e9ddc4;
+}
