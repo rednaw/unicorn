@@ -23,10 +23,11 @@ export function serviceWorkerPlugin() {
 				const path = req.url?.split('?')[0];
 				if (path !== '/sw.js') return next();
 				void (async () => {
+					const { key } = await computeMediaCacheKey();
 					const urls = await listPrecacheUrls(process.env.BASE_PATH ?? '');
 					res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
 					res.setHeader('Cache-Control', 'no-store');
-					res.end(renderServiceWorker('dev', urls));
+					res.end(renderServiceWorker(key, urls));
 				})().catch(next);
 			});
 		}
