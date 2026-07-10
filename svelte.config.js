@@ -17,7 +17,7 @@ const config = {
 			mode: 'auto',
 			directives: {
 				'default-src': ['self'],
-				'script-src': ['self'],
+				'script-src': ['self', 'https://scripts.simpleanalyticscdn.com'],
 				// Svelte SSR event delegation: on*="this.__e=event" (nonces/hashes on script-src do not apply).
 				'script-src-attr': [
 					'unsafe-hashes',
@@ -26,10 +26,14 @@ const config = {
 				'worker-src': ['self'],
 				// Svelte scoped styles + view transitions inject <style> blocks.
 				'style-src': ['self', 'unsafe-inline'],
-				'img-src': ['self', 'blob:', 'data:'],
+				'img-src': ['self', 'blob:', 'data:', 'https://queue.simpleanalyticscdn.com'],
 				'media-src': ['self'],
 				'font-src': ['self', 'data:'],
-				'connect-src': ['self'],
+				'connect-src': [
+					'self',
+					'https://queue.simpleanalyticscdn.com',
+					'https://scripts.simpleanalyticscdn.com'
+				],
 				'object-src': ['none'],
 				'base-uri': ['self'],
 				'form-action': ['self'],
