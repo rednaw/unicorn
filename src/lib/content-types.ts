@@ -11,7 +11,6 @@ export type Drawing = {
 	title: string;
 	year: string;
 	medium: string;
-	alt: string;
 	src: string;
 	thumb: string;
 	srcWidth: number;

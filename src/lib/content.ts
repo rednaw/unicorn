@@ -20,7 +20,6 @@ const atelier = {
 			title: 'Maskers',
 			year: '2023',
 			medium: 'potlood op papier',
-			alt: 'Vier Venetiaanse maskers, getekend in potlood',
 			...drawingPaths('image003.jpg'),
 			srcWidth: 2956,
 			srcHeight: 4398,
@@ -36,11 +35,10 @@ const atelier = {
 			}
 		},
 		{
-			id: 'buste-profiel',
-			title: 'Buste in profiel',
+			id: 'buste-van-een-gevallen-keizer',
+			title: 'Buste van een gevallen keizer',
 			year: '2023',
 			medium: 'potlood op papier',
-			alt: 'Potloodstudie van een klassieke buste in profiel',
 			...drawingPaths('image002.jpg'),
 			srcWidth: 3100,
 			srcHeight: 4471,
@@ -56,11 +54,10 @@ const atelier = {
 			}
 		},
 		{
-			id: 'profielstudie',
-			title: 'Profielstudie',
+			id: 'bela-bartok',
+			title: 'Béla Bartok',
 			year: '2023',
 			medium: 'potlood op papier',
-			alt: 'Gestileerd gezicht in profiel met zware schaduwen',
 			...drawingPaths('image005.jpg'),
 			srcWidth: 2885,
 			srcHeight: 4413,
@@ -70,11 +67,10 @@ const atelier = {
 			width: 300
 		},
 		{
-			id: 'portret-strik',
-			title: 'Portret met strik',
+			id: 'frederic-chopin',
+			title: 'Frédéric Chopin',
 			year: '2023',
 			medium: 'potlood op papier',
-			alt: 'Portret in driekwartprofiel met strik en jas',
 			...drawingPaths('image006.jpg'),
 			srcWidth: 3057,
 			srcHeight: 4398,
@@ -84,11 +80,10 @@ const atelier = {
 			width: 300
 		},
 		{
-			id: 'lachend-portret',
-			title: 'Lachend portret',
+			id: 'claudio-abbado',
+			title: 'Claudio Abbado',
 			year: '2023',
 			medium: 'potlood op papier',
-			alt: 'Portret van een lachende man met opgerolde mouwen',
 			...drawingPaths('image004.jpg'),
 			srcWidth: 3057,
 			srcHeight: 4441,
@@ -104,11 +99,10 @@ const atelier = {
 			}
 		},
 		{
-			id: 'studie-i',
-			title: 'Studie I',
+			id: 'uit-balans-getrokken',
+			title: 'Uit balans getrokken',
 			year: '2023',
 			medium: 'potlood op papier',
-			alt: 'Abstracte potloodstudie met horizontale banden en een verticale vorm',
 			...drawingPaths('image001.jpg'),
 			srcWidth: 2999,
 			srcHeight: 4441,
@@ -118,11 +112,10 @@ const atelier = {
 			width: 300
 		},
 		{
-			id: 'venus-torso',
-			title: 'Torso',
+			id: 'statue-of-venus',
+			title: 'Statue of Venus',
 			year: '2023',
 			medium: 'potlood op papier',
-			alt: 'Potloodstudie van een klassiek vrouwelijk torso naar het Venus de Milo-type',
 			...drawingPaths('image007.jpg'),
 			srcWidth: 2918,
 			srcHeight: 4377,
@@ -132,11 +125,10 @@ const atelier = {
 			width: 300
 		},
 		{
-			id: 'achteraanzicht',
-			title: 'Achteraanzicht',
+			id: 'de-man-van-achter',
+			title: 'De man van achter',
 			year: '2023',
 			medium: 'potlood op papier',
-			alt: 'Achteraanzicht van een hoofd met kort haar, getekend in potlood',
 			...drawingPaths('image008.jpg'),
 			srcWidth: 3309,
 			srcHeight: 4736,
