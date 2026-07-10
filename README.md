@@ -53,6 +53,14 @@ Push to `main` — GitHub Actions builds and publishes automatically.
 For a custom domain or user/org pages (`username.github.io`), unset `BASE_PATH` in
 the workflow.
 
+### Simple Analytics
+
+Production only — reports under **`rednaw.github.io/unicorn`** (`app.html` + `site-config.ts`).
+The script is stripped during `pnpm dev` so localhost visits don't pollute stats.
+
+1. In [Simple Analytics](https://simpleanalytics.com/) → **Websites** → add `rednaw.github.io/unicorn`.
+2. Deploy — page views appear after the first visit (SPA navigation is tracked automatically).
+
 ## Content & assets
 
 The site uses the artist's own drawings and piano recordings.
@@ -144,8 +152,8 @@ The door home page crossfades into the atelier. Piece-level morphs use
 - **Web Audio + native `<audio>`** for explicit listen playback (`audio-player.svelte.ts`)
 - **@sveltejs/adapter-static** with `404.html` SPA fallback
 - Dev tooling in `.devcontainer/` — GitHub Actions for production builds
+- **Simple Analytics** — privacy-first page views (`app.html` + `site-config.ts`)
 
 ## Out of scope
 
 - A CMS — content lives in one TS file
-- Analytics
