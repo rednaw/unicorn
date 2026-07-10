@@ -84,7 +84,7 @@ The shape is:
 ```ts
 type DrawingTrack = { id; title; composer; src }
 type Drawing = {
-  id; title; year; medium; src; thumb; srcWidth; srcHeight; alt;
+  id; title; year; medium; src; thumb; srcWidth; srcHeight;
   portrait: { x; y }; landscape: { x; y };
   rotation?; width?; track?
 }

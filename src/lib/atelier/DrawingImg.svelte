@@ -37,7 +37,7 @@
 			src={drawing.src}
 			width={drawing.srcWidth}
 			height={drawing.srcHeight}
-			alt={drawing.alt}
+			alt={drawing.title}
 			decoding="async"
 			draggable="false"
 			style:view-transition-name={viewTransitionName}
