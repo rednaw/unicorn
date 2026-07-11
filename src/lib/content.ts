@@ -55,7 +55,7 @@ const atelier = {
 		},
 		{
 			id: 'bela-bartok',
-			title: 'Béla Bartok',
+			title: 'Portret van Béla Bartok',
 			year: '2023',
 			medium: 'potlood op papier',
 			...drawingPaths('image005.jpg'),
@@ -68,7 +68,7 @@ const atelier = {
 		},
 		{
 			id: 'frederic-chopin',
-			title: 'Frédéric Chopin',
+			title: 'Portret van Frédéric Chopin',
 			year: '2023',
 			medium: 'potlood op papier',
 			...drawingPaths('image006.jpg'),
@@ -81,7 +81,7 @@ const atelier = {
 		},
 		{
 			id: 'claudio-abbado',
-			title: 'Claudio Abbado',
+			title: 'Portret van Claudio Abbado',
 			year: '2023',
 			medium: 'potlood op papier',
 			...drawingPaths('image004.jpg'),
