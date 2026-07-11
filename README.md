@@ -55,10 +55,10 @@ the workflow.
 
 ### Simple Analytics
 
-Production only — reports under **`rednaw.github.io/unicorn`** (`app.html` + `site-config.ts`).
-The script is stripped during `pnpm dev` so localhost visits don't pollute stats.
+Production only — reports under **`unicorn.rednaw.github.io`**
+(`app.html` + `site-config.ts`). The script is stripped during `pnpm dev`.
 
-1. In [Simple Analytics](https://simpleanalytics.com/) → **Websites** → add `rednaw.github.io/unicorn`.
+1. In [Simple Analytics](https://simpleanalytics.com/) → **Websites** → add `unicorn.rednaw.github.io`.
 2. Deploy — page views appear after the first visit (SPA navigation is tracked automatically).
 
 ## Content & assets

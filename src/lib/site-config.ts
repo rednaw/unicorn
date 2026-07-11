@@ -1,5 +1,6 @@
 /**
  * Simple Analytics hostname — add as a website in your dashboard.
- * Production only; stripped in local dev (see vite.config.ts).
+ * Use a pseudo-subdomain (not a URL path) so stats stay separate from other
+ * github.io projects on the same account.
  */
-export const SIMPLE_ANALYTICS_HOSTNAME = 'rednaw.github.io/unicorn';
+export const SIMPLE_ANALYTICS_HOSTNAME = 'unicorn.rednaw.github.io';
