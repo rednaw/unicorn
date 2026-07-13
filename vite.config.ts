@@ -11,7 +11,7 @@ function simpleAnalyticsDevPlugin() {
 	return {
 		name: 'simple-analytics-dev',
 		transformIndexHtml: {
-			order: 'pre',
+			order: 'pre' as const,
 			handler(html: string, ctx: { server?: unknown }) {
 				if (!ctx.server) return html;
 				return html.replace(SA_SCRIPT, '');

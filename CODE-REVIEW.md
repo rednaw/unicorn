@@ -4,13 +4,18 @@ Critical review of the Unicorn (RvA) codebase — atelier stack, audio, prefetch
 service worker, content model, themes, and ops. Replaces the earlier review docs that
 described the removed spatial-audio architecture.
 
-**Status at review time:** `pnpm check`, `pnpm test` (41 tests), and `pnpm build` pass.
-~3.4k lines of source across 37 TS/Svelte files plus 7 test files. Eight drawings,
-three with audio tracks.
+**Status at review time:** `pnpm test` (41 tests) and `pnpm build` pass. `pnpm check`
+has one known typing error in `vite.config.ts` (`simpleAnalyticsDevPlugin` —
+`order: 'pre'` must be `as const` for Vite 7 plugin types). ~4k lines of source
+across 47 TS/Svelte files plus 7 test files. Eight drawings, three with audio tracks.
 
-**Updated 2026-07-13:** Vitest suite and CI `test` job added. Prior updates: catalog,
-room themes, Simple Analytics, `ssr = false`, accessibility corrections, audio memory
-fixes (SW `Blob.slice`, tight preload, buffer release).
+**Updated 2026-07-13:** Vite pinned to 7.x and theme bootstrap moved to pre-built
+`ATELIER_THEME_BOOTSTRAP_HTML` (Vite 8 Rolldown dep scan failed on inline
+`{@html \`<script>${…}</script>\`}` in atelier `+page.svelte`, causing ~50s dev
+starts). Vitest config split from `vite.config.ts` (`mergeConfig` + `ViteUserConfig`
+cast). Hit testing now respects paint order. Prior updates: Vitest suite and CI
+`test` job, catalog, room themes, Simple Analytics, `ssr = false`, accessibility
+corrections, audio memory fixes.
 
 ---
 
@@ -58,9 +63,9 @@ recording into the service worker JS heap per range request.
 ## Executive summary
 
 **Verdict:** Production-ready for a personal artist site at current scale. The
-atelier core is coherent and performance-aware. Main remaining risks before the
-catalog grows: **silent audio failure paths**, and **limited keyboard navigation
-between pieces** (Tab order only — no roving arrow keys).
+atelier core is coherent and performance-aware. Main remaining risk before the
+catalog grows: **limited keyboard navigation between pieces** (Tab order only —
+no roving arrow keys).
 
 **41 Vitest tests** cover pure modules and the audio-player state machine; CI runs
 `pnpm test` on every push and pull request to `main`.
@@ -91,7 +96,8 @@ between pieces** (Tab order only — no roving arrow keys).
 | Content | `src/lib/content.ts`, `content-types.ts`, `content-derive.ts` |
 | Analytics | `src/lib/site-config.ts`, `src/app.html` |
 | Service worker | `scripts/sw.template.js`, `service-worker.mjs`, `media-cache-key.mjs` |
-| Tests | `vitest.config.ts`, `src/test/*`, `src/**/*.test.ts` |
+| Tests | `vitest.config.ts` (merges `vite.config.ts`), `src/test/*`, `src/**/*.test.ts` |
+| Tooling | Vite `^7.3.0` (pinned — see Dev tooling below) |
 
 **Atelier `ssr = false`:** desk layout depends on viewport (portrait vs landscape
 piece coordinates). Prerender would bake the wrong mode into HTML and worsen CLS.
@@ -154,8 +160,12 @@ service worker, build scripts, E2E.
 ### Room themes
 
 Nine CSS room themes with `localStorage` persistence and a blocking bootstrap
-script in `<svelte:head>` to avoid a flash of the default theme. Theme picker
-is a native `<select>` with safe-area and browser-chrome inset offsets.
+script in `<svelte:head>` to avoid a flash of the default theme. The script body
+is exported as `ATELIER_THEME_BOOTSTRAP_HTML` from `atelier-themes.ts` and
+injected via `{@html …}` — **not** an inline template literal in the Svelte file
+(Vite 8’s Rolldown dependency scanner parses virtual module script blocks and
+chokes on `${…}` interpolation). Theme picker is a native `<select>` with
+safe-area and browser-chrome inset offsets.
 
 ### Ops and security
 
@@ -228,23 +238,7 @@ layouts remain tedious without roving navigation.
 
 ---
 
-### 4. Silent audio failures
-
-Failure paths are swallowed in `audio-player.svelte.ts`:
-
-- `void el.play().catch(() => {})`
-- Empty `catch {}` around `currentTime` assignment and `ctx.resume()`
-
-If playback fails (missing WebM on deploy, iOS gesture timing, corrupt file),
-the UI shows “playing” via `listening.focus()` but nothing is heard.
-
-**Recommendation:** On `play()` rejection or `error` event, call
-`listening.markEnded()` or surface a non-blocking error state in `NearCue`. At
-minimum, `console.warn` in dev builds.
-
----
-
-### 5. ~~Service worker audio caching — memory pressure~~ — shipped
+### 4. ~~Service worker audio caching — memory pressure~~ — shipped
 
 **Fixed:** Range responses from cache use `Blob.slice()` so the 206 body streams
 from cache storage without a full JS heap copy. Paired with `<audio>`
@@ -311,9 +305,46 @@ generate theme imports from `atelier-themes.ts` at build time if the set keeps g
 
 ### 10. Tooling gap
 
-`pnpm check` (svelte-check) and `pnpm test` (Vitest) run in CI. No ESLint,
-Prettier, or format gate yet. Fine for a solo project today; consider adding as
-edits accumulate.
+`pnpm test` (Vitest) runs in CI. `pnpm check` (svelte-check) is available locally
+but currently fails on one `vite.config.ts` plugin typing issue (`order: 'pre'`).
+No ESLint, Prettier, or format gate yet. Fine for a solo project today; consider
+adding as edits accumulate.
+
+**Dev config split:** `vitest.config.ts` merges the main Vite config via
+`mergeConfig(viteConfig as ViteUserConfig, …)` so `$app/*` aliases resolve in
+tests without pulling Vitest types into `vite.config.ts` (which broke `pnpm dev`
+when both were combined).
+
+**Vite 7 pin:** `package.json` pins `vite` to `^7.3.0`. Vite 8.0.x reintroduced
+Rolldown for dependency pre-bundling; the atelier theme bootstrap pattern above
+triggered `PARSE_ERROR` during dep scan and very slow cold starts (~50s) with
+repeated re-optimization. Revisit when upgrading to Vite 8+.
+
+---
+
+### 11. Silent audio failures — low priority (hardening)
+
+Failure paths are swallowed in `audio-player.svelte.ts`:
+
+- `void el.play().catch(() => {})`
+- Empty `catch {}` around `currentTime` assignment and `ctx.resume()`
+- `error` on load shares the `loadedmetadata` handler and can still call `fadeIn()`
+
+If playback fails (missing file on deploy, offline tap, corrupt asset), the UI
+can show “playing” via optimistic `listening.focus()` before `playDrawing`
+succeeds — but nothing is heard.
+
+**Not reproducible in normal use:** On a real iPhone, door → tap → switch pieces
+while playing, and direct `/atelier/` entry all work. The crossfade `setTimeout`
+and skip-door paths are theoretical; iOS Safari allows them when assets load.
+Only forced failures (broken URL, airplane mode) reliably trigger the desync.
+
+**Priority:** Low — hardening for deploy/network mistakes, not a live UX bug at
+current scale. When addressed: split load `error` from `onReady`, roll back
+listening on failure, optional NearCue error state. Dev `console.warn` is enough
+for a first pass.
+
+**Files:** `audio-player.svelte.ts`, `atelier-session.svelte.ts`, `listening.svelte.ts`, `NearCue.svelte`.
 
 ---
 
@@ -329,7 +360,9 @@ edits accumulate.
 | `audioIndexForDrawing` | Precomputed `Map` in `content.ts` — no per-frame cost. |
 | Theme picker opacity | CSS comment calls it a “temporary dev control” at 0.22 opacity — consider whether it should stay subtle or become a first-class UI element. |
 | `ssr = false` | Atelier meta tags (`<title>`, description) only appear after JS on that route. Acceptable trade-off for correct desk layout. |
-| Content model | Eight drawings; three with audio (`maskers`, `buste-van-een-gevallen-keizer`, `claudio-abbado`). Entry prefetch targets `maskers`. |
+| Content model | Eight drawings; three with audio (`maskers`, `buste-van-een-gevallen-keizer`, `claudio-abbado`). Entry prefetch targets `maskers`. Drawing `title` is the image `alt` on the full-res layer (`DrawingImg.svelte`). |
+| Dev cold start | First `pnpm dev` after lockfile change can take ~15–60s in the container while deps re-optimize; avoid Vite 8 until theme bootstrap / Rolldown issue is resolved. |
+| `pnpm check` | One `vite.config.ts` plugin overload error (`order: 'pre'` → needs `as const`). Build unaffected. |
 | Test reset hook | `resetAudioPlayerForTests()` in `audio-player.svelte.ts` — Vitest-only singleton reset. |
 
 ---
@@ -337,9 +370,10 @@ edits accumulate.
 ## Priority recommendations
 
 1. **Roving keyboard navigation between pieces** — build on existing Tab + button activation.
-2. **Surface audio errors** — instead of silent `catch`.
-3. **Build-time content validation** — image dimensions, audio file presence, coordinate bounds.
+2. **Build-time content validation** — image dimensions, audio file presence, coordinate bounds.
+3. **Fix `vite.config.ts` plugin typing** — `order: 'pre' as const` so `pnpm check` is clean.
 4. **Optional:** ESLint + format in CI; component tests for gestures/listening.
+5. **Low priority:** Surface audio errors on load/`play()` failure (hardening only).
 
 ---
 
@@ -350,7 +384,7 @@ edits accumulate.
 - [x] Automated tests for pure modules and audio state machine
 - [x] Hit testing respects visual z-order (reverse paint order)
 - [~] Keyboard path to focus any drawing (Tab + Enter on buttons; no roving arrows)
-- [ ] Audio play/error feedback when `play()` or load fails
+- [ ] Audio play/error feedback when `play()` or load fails *(low priority — hardening)*
 - [x] Low RAM audio: SW `Blob.slice` range serving, tight preload, buffer release on switch/leave
 - [x] Consistent crossfade when switching audio pieces
 
@@ -359,6 +393,7 @@ edits accumulate.
 - [ ] Single piece-activation funnel (pointer vs button)
 - [ ] Build-time validation of content.ts vs static assets
 - [ ] Lint/format in CI (optional)
+- [~] `pnpm check` clean (`vite.config.ts` plugin `order` typing — one error)
 - [x] Vitest in CI (`test` job on push/PR)
 - [x] Room themes with persistence
 - [x] SW cache busting via media content hash
@@ -371,6 +406,8 @@ edits accumulate.
 Well-crafted, constraint-driven implementation for an immersive drawing gallery.
 The atelier stack shows real attention to sharpness, gesture feel, and mobile
 networks. Pure-module and audio state-machine regressions are now guarded by
-Vitest and CI. Remaining gaps are **silent audio failures** and **keyboard
-navigation** that works but doesn't scale to many pieces. Audio memory pressure for long/many recordings is addressed — address
-remaining Tier 1 before the catalog grows significantly.
+Vitest and CI. Remaining gap for many pieces: **keyboard navigation** (Tab works;
+roving arrows would help). Audio memory pressure for long/many recordings is
+addressed. Silent audio failure handling is documented hardening — not observed
+on iPhone in normal use. Dev tooling is stable on Vite 7; upgrade to Vite 8
+only after validating the theme-bootstrap / dep-scan path.
