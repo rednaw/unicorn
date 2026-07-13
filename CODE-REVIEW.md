@@ -1,14 +1,15 @@
-# Code review (2026-07-03)
+# Code review (2026-07-13)
 
 Critical review of the Unicorn (RvA) codebase — atelier stack, audio, prefetch,
-service worker, content model, and ops. Replaces the earlier review docs that
+service worker, content model, themes, and ops. Replaces the earlier review docs that
 described the removed spatial-audio architecture.
 
-**Status at review time:** `pnpm check` and `pnpm build` pass. ~3k lines of
-source across 33 TS/Svelte files. Six drawings, two audio tracks.
+**Status at review time:** `pnpm check` and `pnpm build` pass. ~3.4k lines of
+source across 37 TS/Svelte files. Eight drawings, three with audio tracks.
 
-**Updated 2026-07-03:** Audio memory-pressure fixes shipped (SW `Blob.slice`,
-`<audio>` preload policy, buffer release on track switch / leave).
+**Updated 2026-07-13:** Refreshed for current catalog, room themes, Simple Analytics,
+`ssr = false` on atelier, and corrected accessibility claims. Prior audio memory
+fixes (SW `Blob.slice`, tight preload, buffer release) remain in place.
 
 ---
 
@@ -41,6 +42,8 @@ recording into the service worker JS heap per range request.
 - **`audio-player.svelte.ts`** — `preload='metadata'` by default; `'auto'` only
   in `playDrawing`; `removeAttribute('src')` + `load()` when switching tracks
   or on `stop({ reset: true })`.
+- **Piece switch** — `atelier-session.svelte.ts` fades out the current track
+  (`crossfadeMs`) before starting the next, matching pause/stop behaviour.
 
 ### Still to watch as catalog grows
 
@@ -55,11 +58,12 @@ recording into the service worker JS heap per range request.
 
 **Verdict:** Production-ready for a personal artist site at current scale. The
 atelier core is coherent and performance-aware. Main risks before the catalog
-grows: **no automated tests**, **pointer-only piece selection**, **hit testing
-that ignores visual stacking**, and **silent audio failure paths**.
+grows: **no automated tests**, **hit testing that ignores visual stacking**,
+**silent audio failure paths**, and **limited keyboard navigation between pieces**
+(Tab order only — no roving arrow keys).
 
 The explicit-listen refactor (`listening.svelte.ts` + `audio-player.svelte.ts`)
-is a clear improvement over the old spatial-audio model.
+remains a clear improvement over the old spatial-audio model.
 
 ---
 
@@ -67,24 +71,31 @@ is a clear improvement over the old spatial-audio model.
 
 ```
 +page.svelte → createAtelierSession()
-  ├── createAtelierView()      — pan/zoom, per-piece sharp zoom cap
+  ├── createAtelierView()      — pan/zoom, per-piece sharp zoom cap, portrait/landscape
   ├── createListening()        — tap-focus + HUD phase
   ├── audio-player (singleton) — one <audio>, gesture-owned play()
-  ├── createAtelierGestures()  — pointer/wheel/keyboard
+  ├── createAtelierGestures()  — pointer/wheel/keyboard (canvas pan/zoom)
   └── prefetch.svelte          — serial full-res queue
 ```
 
 | Layer | Files |
 |-------|--------|
-| Page shell | `src/routes/(site)/atelier/+page.svelte` |
+| Page shell | `src/routes/(site)/atelier/+page.svelte`, `+page.ts` (`ssr = false`) |
 | Orchestration | `src/lib/atelier/atelier-session.svelte.ts` |
-| View / pan-zoom | `src/lib/atelier/view.svelte.ts`, `view-math.ts` |
+| View / pan-zoom | `src/lib/atelier/view.svelte.ts`, `view-math.ts`, `atelier-layout.ts` |
 | Gestures | `src/lib/atelier/gestures.svelte.ts` |
 | Listening session | `src/lib/atelier/listening.svelte.ts` |
 | Audio engine | `src/lib/atelier/audio-player.svelte.ts`, `audio-format.ts` |
 | Prefetch | `src/lib/drawing/prefetch.svelte.ts`, `visible-drawings.ts` |
+| Room themes | `atelier-themes.ts`, `atelier-theme.svelte.ts`, `ThemePicker.svelte`, `backgrounds/` |
 | Content | `src/lib/content.ts`, `content-types.ts`, `content-derive.ts` |
-| Service worker | `scripts/sw.template.js`, `service-worker.mjs` |
+| Analytics | `src/lib/site-config.ts`, `src/app.html` |
+| Service worker | `scripts/sw.template.js`, `service-worker.mjs`, `media-cache-key.mjs` |
+
+**Atelier `ssr = false`:** desk layout depends on viewport (portrait vs landscape
+piece coordinates). Prerender would bake the wrong mode into HTML and worsen CLS.
+Simple Analytics lives in `app.html` so the script is present in the static shell
+for all routes, including client-only atelier.
 
 Agent constraints and file map: [`CURSOR.md`](./CURSOR.md). Workflow and
 deployment: [`README.md`](./README.md).
@@ -105,6 +116,7 @@ without circular dependencies.
 - Full-res JPEGs gated by **viewport coverage** (`ATELIER_PREFETCH.fullResCoverage`), not raw zoom — scales better as the catalog grows.
 - Serial full-res decode (`fullMaxConcurrent: 1`) — sensible on slow networks.
 - Per-drawing `maxSharpZoomForDrawing()` — honors the “still sharp at max zoom?” litmus test in CURSOR.md.
+- Portrait-specific `minPortrait` zoom floor — tall/narrow canvas can overview without hitting desktop `min` too early.
 - `box-shadow` instead of `filter: drop-shadow` on pieces — avoids GPU raster blow-up when zoomed (`DrawingPiece.svelte`).
 
 ### Audio engine
@@ -115,12 +127,24 @@ without circular dependencies.
 - Resume positions per drawing when switching mid-recording.
 - Web Audio gain crossfade instead of relying on `<audio>` volume alone.
 - `pickAudioSrc()` handles WebM vs m4a per browser.
+- Consistent fade-out when switching pieces or pausing (`atelier-session` + `stop({ fadeMs })`).
+
+### Room themes
+
+Nine CSS room themes with `localStorage` persistence and a blocking bootstrap
+script in `<svelte:head>` to avoid a flash of the default theme. Theme picker
+is a native `<select>` with safe-area and browser-chrome inset offsets.
 
 ### Ops and security
 
 - GitHub Actions with LFS, ffmpeg, frozen lockfile, Pages artifact upload.
-- CSP configured in `svelte.config.js` (including Svelte `script-src-attr` hash).
+- CSP configured in `svelte.config.js` (including Svelte `script-src-attr` hash
+  and Simple Analytics domains).
 - Static adapter with SPA fallback — appropriate for GitHub Pages.
+- SW cache bucket keyed by media content hash (`media-cache-key.mjs`) — stale
+  drawing filenames don't linger across deploys.
+- Simple Analytics (prod only) via pseudo-hostname `unicorn.rednaw.github.io`;
+  script stripped in `pnpm dev`.
 
 ---
 
@@ -137,11 +161,12 @@ There are zero test files. Highest-risk logic:
 | `prefetchIntentsForView` | Coverage threshold, visible-set math |
 | `maxSharpZoomForDrawing` | Regressions break the core product promise |
 | `pickAudioSrc` | Browser format selection |
+| `resolveLayoutMode` | Portrait vs landscape desk selection |
 
 **Recommendation:** Add Vitest (or similar) for pure modules first
 (`drawing-geometry`, `view-math`, `content-derive`, `audio-format`,
-`visible-drawings`). Audio player can be tested with mocked `AudioContext` /
-`HTMLAudioElement`.
+`visible-drawings`, `atelier-layout`). Audio player can be tested with mocked
+`AudioContext` / `HTMLAudioElement`.
 
 ---
 
@@ -161,16 +186,28 @@ denser.
 
 ---
 
-### 3. ~~Accessibility — canvas is pointer-first~~ — shipped
+### 3. Accessibility — partial keyboard support
 
-**Fixed:** Full keyboard support in the atelier.
+**Shipped:**
 
-- **Tab order:** Terug → canvas (pan/zoom) → werken (roving `tabindex`).
-- **Canvas focused:** pijltjestoetsen / WASD pan, `+`/`−` zoom, Escape terug.
-- **Werk focused:** pijltjestoetsen / Home / End roven tussen werken (top→bottom, links→rechts); canvas schuift het werk in beeld (`revealDrawing`); Enter/Space activeert (zoom + audio).
-- **Focus rings** on viewport and piece buttons.
+- **Canvas focused:** arrow keys / WASD pan, `+`/`−` zoom (`gestures.svelte.ts`).
+- **Tab order:** BackLink → theme picker → canvas → piece buttons (native `<button>`).
+- **Escape** returns toward overview (`+page.svelte` capture handler + `goBack`).
+- **Focus rings** on viewport and piece buttons; `aria-label` / `aria-pressed` on pieces.
 
-**Files:** `Canvas.svelte`, `DrawingPiece.svelte`, `keyboard-pieces.ts`, `view.svelte.ts` (`revealDrawing`), `gestures.svelte.ts`.
+**Not shipped** (do not assume these exist):
+
+- Roving `tabindex` between pieces.
+- Arrow keys to move focus from piece to piece.
+- `revealDrawing` / auto-pan when a piece receives keyboard focus.
+
+Keyboard users can Tab to each work and activate with Enter/Space, but dense
+layouts remain tedious without roving navigation.
+
+**Recommendation:** Add roving tabindex + arrow navigation between pieces, with
+`view.focusDrawing` / `revealDrawing` to keep the focused work in view.
+
+**Files:** `Canvas.svelte`, `DrawingPiece.svelte`, `view.svelte.ts`, `gestures.svelte.ts`.
 
 ---
 
@@ -191,9 +228,6 @@ minimum, `console.warn` in dev builds.
 ---
 
 ### 5. ~~Service worker audio caching — memory pressure~~ — shipped
-
-~~In `scripts/sw.template.js`, `serveRangeFromCached` loads the **entire cached
-audio file into an `ArrayBuffer`** to slice range responses.~~
 
 **Fixed:** Range responses from cache use `Blob.slice()` so the 206 body streams
 from cache storage without a full JS heap copy. Paired with `<audio>`
@@ -231,7 +265,8 @@ Each drawing requires hand-entered:
 - Optional `rotation`, `width`, `track`
 
 Nothing validates that coordinates fit the computed canvas or that filenames
-exist.
+exist. Drawing `id` slugs and `title` labels are maintained separately (title
+doubles as image `alt` text).
 
 **Recommendation:** Extend build scripts (e.g. `content-drawings.mjs`) to probe
 image dimensions and assert file presence, similar to thumb generation.
@@ -246,7 +281,18 @@ vs `backgrounds.css`. Comments call this out; there is no compile-time guard.
 
 ---
 
-### 9. Tooling gap
+### 9. Theme / layout CSS duplication
+
+Nine theme files under `backgrounds/themes/` share structure via `shared.css`
+but each duplicates leather-pad geometry tokens. Adding a theme means a new CSS
+file plus an entry in `atelier-themes.ts` and `backgrounds.css` imports.
+
+**Recommendation:** Document the checklist in README (already partial) or
+generate theme imports from `atelier-themes.ts` at build time if the set keeps growing.
+
+---
+
+### 10. Tooling gap
 
 Only `pnpm check` (svelte-check). No ESLint, Prettier, or CI lint step. Fine for
 a solo project today; will drift as edits accumulate.
@@ -260,17 +306,20 @@ a solo project today; will drift as edits accumulate.
 | Zoom cap off-piece | `maxZoomAt` falls back to `peakMaxZoom` when the cursor is not over a drawing — you can zoom past one piece’s sharp limit while inspecting another. Probably intentional. |
 | Audio preload | `metadata` until tap; `auto` only during playback — see Audio memory requirement above. |
 | TypeScript 6.0.2 | Very new; watch for ecosystem friction. |
-| Silent pieces | Focusing a drawing without `track` still shows `NearCue` and requests full-res — coherent “look but don’t listen” behavior. |
+| Silent pieces | Focusing a drawing without `track` still zooms and requests full-res — coherent “look but don’t listen” behaviour. |
 | View Transitions | Gracefully skipped when `prefers-reduced-motion` — good. |
-| `audioIndexForDrawing` | Precomputed `Map` in `content.ts` — no longer a per-frame cost (fixed since earlier review). |
+| `audioIndexForDrawing` | Precomputed `Map` in `content.ts` — no per-frame cost. |
+| Theme picker opacity | CSS comment calls it a “temporary dev control” at 0.22 opacity — consider whether it should stay subtle or become a first-class UI element. |
+| `ssr = false` | Atelier meta tags (`<title>`, description) only appear after JS on that route. Acceptable trade-off for correct desk layout. |
+| Content model | Eight drawings; three with audio (`maskers`, `buste-van-een-gevallen-keizer`, `claudio-abbado`). Entry prefetch targets `maskers`. |
 
 ---
 
 ## Priority recommendations
 
-1. **Tests** — geometry, view math, prefetch intents, audio format selection, audio player state transitions.
+1. **Tests** — geometry, view math, layout mode, prefetch intents, audio format selection, audio player state transitions.
 2. **Hit-test stacking** — before adding overlapping placements.
-3. **Keyboard-accessible piece selection** — minimum viable for operable UX.
+3. **Roving keyboard navigation between pieces** — build on existing Tab + button activation.
 4. **Surface audio errors** — instead of silent `catch`.
 5. **Build-time content validation** — image dimensions, audio file presence, coordinate bounds.
 6. **Optional:** ESLint + format in CI as the codebase grows.
@@ -283,15 +332,19 @@ a solo project today; will drift as edits accumulate.
 
 - [ ] Automated tests for pure modules and audio state machine
 - [ ] Hit testing respects visual z-order
-- [x] Keyboard path to focus any drawing (roving tabindex + arrows + Enter)
+- [~] Keyboard path to focus any drawing (Tab + Enter on buttons; no roving arrows)
 - [ ] Audio play/error feedback when `play()` or load fails
 - [x] Low RAM audio: SW `Blob.slice` range serving, tight preload, buffer release on switch/leave
+- [x] Consistent crossfade when switching audio pieces
 
 ### Tier 2 — maintainability
 
 - [ ] Single piece-activation funnel (pointer vs button)
 - [ ] Build-time validation of content.ts vs static assets
 - [ ] Lint/format in CI (optional)
+- [x] Room themes with persistence
+- [x] SW cache busting via media content hash
+- [x] Simple Analytics (production only)
 
 ---
 
@@ -299,7 +352,8 @@ a solo project today; will drift as edits accumulate.
 
 Well-crafted, constraint-driven implementation for an immersive drawing gallery.
 The atelier stack shows real attention to sharpness, gesture feel, and mobile
-networks. Gaps are mostly **scale and resilience**: no tests, pointer-first UX,
-stacking bugs waiting on denser layouts, and silent failure modes in audio. Audio
-memory pressure for long/many recordings is addressed; fine for six pieces —
-address remaining Tier 1 before the catalog grows significantly.
+networks. Gaps are mostly **scale and resilience**: no tests, stacking bugs
+waiting on denser layouts, silent failure modes in audio, and keyboard navigation
+that works but doesn't scale to many pieces. Audio memory pressure for long/many
+recordings is addressed; fine for eight pieces today — address remaining Tier 1
+before the catalog grows significantly.

@@ -7,7 +7,7 @@ studio view where works sit on a pannable canvas — tap a drawing to listen to 
 | Route       | Idea                                                       |
 | ----------- | ---------------------------------------------------------- |
 | `/`         | Threshold — door sketch; click to enter the atelier (fit-all overview) |
-| `/atelier/` | Studio — pan/zoom canvas; tap a piece to play its recording (fit-all on entry) |
+| `/atelier/` | Studio — pan/zoom canvas; tap a piece to play its recording; switch room theme (fit-all on entry) |
 | `/credits/` | Colofon — rights and asset credits                         |
 
 ## Prerequisites
@@ -65,7 +65,7 @@ Production only — reports under **`unicorn.rednaw.github.io`**
 
 The site uses the artist's own drawings and piano recordings.
 
-- `/static/drawings/*.jpg` — drawing masters (final scans TBD); `-thumb.webp` generated at build, not committed
+- `/static/drawings/*.jpg` — drawing masters; `-thumb.webp` generated at build, not committed
 - `/static/hall/` — door sketch for the home page (`door-ajar-sketch.webp`)
 - `/static/audio/` — performances (m4a masters; `.webm` generated at build, not committed)
 
@@ -102,6 +102,7 @@ which pair is active (portrait phones vs wider viewports).
 - **Drag** or two-finger scroll to pan; playback continues while you explore.
 - **Mouse wheel** or pinch zooms at the cursor.
 - **Keyboard:** Tab to the canvas (pan/zoom) or through works; **arrow keys** / WASD pan when the canvas is focused; **+** / **−** zoom; **Escape** back (same as ←).
+- **Theme picker** (top right) — nine room backgrounds; choice persists in `localStorage`.
 - Full-resolution JPEGs load on demand when a piece covers enough of the viewport (not all at once).
 - At most **one** recording plays at a time; tap another audio piece to switch (crossfade).
 
@@ -111,25 +112,31 @@ Agent-oriented constraints and file map: [`CURSOR.md`](./CURSOR.md).
 
 ```
 src/
-  app.html                  # favicon links, HTML shell
+  app.html                  # favicon links, HTML shell, Simple Analytics (prod)
   routes/
-    +layout.svelte          # global CSS, service worker registration
+    +layout.svelte          # service worker registration
     +layout.ts              # prerender + trailingSlash: 'always'
     layout.css              # Tailwind + theme tokens + view transitions
     (site)/
-      +layout.svelte        # mode-aware shell (hall / credits / immersive atelier)
+      +layout.svelte        # mode-aware shell; cross-route view transitions
       +page.svelte          # home — door threshold
       credits/+page.svelte  # colofon
-      atelier/+page.svelte  # fullscreen studio canvas
+      atelier/
+        +page.svelte        # fullscreen studio canvas
+        +page.ts            # ssr = false (viewport-dependent desk layout)
   lib/
     content.ts              # site data (drawings, lookups)
     content-types.ts        # Drawing / Atelier types + constants
     content-derive.ts       # pure derivations (audio list, sharp zoom)
+    site-config.ts          # Simple Analytics hostname
     drawing/
       prefetch.svelte.ts    # thumb warmup + full-res coordinator
     atelier/                # studio canvas, gestures, explicit listen audio
+      atelier-session.svelte.ts  # orchestrates view, audio, gestures, prefetch
       listening.svelte.ts, audio-player.svelte.ts
       view.svelte.ts, gestures.svelte.ts, …
+      atelier-themes.ts, atelier-theme.svelte.ts, ThemePicker.svelte
+      backgrounds.css, backgrounds/themes/*.css
       visible-drawings.ts   # viewport hit-test + coverage-based prefetch intents
       Canvas.svelte, DrawingPiece.svelte, DrawingImg.svelte, …
 scripts/
@@ -141,7 +148,7 @@ static/
   Dockerfile, devcontainer.json
 ```
 
-Cross-route navigation uses the View Transitions API (`+layout.svelte`, `layout.css`).
+Cross-route navigation uses the View Transitions API (`(site)/+layout.svelte`, `layout.css`).
 The door home page crossfades into the atelier. Piece-level morphs use
 `view-transition-name: piece-<id>` on the focused drawing in the atelier.
 
