@@ -7,7 +7,6 @@
 	import BackLink from '$lib/atelier/BackLink.svelte';
 	import ThemePicker from '$lib/atelier/ThemePicker.svelte';
 	import { atelierTheme, hydrateAtelierTheme } from '$lib/atelier/atelier-theme.svelte';
-	import { ATELIER_THEME_BOOTSTRAP_HTML } from '$lib/atelier/atelier-themes';
 	import NearCue from '$lib/atelier/NearCue.svelte';
 	import Canvas from '$lib/atelier/Canvas.svelte';
 	import { createAtelierSession } from '$lib/atelier/atelier-session.svelte';
@@ -49,7 +48,6 @@
 <svelte:window onkeydowncapture={onWindowKeyDown} />
 
 <svelte:head>
-	{@html ATELIER_THEME_BOOTSTRAP_HTML}
 	<title>{artist.name}</title>
 	<meta
 		name="description"
@@ -69,6 +67,7 @@
 	</div>
 
 	<Canvas
+		drawings={drawings}
 		view={session.view}
 		gestures={session.gestures}
 		bind:viewport

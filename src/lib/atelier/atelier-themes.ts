@@ -28,12 +28,6 @@ export function applyAtelierThemeToDocument(id: AtelierThemeId): void {
 	document.documentElement.setAttribute(ATELIER_THEME_HTML_ATTR, id);
 }
 
-/** Blocking head script — reads localStorage before the atelier paints. */
-export const ATELIER_THEME_BOOTSTRAP_SCRIPT = `(function(){try{var k=${JSON.stringify(ATELIER_THEME_STORAGE_KEY)};var t=${JSON.stringify(THEME_ID_LIST)};var s=localStorage.getItem(k);if(s&&t.indexOf(s)!==-1)document.documentElement.setAttribute(${JSON.stringify(ATELIER_THEME_HTML_ATTR)},s);}catch(e){}})();`;
-
-/** Full `<script>` tag for `{@html …}` — keep interpolation out of `.svelte` (Vite 8 dep scan). */
-export const ATELIER_THEME_BOOTSTRAP_HTML = `<script>${ATELIER_THEME_BOOTSTRAP_SCRIPT}</script>`;
-
 export function readStoredAtelierTheme(): AtelierThemeId {
 	if (typeof localStorage === 'undefined') return 'graphite';
 	const stored = localStorage.getItem(ATELIER_THEME_STORAGE_KEY);

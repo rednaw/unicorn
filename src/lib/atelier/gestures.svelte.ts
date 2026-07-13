@@ -1,4 +1,4 @@
-import { drawings } from '$lib/content';
+import type { Drawing } from '$lib/content';
 import { ATELIER_GESTURES, ATELIER_ZOOM } from './constants';
 import { drawingAtCanvasPoint } from './drawing-geometry';
 import { suppressNextPieceButtonClick } from './piece-activation';
@@ -10,6 +10,7 @@ type InteractionMode = 'idle' | 'pending-pan' | 'panning' | 'pinching';
 type PinchState = { midX: number; midY: number; dist: number; left: number; top: number };
 
 export type AtelierGestureDeps = {
+	drawings: Drawing[];
 	/** Visitor panned/zoomed — dismiss ended listening HUD; playback continues while playing. */
 	onExplore: () => void;
 	onPrefetchDrawing: (id: string) => void;
@@ -58,7 +59,7 @@ export function createAtelierGestures(view: AtelierView, deps: AtelierGestureDep
 
 	function prefetchAtViewport(viewportX: number, viewportY: number) {
 		const canvas = viewportToCanvas(view.getView(), viewportX, viewportY);
-		const id = drawingAtCanvasPoint(drawings, canvas.x, canvas.y, (d) => view.drawingPos(d));
+		const id = drawingAtCanvasPoint(deps.drawings, canvas.x, canvas.y, (d) => view.drawingPos(d));
 		if (id) deps.onPrefetchDrawing(id);
 	}
 
@@ -199,7 +200,7 @@ export function createAtelierGestures(view: AtelierView, deps: AtelierGestureDep
 					const viewportX = e.clientX - left;
 					const viewportY = e.clientY - top;
 					const canvas = viewportToCanvas(view.getView(), viewportX, viewportY);
-					const hitId = drawingAtCanvasPoint(drawings, canvas.x, canvas.y, (d) =>
+					const hitId = drawingAtCanvasPoint(deps.drawings, canvas.x, canvas.y, (d) =>
 						view.drawingPos(d)
 					);
 					if (hitId) focusPiece(hitId);

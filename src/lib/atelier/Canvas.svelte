@@ -1,10 +1,11 @@
 <script lang="ts">
-	import { drawings } from '$lib/content';
 	import type { AtelierGestures } from './gestures.svelte';
 	import type { AtelierView } from './view.svelte';
+	import type { Drawing } from '$lib/content';
 	import DrawingPiece from './DrawingPiece.svelte';
 
 	let {
+		drawings,
 		view,
 		gestures,
 		viewport = $bindable(),
@@ -12,6 +13,7 @@
 		isPiecePlaying,
 		onFocusDrawing
 	}: {
+		drawings: Drawing[];
 		view: AtelierView;
 		gestures: AtelierGestures;
 		viewport?: HTMLDivElement;

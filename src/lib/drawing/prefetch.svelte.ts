@@ -100,7 +100,7 @@ export function prefetchVisibleInView(
 	layoutMode: AtelierLayoutMode,
 	posFor: (d: Drawing) => { x: number; y: number }
 ): void {
-	for (const { id, intent } of prefetchIntentsForView(view, viewport, layoutMode, posFor)) {
+	for (const { id, intent } of prefetchIntentsForView(drawings, view, viewport, layoutMode, posFor)) {
 		requestDrawing(id, intent);
 	}
 }
