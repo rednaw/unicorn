@@ -45,10 +45,10 @@ describe('drawingAtCanvasPoint', () => {
 		expect(drawingAtCanvasPoint([d], -50, -50)).toBeNull();
 	});
 
-	it('returns the first hit in array order (current stacking behaviour)', () => {
+	it('returns the topmost hit in paint order (later entries in the list)', () => {
 		const back = mockDrawing({ id: 'back', landscape: { x: 0, y: 0 }, width: 200, rotation: 0 });
 		const front = mockDrawing({ id: 'front', landscape: { x: 50, y: 50 }, width: 200, rotation: 0 });
 		const centre = drawingListenPoint(front, front.landscape);
-		expect(drawingAtCanvasPoint([back, front], centre.x, centre.y)).toBe('back');
+		expect(drawingAtCanvasPoint([back, front], centre.x, centre.y)).toBe('front');
 	});
 });

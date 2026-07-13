@@ -4,12 +4,13 @@ Critical review of the Unicorn (RvA) codebase — atelier stack, audio, prefetch
 service worker, content model, themes, and ops. Replaces the earlier review docs that
 described the removed spatial-audio architecture.
 
-**Status at review time:** `pnpm check` and `pnpm build` pass. ~3.4k lines of
-source across 37 TS/Svelte files. Eight drawings, three with audio tracks.
+**Status at review time:** `pnpm check`, `pnpm test` (41 tests), and `pnpm build` pass.
+~3.4k lines of source across 37 TS/Svelte files plus 7 test files. Eight drawings,
+three with audio tracks.
 
-**Updated 2026-07-13:** Refreshed for current catalog, room themes, Simple Analytics,
-`ssr = false` on atelier, and corrected accessibility claims. Prior audio memory
-fixes (SW `Blob.slice`, tight preload, buffer release) remain in place.
+**Updated 2026-07-13:** Vitest suite and CI `test` job added. Prior updates: catalog,
+room themes, Simple Analytics, `ssr = false`, accessibility corrections, audio memory
+fixes (SW `Blob.slice`, tight preload, buffer release).
 
 ---
 
@@ -57,13 +58,12 @@ recording into the service worker JS heap per range request.
 ## Executive summary
 
 **Verdict:** Production-ready for a personal artist site at current scale. The
-atelier core is coherent and performance-aware. Main risks before the catalog
-grows: **no automated tests**, **hit testing that ignores visual stacking**,
-**silent audio failure paths**, and **limited keyboard navigation between pieces**
-(Tab order only — no roving arrow keys).
+atelier core is coherent and performance-aware. Main remaining risks before the
+catalog grows: **silent audio failure paths**, and **limited keyboard navigation
+between pieces** (Tab order only — no roving arrow keys).
 
-The explicit-listen refactor (`listening.svelte.ts` + `audio-player.svelte.ts`)
-remains a clear improvement over the old spatial-audio model.
+**41 Vitest tests** cover pure modules and the audio-player state machine; CI runs
+`pnpm test` on every push and pull request to `main`.
 
 ---
 
@@ -91,6 +91,7 @@ remains a clear improvement over the old spatial-audio model.
 | Content | `src/lib/content.ts`, `content-types.ts`, `content-derive.ts` |
 | Analytics | `src/lib/site-config.ts`, `src/app.html` |
 | Service worker | `scripts/sw.template.js`, `service-worker.mjs`, `media-cache-key.mjs` |
+| Tests | `vitest.config.ts`, `src/test/*`, `src/**/*.test.ts` |
 
 **Atelier `ssr = false`:** desk layout depends on viewport (portrait vs landscape
 piece coordinates). Prerender would bake the wrong mode into HTML and worsen CLS.
@@ -128,6 +129,27 @@ without circular dependencies.
 - Web Audio gain crossfade instead of relying on `<audio>` volume alone.
 - `pickAudioSrc()` handles WebM vs m4a per browser.
 - Consistent fade-out when switching pieces or pausing (`atelier-session` + `stop({ fadeMs })`).
+- `fromStart` replay resets `currentTime` on the same loaded element (fixed via test).
+
+### Test coverage
+
+Vitest + happy-dom (`pnpm test` / `pnpm test:watch`):
+
+| File | What it guards |
+|------|----------------|
+| `content-derive.test.ts` | Audio list/index map, `maxSharpZoomForDrawing` |
+| `audio-format.test.ts` | WebM vs m4a per browser / UA |
+| `drawing-geometry.test.ts` | Bounds, hit test, current z-order behaviour |
+| `view-math.test.ts` | Clamp, zoom-at-point, fit, coordinate transforms |
+| `atelier-layout.test.ts` | Portrait/landscape mode, canvas dimensions |
+| `visible-drawings.test.ts` | Visibility, prefetch coverage threshold |
+| `audio-player.test.ts` | Play/stop/switch/resume/stale-callback state machine |
+
+Audio tests mock `Audio` / `AudioContext` via `src/test/mock-audio.ts` and reset
+the singleton through `resetAudioPlayerForTests()` between cases.
+
+**Not yet covered:** gesture integration, Svelte components, listening session,
+service worker, build scripts, E2E.
 
 ### Room themes
 
@@ -137,7 +159,9 @@ is a native `<select>` with safe-area and browser-chrome inset offsets.
 
 ### Ops and security
 
-- GitHub Actions with LFS, ffmpeg, frozen lockfile, Pages artifact upload.
+- GitHub Actions: dedicated **`test` job** (`pnpm test`) on push/PR; **`build`**
+  (ffmpeg + `pnpm build`) and deploy only on push to `main`.
+- LFS, frozen lockfile, Pages artifact upload.
 - CSP configured in `svelte.config.js` (including Svelte `script-src-attr` hash
   and Simple Analytics domains).
 - Static adapter with SPA fallback — appropriate for GitHub Pages.
@@ -150,39 +174,32 @@ is a native `<select>` with safe-area and browser-chrome inset offsets.
 
 ## Critical issues
 
-### 1. No automated tests
+### 1. ~~No automated tests~~ — shipped (partial)
 
-There are zero test files. Highest-risk logic:
+**Added:** 41 Vitest tests across seven files (see Test coverage above). CI blocks
+merge/deploy on failure.
+
+**Still missing:** component/E2E tests, gesture path integration, SW behaviour,
+build-time content validation. Highest-value next additions:
 
 | Area | Why it matters |
 |------|----------------|
-| `drawingAtCanvasPoint` | Rotated hit boxes; wrong piece → wrong audio |
-| `playDrawing` / `stop` state machine | Crossfade, resume, stale callbacks, `fromStart` |
-| `prefetchIntentsForView` | Coverage threshold, visible-set math |
-| `maxSharpZoomForDrawing` | Regressions break the core product promise |
-| `pickAudioSrc` | Browser format selection |
-| `resolveLayoutMode` | Portrait vs landscape desk selection |
-
-**Recommendation:** Add Vitest (or similar) for pure modules first
-(`drawing-geometry`, `view-math`, `content-derive`, `audio-format`,
-`visible-drawings`, `atelier-layout`). Audio player can be tested with mocked
-`AudioContext` / `HTMLAudioElement`.
+| `gestures.svelte.ts` + `piece-activation.ts` | Dual activation path regressions |
+| `listening.svelte.ts` | HUD phase vs audio desync |
+| Build scripts | Content/asset drift |
 
 ---
 
-### 2. Hit testing ignores z-order
+### 2. ~~Hit testing ignores z-order~~ — shipped
 
-`drawingAtCanvasPoint` walks `content.ts` array order and returns the **first**
-intersection. Pieces use `z-index: 1` normally and `z-index: 10` on hover, but
-hit testing does not match DOM stacking.
+`drawingAtCanvasPoint` now walks the drawings list **top-down** (reverse paint
+order), matching DOM stacking for equal `z-index` siblings in `Canvas.svelte`.
 
-Overlapping or rotated pieces can focus/play the wrong one as placements get
-denser.
+**Note:** `:hover` / `:focus-visible` still raise a piece to `z-index` 10/11 in
+CSS; geometry hit tests do not model that (pointer-down on a piece uses
+`data-drawing-id` from the DOM instead).
 
-**Recommendation:** Iterate in reverse paint order (or track an explicit
-`zIndex` in content), matching visual stacking.
-
-**Files:** `src/lib/atelier/drawing-geometry.ts`, `src/lib/atelier/gestures.svelte.ts`.
+**Files:** `src/lib/atelier/drawing-geometry.ts`, `drawing-geometry.test.ts`.
 
 ---
 
@@ -294,8 +311,9 @@ generate theme imports from `atelier-themes.ts` at build time if the set keeps g
 
 ### 10. Tooling gap
 
-Only `pnpm check` (svelte-check). No ESLint, Prettier, or CI lint step. Fine for
-a solo project today; will drift as edits accumulate.
+`pnpm check` (svelte-check) and `pnpm test` (Vitest) run in CI. No ESLint,
+Prettier, or format gate yet. Fine for a solo project today; consider adding as
+edits accumulate.
 
 ---
 
@@ -312,17 +330,16 @@ a solo project today; will drift as edits accumulate.
 | Theme picker opacity | CSS comment calls it a “temporary dev control” at 0.22 opacity — consider whether it should stay subtle or become a first-class UI element. |
 | `ssr = false` | Atelier meta tags (`<title>`, description) only appear after JS on that route. Acceptable trade-off for correct desk layout. |
 | Content model | Eight drawings; three with audio (`maskers`, `buste-van-een-gevallen-keizer`, `claudio-abbado`). Entry prefetch targets `maskers`. |
+| Test reset hook | `resetAudioPlayerForTests()` in `audio-player.svelte.ts` — Vitest-only singleton reset. |
 
 ---
 
 ## Priority recommendations
 
-1. **Tests** — geometry, view math, layout mode, prefetch intents, audio format selection, audio player state transitions.
-2. **Hit-test stacking** — before adding overlapping placements.
-3. **Roving keyboard navigation between pieces** — build on existing Tab + button activation.
-4. **Surface audio errors** — instead of silent `catch`.
-5. **Build-time content validation** — image dimensions, audio file presence, coordinate bounds.
-6. **Optional:** ESLint + format in CI as the codebase grows.
+1. **Roving keyboard navigation between pieces** — build on existing Tab + button activation.
+2. **Surface audio errors** — instead of silent `catch`.
+3. **Build-time content validation** — image dimensions, audio file presence, coordinate bounds.
+4. **Optional:** ESLint + format in CI; component tests for gestures/listening.
 
 ---
 
@@ -330,8 +347,8 @@ a solo project today; will drift as edits accumulate.
 
 ### Tier 1 — behavioral / reliability
 
-- [ ] Automated tests for pure modules and audio state machine
-- [ ] Hit testing respects visual z-order
+- [x] Automated tests for pure modules and audio state machine
+- [x] Hit testing respects visual z-order (reverse paint order)
 - [~] Keyboard path to focus any drawing (Tab + Enter on buttons; no roving arrows)
 - [ ] Audio play/error feedback when `play()` or load fails
 - [x] Low RAM audio: SW `Blob.slice` range serving, tight preload, buffer release on switch/leave
@@ -342,6 +359,7 @@ a solo project today; will drift as edits accumulate.
 - [ ] Single piece-activation funnel (pointer vs button)
 - [ ] Build-time validation of content.ts vs static assets
 - [ ] Lint/format in CI (optional)
+- [x] Vitest in CI (`test` job on push/PR)
 - [x] Room themes with persistence
 - [x] SW cache busting via media content hash
 - [x] Simple Analytics (production only)
@@ -352,8 +370,7 @@ a solo project today; will drift as edits accumulate.
 
 Well-crafted, constraint-driven implementation for an immersive drawing gallery.
 The atelier stack shows real attention to sharpness, gesture feel, and mobile
-networks. Gaps are mostly **scale and resilience**: no tests, stacking bugs
-waiting on denser layouts, silent failure modes in audio, and keyboard navigation
-that works but doesn't scale to many pieces. Audio memory pressure for long/many
-recordings is addressed; fine for eight pieces today — address remaining Tier 1
-before the catalog grows significantly.
+networks. Pure-module and audio state-machine regressions are now guarded by
+Vitest and CI. Remaining gaps are **silent audio failures** and **keyboard
+navigation** that works but doesn't scale to many pieces. Audio memory pressure for long/many recordings is addressed — address
+remaining Tier 1 before the catalog grows significantly.
