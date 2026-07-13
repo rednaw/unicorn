@@ -153,6 +153,7 @@ export function createAtelierSession(opts: {
 		view.metrics.width;
 		if (view.metrics.width === 0) return false;
 		return !isDrawingVisibleInView(
+			opts.drawings,
 			id,
 			view.getView(),
 			view.metrics,
@@ -162,6 +163,7 @@ export function createAtelierSession(opts: {
 	});
 
 	const gestures = createAtelierGestures(view, {
+		drawings: opts.drawings,
 		onExplore,
 		onPrefetchDrawing: (id) => requestDrawing(id, 'full'),
 		onFocusPiece: focusDrawing,

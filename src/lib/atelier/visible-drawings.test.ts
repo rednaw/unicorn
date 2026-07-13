@@ -14,13 +14,18 @@ const viewport = { width: 390, height: 844 };
 
 describe('visibleDrawings', () => {
 	it('returns an empty list when the viewport has zero width', () => {
-		const hits = visibleDrawings({ tx: 0, ty: 0, zoom: 1 }, { width: 0, height: 800 }, 'landscape');
+		const hits = visibleDrawings(
+			drawings,
+			{ tx: 0, ty: 0, zoom: 1 },
+			{ width: 0, height: 800 },
+			'landscape'
+		);
 		expect(hits).toEqual([]);
 	});
 
 	it('lists drawings intersecting the viewport, nearest first', () => {
 		const view = { tx: 0, ty: 0, zoom: 0.2 };
-		const hits = visibleDrawings(view, viewport, 'landscape');
+		const hits = visibleDrawings(drawings, view, viewport, 'landscape');
 		expect(hits.length).toBeGreaterThan(0);
 		const distances = hits.map((h) => h.distance);
 		expect([...distances].sort((a, b) => a - b)).toEqual(distances);
@@ -31,6 +36,7 @@ describe('prefetchIntentsForView', () => {
 	it('queues full-res only above the coverage threshold', () => {
 		const overview = { tx: 0, ty: 0, zoom: 0.15 };
 		const overviewIntents = prefetchIntentsForView(
+			drawings,
 			overview,
 			viewport,
 			'landscape',
@@ -46,6 +52,7 @@ describe('prefetchIntentsForView', () => {
 			2.5
 		);
 		const focusedIntents = prefetchIntentsForView(
+			drawings,
 			focus,
 			viewport,
 			'landscape',
@@ -53,7 +60,7 @@ describe('prefetchIntentsForView', () => {
 		);
 		const maskersIntent = focusedIntents.find((i) => i.id === 'maskers');
 		expect(maskersIntent).toEqual({ id: 'maskers', intent: 'full' });
-		const maskersHit = visibleDrawings(focus, viewport, 'landscape').find(
+		const maskersHit = visibleDrawings(drawings, focus, viewport, 'landscape').find(
 			(h) => h.drawing.id === 'maskers'
 		);
 		expect(maskersHit?.coverage ?? 0).toBeGreaterThanOrEqual(ATELIER_PREFETCH.fullResCoverage);
@@ -70,7 +77,7 @@ describe('isDrawingVisibleInView', () => {
 			2
 		);
 		expect(
-			isDrawingVisibleInView('maskers', focus, viewport, 'landscape', (d) =>
+			isDrawingVisibleInView(drawings, 'maskers', focus, viewport, 'landscape', (d) =>
 				layoutPos(d, 'landscape')
 			)
 		).toBe(true);
@@ -78,8 +85,13 @@ describe('isDrawingVisibleInView', () => {
 
 	it('returns false for unknown ids', () => {
 		expect(
-			isDrawingVisibleInView('missing', { tx: 0, ty: 0, zoom: 1 }, viewport, 'landscape', (d) =>
-				layoutPos(d, 'landscape')
+			isDrawingVisibleInView(
+				drawings,
+				'missing',
+				{ tx: 0, ty: 0, zoom: 1 },
+				viewport,
+				'landscape',
+				(d) => layoutPos(d, 'landscape')
 			)
 		).toBe(false);
 	});
