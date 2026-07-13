@@ -12,6 +12,8 @@
     "prepare": "svelte-kit sync || true",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "assets:encode": "node scripts/encode-audio.mjs && node scripts/encode-thumbs.mjs",
     "assets:thumbs": "node scripts/encode-thumbs.mjs",
     "assets:audio": "node scripts/encode-audio.mjs"
@@ -22,12 +24,14 @@
     "@sveltejs/vite-plugin-svelte": "^7.0.0",
     "@tailwindcss/vite": "^4.2.2",
     "@types/node": "^25.9.1",
+    "happy-dom": "18.0.1",
     "sharp": "^0.34.5",
     "svelte": "^5.55.2",
     "svelte-check": "^4.4.6",
     "tailwindcss": "^4.2.2",
     "typescript": "^6.0.2",
-    "vite": "^8.0.7"
+    "vite": "^8.0.7",
+    "vitest": "3.2.4"
   },
   "dependencies": {
     "@fontsource/cormorant-garamond": "^5.2.11"

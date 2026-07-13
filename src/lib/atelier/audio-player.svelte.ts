@@ -207,7 +207,11 @@ function createAudioPlayer() {
 		}
 
 		void el.play().catch(() => {});
-		if (startAt > 0.05) {
+		if (fromStart) {
+			try {
+				el.currentTime = 0;
+			} catch {}
+		} else if (startAt > 0.05) {
 			try {
 				el.currentTime = startAt;
 			} catch {}
@@ -288,6 +292,29 @@ function createAudioPlayer() {
 		stop({ fadeMs: 0, reset: true });
 	}
 
+	/** @internal Vitest-only — drops the audio graph so each case starts clean. */
+	function resetForTests(): void {
+		clearStopTimer();
+		invalidatePendingPlay();
+		onEndedCb = undefined;
+		savedPositions.clear();
+		loadedDrawingId = null;
+		if (el) {
+			el.pause();
+			try {
+				el.currentTime = 0;
+			} catch {}
+			el.removeAttribute('src');
+			el.load();
+		}
+		el = undefined;
+		gain = undefined;
+		ctx = undefined;
+		player.ready = false;
+		player.unlocked = false;
+		player.drawingId = null;
+	}
+
 	return {
 		player,
 		initAudio,
@@ -296,7 +323,8 @@ function createAudioPlayer() {
 		stop,
 		setOnEnded,
 		enterAtelier,
-		leaveAtelier
+		leaveAtelier,
+		resetForTests
 	};
 }
 
@@ -310,3 +338,4 @@ export const stop = audioPlayer.stop;
 export const setOnEnded = audioPlayer.setOnEnded;
 export const enterAtelier = audioPlayer.enterAtelier;
 export const leaveAtelier = audioPlayer.leaveAtelier;
+export const resetAudioPlayerForTests = audioPlayer.resetForTests;
