@@ -52,7 +52,9 @@ export function drawingAtCanvasPoint(
 	canvasY: number,
 	posFor: (d: Drawing) => { x: number; y: number } = (d) => d.landscape ?? { x: 0, y: 0 }
 ): string | null {
-	for (const d of drawings) {
+	// Later siblings paint above earlier ones (same z-index) — walk top-down.
+	for (let i = drawings.length - 1; i >= 0; i--) {
+		const d = drawings[i]!;
 		const { width, height } = pieceBounds(d);
 		const { x, y } = posFor(d);
 		const rot = ((d.rotation ?? 0) * Math.PI) / 180;
