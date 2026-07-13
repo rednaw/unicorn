@@ -32,6 +32,7 @@ Common commands (inside the container terminal):
 ```sh
 pnpm dev            # already started on container launch
 pnpm check          # type-check
+pnpm test           # unit tests (vitest)
 pnpm build          # production build → build/
 pnpm assets:encode  # regenerate webm + thumbs (also runs before dev/build)
 pnpm assets:thumbs  # thumbs only
