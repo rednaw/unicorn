@@ -4,6 +4,9 @@ import viteConfig from './vite.config';
 export default mergeConfig(
 	viteConfig as ViteUserConfig,
 	defineConfig({
+		resolve: {
+			conditions: ['browser']
+		},
 		test: {
 			include: ['src/**/*.{test,spec}.ts'],
 			environment: 'happy-dom',
@@ -12,8 +15,8 @@ export default mergeConfig(
 				provider: 'v8',
 				reporter: ['text', 'text-summary', 'html'],
 				reportsDirectory: 'coverage',
-				include: ['src/lib/**/*.{ts,svelte.ts}'],
-				exclude: ['src/**/*.test.ts', 'src/test/**']
+				include: ['src/lib/**/*.ts', 'src/lib/**/*.svelte.ts'],
+				exclude: ['src/**/*.test.ts', 'src/test/**', 'src/**/*.harness.svelte']
 			}
 		}
 	})
