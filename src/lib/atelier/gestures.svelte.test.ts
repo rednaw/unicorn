@@ -5,7 +5,7 @@ import { drawingListenPoint } from './drawing-geometry';
 import { shouldSuppressPieceButtonClick } from './piece-activation';
 import { createAtelierView } from './view.svelte';
 import type { AtelierView } from './view.svelte';
-import { mockDrawing } from '../../test/fixtures';
+import { mockDrawing } from '$test/fixtures';
 import type { Drawing } from '$lib/content';
 
 function sampleDrawing(): Drawing {

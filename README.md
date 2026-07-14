@@ -66,6 +66,11 @@ after each deploy.)
 
 Locally: `pnpm test:coverage` then open `coverage/index.html`.
 
+### Test layout
+
+- **`src/**/*.test.ts`** — unit tests co-located with the module they cover.
+- **`src/test/`** — everything that is not a test file but exists only for tests: setup, fixtures, mocks, harnesses, shared helpers. Import via the **`$test/`** alias (e.g. `$test/fixtures`, `$test/atelier/session.harness.svelte`). Production code under `src/lib/` must not import from `$test/`.
+
 ### Simple Analytics
 
 Production only — reports under **`unicorn.rednaw.github.io`**
@@ -152,6 +157,9 @@ src/
       backgrounds.css, backgrounds/themes/*.css
       visible-drawings.ts   # viewport hit-test + coverage-based prefetch intents
       Canvas.svelte, DrawingPiece.svelte, DrawingImg.svelte, …
+  test/                     # test-only helpers (fixtures, mocks, harnesses); $test/ alias
+    setup.ts, fixtures.ts, mock-audio.ts, raf.ts
+    atelier/session.harness.svelte
 scripts/
   encode-audio.mjs, encode-thumbs.mjs, content-drawings.mjs
   service-worker.mjs, sw.template.js, media-cache-key.mjs

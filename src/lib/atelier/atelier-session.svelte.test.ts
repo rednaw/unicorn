@@ -1,10 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount, tick, unmount } from 'svelte';
 import { ATELIER_ANIM, ATELIER_AUDIO, ATELIER_PREFETCH } from './constants';
-import SessionHarness from './atelier-session.harness.svelte';
+import SessionHarness from '$test/atelier/session.harness.svelte';
 import type { AtelierSession } from './atelier-session.svelte';
-import { mockDrawing, mockTrack } from '../../test/fixtures';
+import { mockDrawing, mockTrack } from '$test/fixtures';
 import type { Drawing } from '$lib/content';
+import { installRafViaTimers, flushRaf } from '$test/raf';
 
 const audioMocks = vi.hoisted(() => {
 	let onEnded: (() => void) | undefined;
@@ -81,22 +82,6 @@ const silent = mockDrawing({
 	width: 300,
 	rotation: 0
 });
-
-function installRafViaTimers() {
-	vi.stubGlobal(
-		'requestAnimationFrame',
-		vi.fn((cb: FrameRequestCallback) => setTimeout(() => cb(performance.now()), 0) as unknown as number)
-	);
-	vi.stubGlobal(
-		'cancelAnimationFrame',
-		vi.fn((id: number) => clearTimeout(id as unknown as ReturnType<typeof setTimeout>))
-	);
-}
-
-async function flushRaf() {
-	await Promise.resolve();
-	await Promise.resolve();
-}
 
 async function sessionReady(drawings: Drawing[] = [audioA, audioB, silent]) {
 	const onNavigateHome = vi.fn();

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { createAtelierSession, type AtelierSession } from './atelier-session.svelte';
+	import { createAtelierSession, type AtelierSession } from '$lib/atelier/atelier-session.svelte';
 	import type { Drawing } from '$lib/content';
 
 	let {

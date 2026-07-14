@@ -5,7 +5,7 @@ import {
 	pieceBounds,
 	rotatedPieceBounds
 } from './drawing-geometry';
-import { mockDrawing, mockTrack } from '../../test/fixtures';
+import { mockDrawing, mockTrack } from '$test/fixtures';
 
 describe('pieceBounds', () => {
 	it('includes plaque height when a track is present', () => {

@@ -16,7 +16,7 @@ export default mergeConfig(
 				reporter: ['text', 'text-summary', 'html'],
 				reportsDirectory: 'coverage',
 				include: ['src/lib/**/*.ts', 'src/lib/**/*.svelte.ts'],
-				exclude: ['src/**/*.test.ts', 'src/test/**', 'src/**/*.harness.svelte']
+				exclude: ['src/**/*.test.ts', 'src/test/**']
 			}
 		}
 	})

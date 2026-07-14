@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { drawings } from '$lib/content';
-import { mockDrawing } from '../../test/fixtures';
+import { mockDrawing } from '$test/fixtures';
 import { ATELIER_PREFETCH } from './constants';
 import { drawingAtCanvasPoint, drawingListenPoint } from './drawing-geometry';
 import { layoutPos } from './atelier-layout';

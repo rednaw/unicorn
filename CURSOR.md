@@ -40,5 +40,7 @@ More drawings/recordings coming. `portrait` / `landscape` coords in `content.ts`
 | Analytics hostname | `site-config.ts`, `app.html` |
 | Encode (build) | `scripts/encode-audio.mjs`, `encode-thumbs.mjs`, `content-drawings.mjs` |
 | Service worker | `scripts/sw.template.js`, `service-worker.mjs`, `media-cache-key.mjs` |
+| Unit tests (co-located) | `src/**/*.test.ts` next to the module under test |
+| Test-only helpers | `src/test/` — fixtures, mocks, harnesses; import via `$test/` |
 
 Workflow and architecture: `README.md`.
