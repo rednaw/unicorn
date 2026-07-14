@@ -10,7 +10,7 @@ import {
 	audioIndexMapFrom,
 	maxSharpZoomForDrawing
 } from './content-derive';
-import { mockDrawing, mockTrack } from '../test/fixtures';
+import { mockDrawing, mockTrack } from '$test/fixtures';
 
 describe('audioDrawingsFrom', () => {
 	it('returns only drawings with a track', () => {

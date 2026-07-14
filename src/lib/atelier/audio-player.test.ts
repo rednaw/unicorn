@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { audioMocks } from '../../test/setup';
-import { flushMicrotasks } from '../../test/mock-audio';
+import { audioMocks } from '$test/setup';
+import { flushMicrotasks } from '$test/mock-audio';
 import {
 	initAudio,
 	playDrawing,

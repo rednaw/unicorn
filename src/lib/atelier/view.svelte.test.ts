@@ -2,22 +2,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ATELIER_ANIM, ATELIER_ZOOM } from './constants';
 import { drawingListenPoint } from './drawing-geometry';
 import { createAtelierView } from './view.svelte';
-import { mockDrawing } from '../../test/fixtures';
+import { installRafViaTimers, flushRaf } from '$test/raf';
+import { mockDrawing } from '$test/fixtures';
 import type { ViewportMetrics } from './viewport-metrics';
 
 const landscape: ViewportMetrics = { width: 1200, height: 800, left: 0, top: 0 };
 const portrait: ViewportMetrics = { width: 390, height: 844, left: 0, top: 0 };
-
-function installRafViaTimers() {
-	vi.stubGlobal(
-		'requestAnimationFrame',
-		vi.fn((cb: FrameRequestCallback) => setTimeout(() => cb(performance.now()), 0) as unknown as number)
-	);
-	vi.stubGlobal(
-		'cancelAnimationFrame',
-		vi.fn((id: number) => clearTimeout(id as unknown as ReturnType<typeof setTimeout>))
-	);
-}
 
 function sampleDrawings() {
 	return [
@@ -106,7 +96,7 @@ describe('createAtelierView', () => {
 		expect(onArrive).not.toHaveBeenCalled();
 
 		vi.advanceTimersByTime(ATELIER_ANIM.focusDurationMs + 50);
-		await awaitFlushRaf();
+		await flushRaf();
 
 		expect(onArrive).toHaveBeenCalledOnce();
 	});
@@ -121,14 +111,14 @@ describe('createAtelierView', () => {
 
 		for (let i = 0; i < 40; i++) {
 			vi.advanceTimersByTime(16);
-			await awaitFlushRaf();
+			await flushRaf();
 		}
 
 		expect(view.tx).not.toBe(startTx);
 		view.stopInertia();
 		const paused = view.tx;
 		vi.advanceTimersByTime(100);
-		await awaitFlushRaf();
+		await flushRaf();
 		expect(view.tx).toBe(paused);
 	});
 
@@ -143,7 +133,7 @@ describe('createAtelierView', () => {
 		view.resetViewAnimated(onDone);
 
 		vi.advanceTimersByTime(ATELIER_ANIM.viewDurationMs + 50);
-		await awaitFlushRaf();
+		await flushRaf();
 
 		expect(onDone).toHaveBeenCalledOnce();
 		expect(view.isAtFitAll()).toBe(true);
@@ -159,8 +149,3 @@ describe('createAtelierView', () => {
 		expect(view.zoom).toBeCloseTo(1.5, 1);
 	});
 });
-
-async function awaitFlushRaf() {
-	await Promise.resolve();
-	await Promise.resolve();
-}

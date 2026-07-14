@@ -6,6 +6,9 @@ const config = {
 		runes: ({ filename }) => (filename.split(/[/\\]/).includes('node_modules') ? undefined : true)
 	},
 	kit: {
+		alias: {
+			$test: 'src/test'
+		},
 		adapter: adapter({
 			fallback: '404.html',
 			strict: true

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { flushMicrotasks } from '../../test/mock-audio';
-import { mockDrawing } from '../../test/fixtures';
+import { flushMicrotasks } from '$test/mock-audio';
+import { mockDrawing } from '$test/fixtures';
 import {
 	fullReadyIds,
 	prefetchVisibleInView,
