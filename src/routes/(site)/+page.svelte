@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { asset, resolve } from '$app/paths';
 	import { goto } from '$app/navigation';
-	import { artist, entryDrawingId } from '$lib/content';
+	import { artist, drawings, entryDrawingId } from '$lib/content';
 	import { requestDrawing, warmAllDrawingThumbs } from '$lib/drawing/prefetch.svelte';
 	import { initAudio, prepareContext } from '$lib/atelier/audio-player.svelte';
 
@@ -20,7 +20,7 @@
 	function onDoorRendered() {
 		if (thumbsQueued) return;
 		thumbsQueued = true;
-		afterNextPaint(() => warmAllDrawingThumbs());
+		afterNextPaint(() => warmAllDrawingThumbs(drawings));
 	}
 
 	onMount(() => {
@@ -31,7 +31,7 @@
 		e.preventDefault();
 		initAudio();
 		await prepareContext();
-		requestDrawing(entryDrawingId, 'thumb');
+		requestDrawing(drawings, entryDrawingId, 'thumb');
 		await goto(resolve('/atelier/'));
 	}
 </script>

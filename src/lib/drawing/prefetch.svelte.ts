@@ -1,4 +1,3 @@
-import { drawings } from '$lib/content';
 import { prefetchIntentsForView } from '$lib/atelier/visible-drawings';
 import { ATELIER_PREFETCH } from '$lib/atelier/constants';
 import type { AtelierLayoutMode } from '$lib/atelier/atelier-layout';
@@ -13,11 +12,11 @@ const inflight = new Map<string, Promise<void>>();
 const fullQueue: { id: string; src: string }[] = [];
 let fullActive = 0;
 
-function drawingById(id: string) {
+const thumbsWarmed = new Set<string>();
+
+function drawingById(drawings: Drawing[], id: string) {
 	return drawings.find((d) => d.id === id);
 }
-
-const thumbsWarmed = new Set<string>();
 
 function warmThumb(url: string, priority: 'high' | 'low' | 'auto' = 'high'): void {
 	if (typeof window === 'undefined') return;
@@ -68,15 +67,18 @@ function enqueueFull(id: string, src: string): void {
 }
 
 /** Warm gallery thumbs in the HTTP cache — covers the gap before SW install precache finishes. */
-export function warmAllDrawingThumbs(priority: 'high' | 'low' | 'auto' = 'low'): void {
+export function warmAllDrawingThumbs(
+	drawings: Drawing[],
+	priority: 'high' | 'low' | 'auto' = 'low'
+): void {
 	for (const drawing of drawings) {
 		warmThumb(drawing.thumb, priority);
 	}
 }
 
 /** Single entry point for warming drawing assets — callers pass id + intent, not URLs. */
-export function requestDrawing(id: string, intent: PrefetchIntent): void {
-	const drawing = drawingById(id);
+export function requestDrawing(drawings: Drawing[], id: string, intent: PrefetchIntent): void {
+	const drawing = drawingById(drawings, id);
 	if (!drawing) return;
 
 	switch (intent) {
@@ -95,12 +97,22 @@ export function fullReadyIds(): Set<string> {
 }
 
 export function prefetchVisibleInView(
+	drawings: Drawing[],
 	view: ViewTransform,
 	viewport: ViewportRect,
 	layoutMode: AtelierLayoutMode,
 	posFor: (d: Drawing) => { x: number; y: number }
 ): void {
 	for (const { id, intent } of prefetchIntentsForView(drawings, view, viewport, layoutMode, posFor)) {
-		requestDrawing(id, intent);
+		requestDrawing(drawings, id, intent);
 	}
+}
+
+/** @internal Vitest-only — clears queue state so each case starts clean. */
+export function resetPrefetchForTests(): void {
+	fullReady = new Set();
+	inflight.clear();
+	fullQueue.length = 0;
+	fullActive = 0;
+	thumbsWarmed.clear();
 }
