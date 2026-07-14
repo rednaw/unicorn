@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { drawings } from '$lib/content';
+import { mockDrawing } from '../../test/fixtures';
 import { ATELIER_PREFETCH } from './constants';
-import { drawingListenPoint } from './drawing-geometry';
+import { drawingAtCanvasPoint, drawingListenPoint } from './drawing-geometry';
 import { layoutPos } from './atelier-layout';
 import {
 	isDrawingVisibleInView,
@@ -64,6 +65,51 @@ describe('prefetchIntentsForView', () => {
 			(h) => h.drawing.id === 'maskers'
 		);
 		expect(maskersHit?.coverage ?? 0).toBeGreaterThanOrEqual(ATELIER_PREFETCH.fullResCoverage);
+	});
+});
+
+describe('catalog scoping', () => {
+	it('only hit-tests drawings passed in the catalog', () => {
+		const back = mockDrawing({ id: 'back', landscape: { x: 0, y: 0 }, width: 200, rotation: 0 });
+		const front = mockDrawing({ id: 'front', landscape: { x: 900, y: 900 }, width: 200, rotation: 0 });
+		const centre = drawingListenPoint(front, front.landscape);
+
+		expect(drawingAtCanvasPoint([front], centre.x, centre.y)).toBe('front');
+		expect(drawingAtCanvasPoint([back], centre.x, centre.y)).toBeNull();
+	});
+
+	it('only reports visibility for drawings in the passed catalog', () => {
+		const visible = mockDrawing({
+			id: 'visible',
+			landscape: { x: 100, y: 100 },
+			width: 400,
+			rotation: 0
+		});
+		const offscreen = mockDrawing({
+			id: 'offscreen',
+			landscape: { x: 5000, y: 5000 },
+			width: 400,
+			rotation: 0
+		});
+		const view = centreOnCanvas(
+			viewport,
+			drawingListenPoint(visible, visible.landscape).x,
+			drawingListenPoint(visible, visible.landscape).y,
+			2
+		);
+
+		expect(
+			isDrawingVisibleInView([visible], 'visible', view, viewport, 'landscape', (d) => d.landscape)
+		).toBe(true);
+		expect(
+			isDrawingVisibleInView([visible], 'offscreen', view, viewport, 'landscape', (d) => d.landscape)
+		).toBe(false);
+		expect(visibleDrawings([visible], view, viewport, 'landscape').map((h) => h.drawing.id)).toEqual([
+			'visible'
+		]);
+		expect(
+			visibleDrawings([visible, offscreen], view, viewport, 'landscape').map((h) => h.drawing.id)
+		).toEqual(['visible']);
 	});
 });
 

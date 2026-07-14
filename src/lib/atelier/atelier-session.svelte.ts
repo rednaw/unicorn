@@ -41,6 +41,7 @@ export function createAtelierSession(opts: {
 		settleTimer = setTimeout(() => {
 			if (view.metrics.width === 0) return;
 			prefetchVisibleInView(
+				opts.drawings,
 				view.getView(),
 				view.metrics,
 				view.layoutMode,
@@ -116,7 +117,7 @@ export function createAtelierSession(opts: {
 		const drawing = opts.drawings.find((d) => d.id === id);
 		viewFocusedId = id;
 		const audio = drawing?.track ? activatePieceAudio(id) : null;
-		requestDrawing(id, 'full');
+		requestDrawing(opts.drawings, id, 'full');
 		if (!drawing || audio === 'paused') {
 			if (!drawing) scheduleViewportPrefetch();
 			return;
@@ -165,7 +166,7 @@ export function createAtelierSession(opts: {
 	const gestures = createAtelierGestures(view, {
 		drawings: opts.drawings,
 		onExplore,
-		onPrefetchDrawing: (id) => requestDrawing(id, 'full'),
+		onPrefetchDrawing: (id) => requestDrawing(opts.drawings, id, 'full'),
 		onFocusPiece: focusDrawing,
 		viewport: () => getViewport()
 	});
