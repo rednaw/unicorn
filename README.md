@@ -33,6 +33,7 @@ Common commands (inside the container terminal):
 pnpm dev            # already started on container launch
 pnpm check          # type-check
 pnpm test           # unit tests (vitest)
+pnpm test:coverage  # tests + coverage report → coverage/
 pnpm build          # production build → build/
 pnpm assets:encode  # regenerate webm + thumbs (also runs before dev/build)
 pnpm assets:thumbs  # thumbs only
@@ -53,6 +54,17 @@ Push to `main` — GitHub Actions builds and publishes automatically.
 
 For a custom domain or user/org pages (`username.github.io`), unset `BASE_PATH` in
 the workflow.
+
+### Test coverage
+
+Every push to `main` publishes an HTML coverage dashboard (from the `test` job) at:
+
+**https://rednaw.github.io/unicorn/coverage/index.html**
+
+(Same `BASE_PATH` as the site — `build/coverage/` is copied into the Pages artifact
+after each deploy.)
+
+Locally: `pnpm test:coverage` then open `coverage/index.html`.
 
 ### Simple Analytics
 

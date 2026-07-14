@@ -49,8 +49,16 @@ jobs:
       - name: Type-check
         run: pnpm check
 
-      - name: Test
-        run: pnpm test
+      - name: Test with coverage
+        run: pnpm test:coverage
+
+      - name: Upload coverage artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/
+          retention-days: 14
 
   build:
     needs: test
@@ -92,6 +100,15 @@ jobs:
           # custom domain, unset BASE_PATH below.
           BASE_PATH: /${{ github.event.repository.name }}
         run: pnpm build
+
+      - name: Download coverage report
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage
+          path: coverage
+
+      - name: Publish coverage dashboard
+        run: cp -r coverage build/coverage
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v5
