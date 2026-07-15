@@ -6,7 +6,6 @@
 		":semanticCommits",
 		":separateMajorReleases"
 	],
-	"onboarding": false,
 	"timezone": "Europe/Amsterdam",
 	"schedule": ["before 6am on Monday"],
 	"labels": ["dependencies"],
