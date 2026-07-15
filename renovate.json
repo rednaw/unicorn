@@ -1,0 +1,58 @@
+{
+	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
+	"extends": [
+		"config:recommended",
+		":dependencyDashboard",
+		":semanticCommits",
+		":separateMajorReleases"
+	],
+	"onboarding": false,
+	"timezone": "Europe/Amsterdam",
+	"schedule": ["before 6am on Monday"],
+	"labels": ["dependencies"],
+	"rangeStrategy": "bump",
+	"lockFileMaintenance": {
+		"enabled": true,
+		"schedule": ["before 6am on the first day of the month"]
+	},
+	"packageRules": [
+		{
+			"description": "Vitest + happy-dom — exact-pinned; bump as one group",
+			"matchManagers": ["npm"],
+			"matchPackageNames": ["vitest", "happy-dom", "@vitest/coverage-v8"],
+			"groupName": "vitest suite"
+		},
+		{
+			"description": "SvelteKit stack",
+			"matchManagers": ["npm"],
+			"matchPackagePatterns": ["^@sveltejs/", "^svelte$", "^svelte-check$"],
+			"groupName": "svelte stack"
+		},
+		{
+			"description": "Vite + Tailwind build chain",
+			"matchManagers": ["npm"],
+			"matchPackagePatterns": ["^vite$", "^@tailwindcss/", "^tailwindcss$"],
+			"groupName": "vite and tailwind"
+		},
+		{
+			"description": "GitHub Actions",
+			"matchManagers": ["github-actions"],
+			"groupName": "github actions"
+		},
+		{
+			"description": "Devcontainer Node base image",
+			"matchManagers": ["dockerfile"],
+			"matchFileNames": [".devcontainer/Dockerfile"],
+			"matchPackageNames": ["node"],
+			"groupName": "node docker"
+		},
+		{
+			"description": "Manual review for majors — no automerge",
+			"matchUpdateTypes": ["major"],
+			"automerge": false
+		}
+	],
+	"vulnerabilityAlerts": {
+		"enabled": true
+	}
+}
