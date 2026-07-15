@@ -66,6 +66,11 @@ after each deploy.)
 
 Locally: `pnpm test:coverage` then open `coverage/index.html`.
 
+### Dependency updates
+
+[Renovate](https://docs.renovatebot.com/) runs weekly from GitHub Actions (no GitHub
+App) and opens dependency PRs. Setup: [`docs/dependency-updates.md`](docs/dependency-updates.md).
+
 ### Test layout
 
 - **`src/**/*.test.ts`** — unit tests co-located with the module they cover.
