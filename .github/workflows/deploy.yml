@@ -25,7 +25,7 @@ jobs:
         with:
           lfs: true
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
 
@@ -36,7 +36,7 @@ jobs:
           pnpm --version
 
       - name: Cache pnpm store
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.local/share/pnpm/store
           key: pnpm-store-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
@@ -54,7 +54,7 @@ jobs:
 
       - name: Upload coverage artifact
         if: success()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage
           path: coverage/
@@ -68,7 +68,7 @@ jobs:
         with:
           lfs: true
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
 
@@ -79,7 +79,7 @@ jobs:
           pnpm --version
 
       - name: Cache pnpm store
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.local/share/pnpm/store
           key: pnpm-store-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
@@ -99,7 +99,7 @@ jobs:
 
       - name: Download coverage report
         if: github.event_name != 'pull_request'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: coverage
           path: coverage
