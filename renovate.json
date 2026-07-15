@@ -24,14 +24,22 @@
 		{
 			"description": "SvelteKit stack",
 			"matchManagers": ["npm"],
-			"matchPackagePatterns": ["^@sveltejs/", "^svelte$", "^svelte-check$"],
-			"groupName": "svelte stack"
+			"groupName": "svelte stack",
+			"matchPackageNames": [
+				"/^@sveltejs//",
+				"/^svelte$/",
+				"/^svelte-check$/"
+			]
 		},
 		{
 			"description": "Vite + Tailwind build chain",
 			"matchManagers": ["npm"],
-			"matchPackagePatterns": ["^vite$", "^@tailwindcss/", "^tailwindcss$"],
-			"groupName": "vite and tailwind"
+			"groupName": "vite and tailwind",
+			"matchPackageNames": [
+				"/^vite$/",
+				"/^@tailwindcss//",
+				"/^tailwindcss$/"
+			]
 		},
 		{
 			"description": "GitHub Actions",
