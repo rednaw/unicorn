@@ -4,7 +4,7 @@ on:
   schedule:
     # Monday 04:00 UTC — aligns with renovate.json (before 06:00 Europe/Amsterdam).
     # Renovate's internal schedule still controls when PRs are opened.
-    - cron: '0 4 * * 1'
+    - cron: '0 4 * * *'
   workflow_dispatch:
 
 concurrency:
