@@ -77,7 +77,13 @@ const atelier = {
 			rotation: 4,
 			portrait: { x: 58, y: 1450 },
 			landscape: { x: 1280, y: 90 },
-			width: 300
+			width: 300,
+			track: {
+				id: 'chopin-mazurka-op50-2',
+				title: 'Mazurka in As, op. 50 nr. 2',
+				composer: 'Frédéric Chopin',
+				src: asset('/audio/chopin-mazurka-opus-50-no-2.m4a')
+			}
 		},
 		{
 			id: 'claudio-abbado',
@@ -92,10 +98,10 @@ const atelier = {
 			landscape: { x: 1200, y: 660 },
 			width: 300,
 			track: {
-				id: 'chopin-mazurka-op50-2',
-				title: 'Mazurka in As, op. 50 nr. 2',
-				composer: 'Frédéric Chopin',
-				src: asset('/audio/chopin-mazurka-opus-50-no-2.m4a')
+				id: 'brahms-intermezzo-op118-2',
+				title: 'Intermezzo in A majeur, op. 118 nr. 2',
+				composer: 'Johannes Brahms',
+				src: asset('/audio/brahms-intermezzo-opus-118-no-2-in-a-major.m4a')
 			}
 		},
 		{
