@@ -77,6 +77,24 @@ only when your workflow runs.
 | **Major** | Separate PR per package; always manual review |
 | **Security** | `vulnerabilityAlerts` enabled — PRs outside schedule when needed |
 | **Lockfile** | Monthly lockfile maintenance PR |
+| **Release age** | 24 hours — pnpm 11 + Renovate aligned (`minimumReleaseAge`) |
+
+### Release age (supply-chain gate)
+
+**pnpm 11** refuses to install packages published within the last **24 hours**
+(`minimumReleaseAge: 1440` in `pnpm-workspace.yaml`). CI runs
+`pnpm install --frozen-lockfile`, which verifies every locked version against that
+policy.
+
+If Renovate opens a PR before a version has aged out, CI fails with
+`ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION` — not a broken upgrade, just too fresh.
+
+**Renovate** is configured with `minimumReleaseAge: "1 day"` and
+`internalChecksFilter: "strict"` so it should not open PRs until versions pass the
+same gate. Configure both sides — Renovate does not read pnpm’s setting automatically.
+
+**Existing PR already failing?** Re-run CI after the package is 24h old, or close
+the PR and let Renovate open it again once eligible.
 
 ### Groups
 
@@ -122,6 +140,7 @@ Merge only when green.
 | Problem | Fix |
 |---------|-----|
 | Workflow fails immediately | Check `RENOVATE_TOKEN` secret exists and is not expired |
+| `ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION` | Version in lockfile is < 24h old — wait and re-run CI, or close PR until Renovate reopens with strict release-age config |
 | No GitHub Actions updates in PRs | Fine-grained **Workflows** permission missing (or classic `workflow` scope) |
 | PRs open but CI does not run | Use a PAT — not `GITHUB_TOKEN` |
 | Fine-grained auth errors | Fall back to classic PAT with `repo` + `workflow`, or check token repo access includes this repo |
