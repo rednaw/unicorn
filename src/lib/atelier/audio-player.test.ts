@@ -83,7 +83,7 @@ describe('audio-player', () => {
 		playDrawing('claudio-abbado');
 		await flushMicrotasks();
 		expect(player.drawingId).toBe('claudio-abbado');
-		expect(el.src).toContain('mazurka');
+		expect(el.src).toContain('brahms');
 
 		stop({ fadeMs: 0 });
 		playDrawing('maskers');
@@ -96,7 +96,7 @@ describe('audio-player', () => {
 		playDrawing('claudio-abbado');
 		await flushMicrotasks();
 		expect(player.drawingId).toBe('claudio-abbado');
-		expect(audioMocks.instances[0]!.src).toContain('mazurka');
+		expect(audioMocks.instances[0]!.src).toContain('brahms');
 	});
 
 	it('fade stop invokes onDone after the fade duration', async () => {

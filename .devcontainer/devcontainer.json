@@ -6,11 +6,14 @@
 	},
 	"workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
 	"workspaceFolder": "/workspace",
+	"containerEnv": {
+		"COREPACK_ENABLE_DOWNLOAD_PROMPT": "0"
+	},
 	"mounts": [
 		"source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind,readonly,consistency=cached",
 		"source=${localEnv:HOME}/.gitconfig,target=/root/.gitconfig,type=bind,readonly,consistency=cached"
 	],
-	"postCreateCommand": "git lfs install && git lfs pull && pnpm install",
+	"postCreateCommand": "corepack enable && corepack prepare \"$(node -p \"require('./package.json').packageManager\")\" --activate && git lfs pull && pnpm install",
 	"postStartCommand": "pnpm dev --host 0.0.0.0",
 	"forwardPorts": [5173],
 	"portsAttributes": {
