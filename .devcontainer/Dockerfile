@@ -10,9 +10,6 @@ RUN apt-get update \
 
 WORKDIR /workspace
 
-# Match packageManager in package.json — avoids interactive Corepack download prompts.
-COPY package.json ./
-RUN corepack enable \
-	&& corepack prepare "$(node -p "require('./package.json').packageManager")" --activate
+RUN corepack enable
 
 EXPOSE 5173
