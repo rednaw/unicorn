@@ -30,7 +30,7 @@
 			{/each}
 		</ul>
 		<p>
-			Klassieke composities (Chopin, Beethoven, …) zijn vrij van auteursrecht. Opnames
+			Klassieke composities (Chopin, Beethoven, Brahms, …) zijn vrij van auteursrecht. Opnames
 			© {artist.name}.
 		</p>
 	</section>
