@@ -2,3 +2,6 @@ allowBuilds:
   '@tailwindcss/oxide': true
   esbuild: true
   sharp: true
+
+# pnpm 11 default — explicit so Renovate and CI share the same 24h gate.
+minimumReleaseAge: 1440
