@@ -20,6 +20,8 @@ concurrency:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      COREPACK_ENABLE_DOWNLOAD_PROMPT: 0
     steps:
       - uses: actions/checkout@v7
         with:
@@ -32,7 +34,7 @@ jobs:
       - name: Enable pnpm via Corepack
         run: |
           corepack enable
-          corepack prepare pnpm@11.3.0 --activate
+          corepack prepare "$(node -p "require('./package.json').packageManager")" --activate
           pnpm --version
 
       - name: Cache pnpm store
@@ -63,6 +65,8 @@ jobs:
   build:
     needs: test
     runs-on: ubuntu-latest
+    env:
+      COREPACK_ENABLE_DOWNLOAD_PROMPT: 0
     steps:
       - uses: actions/checkout@v7
         with:
@@ -75,7 +79,7 @@ jobs:
       - name: Enable pnpm via Corepack
         run: |
           corepack enable
-          corepack prepare pnpm@11.3.0 --activate
+          corepack prepare "$(node -p "require('./package.json').packageManager")" --activate
           pnpm --version
 
       - name: Cache pnpm store

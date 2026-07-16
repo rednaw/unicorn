@@ -6,7 +6,7 @@
   "packageManager": "pnpm@11.13.0",
   "scripts": {
     "dev": "vite dev",
-    "predev": "pnpm assets:encode",
+    "predev": "svelte-kit sync && pnpm assets:encode",
     "build": "pnpm assets:encode && vite build && node scripts/service-worker.mjs",
     "preview": "vite preview",
     "prepare": "svelte-kit sync || true",
