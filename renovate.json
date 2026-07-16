@@ -10,6 +10,8 @@
 	"schedule": ["before 6am on Monday"],
 	"labels": ["dependencies"],
 	"rangeStrategy": "bump",
+	"minimumReleaseAge": "1 day",
+	"internalChecksFilter": "strict",
 	"lockFileMaintenance": {
 		"enabled": true,
 		"schedule": ["before 6am on the first day of the month"]
