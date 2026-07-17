@@ -1,100 +1,44 @@
 # Dependency updates (Renovate)
 
-This repo runs [Renovate](https://docs.renovatebot.com/) from **GitHub Actions**
-(`.github/workflows/renovate.yml`) — no Renovate GitHub App. You own the token and
-the schedule; nothing automerges.
+Renovate runs from [`.github/workflows/renovate.yml`](../.github/workflows/renovate.yml)
+via the CLI — **no GitHub App**. Config: [`renovate.json`](../renovate.json).
+Nothing automerges; review and merge when CI is green.
 
 ## One-time setup
 
-### 1. Create a Personal Access Token
+1. Create a **fine-grained PAT**
+   ([tokens](https://github.com/settings/personal-access-tokens)):
+   - Repository access: **this repo only**
+   - Permissions: Contents, Pull requests, Issues, Workflows — all **Read and write**
+2. Add repo secret **`RENOVATE_TOKEN`** = that PAT  
+   (`GITHUB_TOKEN` is not enough — Renovate PRs would not trigger CI.)
+3. Merge the workflow to `main`, then wait for the daily run or use
+   **Actions → Renovate → Run workflow**.
 
-Renovate needs a PAT — **`GITHUB_TOKEN` is not sufficient** (PRs would not trigger CI).
+Optional: use a bot account so update PRs are not under your personal name.
 
-#### Fine-grained PAT (preferred)
+**Classic PAT fallback** (only if fine-grained fails): `repo` + `workflow` scopes.
 
-[Settings → Developer settings → Fine-grained tokens](https://github.com/settings/personal-access-tokens)
+## How schedules work
 
-1. **Resource owner** — your user or org that owns the repo.
-2. **Repository access** — **Only select repositories** → this repo (least privilege).
-3. **Permissions** (Repository permissions):
-
-| Permission | Access | Why |
-|------------|--------|-----|
-| Contents | Read and write | Branches, `package.json`, lockfile |
-| Pull requests | Read and write | Open update PRs |
-| Issues | Read and write | Dependency Dashboard issue |
-| Workflows | Read and write | Bump `actions/*` refs in `.github/workflows/` |
-
-4. Set an **expiration** and calendar a reminder to rotate.
-
-Use a **machine/bot account** if you do not want update PRs under your personal name.
-
-#### Classic PAT (fallback)
-
-Only if fine-grained hits a Renovate limitation ([known gaps](https://github.com/renovatebot/github-action#token) around Checks/automerge — not used here):
-
-| Scope | Required for |
-|-------|----------------|
-| `repo` | Private repos (or `public_repo` for public only) |
-| `workflow` | Updating GitHub Actions refs in `.github/workflows/` |
-
-[Classic tokens](https://github.com/settings/tokens) grant broader access than a single-repo fine-grained token — prefer fine-grained when it works.
-
-### 2. Add the repository secret
-
-Repo → **Settings → Secrets and variables → Actions → New repository secret**
-
-| Name | Value |
-|------|--------|
-| `RENOVATE_TOKEN` | the PAT from step 1 |
-
-### 3. Merge this workflow to `main`
-
-After the secret exists, either wait for the Monday schedule or run **Actions →
-Renovate → Run workflow** manually.
-
-Renovate opens a **Dependency Dashboard** issue listing pending updates.
-
-Config: [`renovate.json`](../renovate.json) at the repo root.
-
-## How it runs
-
-| Piece | Role |
+| Layer | Role |
 |-------|------|
-| `.github/workflows/renovate.yml` | Weekly cron + manual `workflow_dispatch` |
-| `renovatebot/github-action` | Runs Renovate CLI in Docker on GitHub-hosted runners |
-| `RENOVATE_TOKEN` | Your PAT — opens branches and PRs |
-| `renovate.json` | Grouping, schedule, labels, no automerge |
+| Actions cron (`0 4 * * *`) | Starts Renovate daily at 04:00 UTC |
+| `renovate.json` `schedule` | Only open update PRs before 06:00 Europe/Amsterdam |
+| `lockFileMaintenance.schedule` | Same window — lockfile-only PRs (no `package.json` range changes) |
 
-No third-party GitHub App is installed. Mend’s open-source Renovate image runs
-only when your workflow runs.
+Manual `workflow_dispatch` still respects the Renovate schedule for opening PRs.
 
-## Update policy
+## Policy
 
-| Type | Handling |
-|------|----------|
-| **Patch / minor** | Grouped weekly (Monday mornings, Europe/Amsterdam) |
-| **Major** | Separate PR per package; always manual review |
-| **Security** | `vulnerabilityAlerts` enabled — PRs outside schedule when needed |
-| **Lockfile** | Monthly lockfile maintenance PR |
-| **Release age** | 24 hours — pnpm 11 + Renovate aligned (`minimumReleaseAge`) |
-
-### Release age (supply-chain gate)
-
-**pnpm 11** refuses to install packages published within the last **24 hours**
-(`minimumReleaseAge: 1440` in `pnpm-workspace.yaml`). CI runs
-`pnpm install --frozen-lockfile`, which verifies every locked version against that
-policy.
-
-If Renovate opens a PR before a version has aged out, CI fails with
-`ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION` — not a broken upgrade, just too fresh.
-
-**Renovate** is configured with `minimumReleaseAge: "1 day"` and
-`internalChecksFilter: "strict"` so it should not open PRs until versions pass the
-same gate. Configure both sides — Renovate does not read pnpm’s setting automatically.
-
-**Existing PR already failing?** Re-run CI after the package is 24h old, or close
-the PR and let Renovate open it again once eligible.
+| Kind | Behaviour |
+|------|-----------|
+| Patch / minor | Grouped; daily morning window |
+| Major | Separate PR; manual review |
+| Security | `vulnerabilityAlerts` — can open outside schedule |
+| Lockfile maintenance | Daily; refreshes `pnpm-lock.yaml` within existing ranges |
+| Release age | **1 day** — see below |
+| Ranges | `rangeStrategy: bump` — updates `package.json` and the lockfile |
 
 ### Groups
 
@@ -103,24 +47,30 @@ the PR and let Renovate open it again once eligible.
 | svelte stack | `@sveltejs/*`, `svelte`, `svelte-check` |
 | vite and tailwind | `vite`, `@tailwindcss/*`, `tailwindcss` |
 | vitest suite | `vitest`, `@vitest/coverage-v8`, `happy-dom` |
-| github actions | All workflow action refs |
+| github actions | Workflow action refs |
 | node docker | `node` image in `.devcontainer/Dockerfile` |
 
-### `rangeStrategy: bump`
+### Release age
 
-Renovate updates both `package.json` ranges **and** `pnpm-lock.yaml`.
+pnpm 11 and Renovate both require packages to be **≥ 24 hours** old:
 
-## CI gate for update PRs
+- `pnpm-workspace.yaml`: `minimumReleaseAge: 1440`
+- `renovate.json`: `minimumReleaseAge: "1 day"` + `internalChecksFilter: "strict"`
 
-Every PR runs:
+CI (`pnpm install --frozen-lockfile`) rejects lockfile entries that are too new
+(`ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION`). Renovate should not open those PRs;
+if one slips through, wait until the package is 24h old and re-run CI, or close
+the PR.
+
+## CI gate
+
+Every PR (including Renovate) must pass:
 
 - `pnpm check`
 - `pnpm test:coverage`
-- `pnpm build` (with `BASE_PATH` set like production)
+- `pnpm build` (with `BASE_PATH` like production)
 
-Merge only when green.
-
-## Risk areas
+## Watch carefully
 
 | Package(s) | Why |
 |------------|-----|
@@ -128,35 +78,19 @@ Merge only when green.
 | `vite`, `@tailwindcss/vite`, `tailwindcss` | Build pipeline, SW plugin |
 | `happy-dom` | DOM behaviour in unit tests (exact-pinned) |
 | `sharp` | Native bindings; thumb generation |
-| `typescript`, `svelte-check` | Type diagnostics |
+| `typescript` / `svelte-check` | Stay on TS **6** until svelte-check supports TS 7’s programmatic API |
 
-## Toolchain notes
+## Toolchain
 
-- **pnpm** version is pinned in `packageManager` and CI Corepack.
-- **Node:** devcontainer **22**, CI **24** — align when touching either.
+- **Node:** `24.18.0` in the devcontainer and in Actions
+- **pnpm:** `packageManager` in `package.json`; Corepack prepares that version in CI and `postCreateCommand`
 
 ## Troubleshooting
 
 | Problem | Fix |
 |---------|-----|
-| Workflow fails immediately | Check `RENOVATE_TOKEN` secret exists and is not expired |
-| `ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION` | Version in lockfile is < 24h old — wait and re-run CI, or close PR until Renovate reopens with strict release-age config |
-| No GitHub Actions updates in PRs | Fine-grained **Workflows** permission missing (or classic `workflow` scope) |
-| PRs open but CI does not run | Use a PAT — not `GITHUB_TOKEN` |
-| Fine-grained auth errors | Fall back to classic PAT with `repo` + `workflow`, or check token repo access includes this repo |
-| Rotate token | Create new PAT → update secret → revoke old PAT |
-
-## Later (optional)
-
-- **Automerge** for patch-only groups (not enabled).
-- **Playwright e2e** on PRs before automerging Svelte/Vite minors.
-- **Node alignment** (22 vs 24) across devcontainer and CI.
-
-## Open decisions
-
-| Question | Decision |
-|----------|----------|
-| Automerge | _Off — manual merge_ |
-| Node alignment (22 vs 24) | _TBD_ |
-| PAT type | _Fine-grained (preferred)_ |
-| PAT owner | _Personal vs machine account — TBD_ |
+| Workflow fails immediately | Check `RENOVATE_TOKEN` exists and is not expired |
+| `ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION` | Package under 24h old — wait and re-run CI, or close the PR |
+| No Actions updates in PRs | Fine-grained token missing **Workflows** write |
+| PRs open but CI does not run | Must use a PAT, not `GITHUB_TOKEN` |
+| Fine-grained auth errors | Confirm repo access; fall back to classic `repo` + `workflow` if needed |
