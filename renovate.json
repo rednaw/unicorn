@@ -7,14 +7,14 @@
 		":separateMajorReleases"
 	],
 	"timezone": "Europe/Amsterdam",
-	"schedule": ["before 6am on Monday"],
+	"schedule": ["before 6am every day"],
 	"labels": ["dependencies"],
 	"rangeStrategy": "bump",
 	"minimumReleaseAge": "1 day",
 	"internalChecksFilter": "strict",
 	"lockFileMaintenance": {
 		"enabled": true,
-		"schedule": ["before 6am on the first day of the month"]
+		"schedule": ["before 6am every day"]
 	},
 	"packageRules": [
 		{
