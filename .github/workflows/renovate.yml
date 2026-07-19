@@ -2,8 +2,7 @@ name: Renovate
 
 on:
   schedule:
-    # Daily 04:00 UTC — aligns with renovate.json (before 06:00 Europe/Amsterdam).
-    # Renovate's internal schedule still controls when PRs are opened.
+    # Daily at 04:00 UTC. Renovate opens PRs for any updates it finds on each run.
     - cron: '0 4 * * *'
   workflow_dispatch:
 
