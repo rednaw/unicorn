@@ -2,19 +2,15 @@
 	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
 	"extends": [
 		"config:recommended",
-		":dependencyDashboard",
 		":semanticCommits",
-		":separateMajorReleases"
+		":disableRateLimiting"
 	],
-	"timezone": "Europe/Amsterdam",
-	"schedule": ["before 6am"],
 	"labels": ["dependencies"],
 	"rangeStrategy": "bump",
 	"minimumReleaseAge": "1 day",
-	"internalChecksFilter": "strict",
 	"lockFileMaintenance": {
 		"enabled": true,
-		"schedule": ["before 6am"]
+		"schedule": ["at any time"]
 	},
 	"packageRules": [
 		{
@@ -54,14 +50,6 @@
 			"matchFileNames": [".devcontainer/Dockerfile"],
 			"matchPackageNames": ["node"],
 			"groupName": "node docker"
-		},
-		{
-			"description": "Manual review for majors — no automerge",
-			"matchUpdateTypes": ["major"],
-			"automerge": false
 		}
-	],
-	"vulnerabilityAlerts": {
-		"enabled": true
-	}
+	]
 }
