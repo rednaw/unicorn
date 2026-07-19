@@ -3,7 +3,8 @@
 	"extends": [
 		"config:recommended",
 		":semanticCommits",
-		":disableRateLimiting"
+		":disableRateLimiting",
+    "mergeConfidence:all-badges"
 	],
 	"labels": ["dependencies"],
 	"rangeStrategy": "bump",
