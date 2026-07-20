@@ -42,10 +42,10 @@
 			<a href="https://commons.wikimedia.org/wiki/File:His_Master%27s_Voice.jpg">Wikimedia Commons</a>
 		</p>
 		<p>
-      45rpm needle drop.wav by FreqMan -- https://freesound.org/s/42819/ -- License: Attribution 4.0
+      45rpm needle drop.wav by Richard Frohlich -- https://freesound.org/s/42819/ -- License: Attribution 4.0
 		</p>
     <p>
-      vinyl_record_needle_lift_01.wav by joedeshon -- https://freesound.org/s/79578/ -- License: Attribution 4.0
+      vinyl_record_needle_lift_01.wav by Joe DeShon -- https://freesound.org/s/79578/ -- License: Attribution 4.0
     </p>
 	</section>
 
