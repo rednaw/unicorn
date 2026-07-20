@@ -7,7 +7,7 @@ const PRECACHE_URLS = __PRECACHE_URLS__;
 
 /** Static media only — extension-guarded so dev paths like `/src/lib/atelier/*.css` and the `/atelier/` HTML route are never cached. */
 const STATIC_MEDIA = /\/(drawings|audio|hall)\/[^/]+\.(?:jpe?g|webp|m4a|webm)$/i;
-const ATELIER_STATIC = /\/atelier\/[^/]+\.(?:webp|jpe?g|png|svg)$/i;
+const ATELIER_STATIC = /\/atelier\/[^/]+\.(?:webp|jpe?g|png|svg|m4a|webm)$/i;
 
 function isStaticMediaPathname(pathname) {
 	return STATIC_MEDIA.test(pathname) || ATELIER_STATIC.test(pathname);

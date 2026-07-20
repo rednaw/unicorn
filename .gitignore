@@ -31,6 +31,7 @@ vite.config.ts.timestamp-*
 
 # Opus/WebM siblings — generated from m4a at build (scripts/encode-audio.mjs)
 static/audio/*.webm
+static/atelier/*.webm
 
 # WebP thumbs — generated from jpg at build (scripts/encode-thumbs.mjs)
 static/drawings/*-thumb.webp

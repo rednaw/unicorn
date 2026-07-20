@@ -91,6 +91,7 @@ The site uses the artist's own drawings and piano recordings.
 - `/static/drawings/*.jpg` — drawing masters; `-thumb.webp` generated at build, not committed
 - `/static/hall/` — door sketch for the home page (`door-ajar-sketch.webp`)
 - `/static/audio/` — performances (m4a masters; `.webm` generated at build, not committed)
+- `/static/atelier/` — atelier UI assets (HMV plaque, needle SFX m4a masters; `.webm` at build)
 
 Credits and rights: [`/credits/`](/credits/) (rendered from `content.ts`).
 
@@ -128,6 +129,7 @@ which pair is active (portrait phones vs wider viewports).
 - **Theme picker** (top right) — nine room backgrounds; choice persists in `localStorage`.
 - Full-resolution JPEGs load on demand when a piece covers enough of the viewport (not all at once).
 - At most **one** recording plays at a time; tap another audio piece to switch (crossfade).
+- Fresh starts play a short vinyl **needle-drop** cue, then the recording fades in (≤0.4s overlap); near the end the music fades out into **needle-lift** (same overlap). The HMV plaque stays “playing” until the lift finishes. Web Audio buffers — not on pause/resume or stop.
 
 Agent-oriented constraints and file map: [`CURSOR.md`](./CURSOR.md).
 
