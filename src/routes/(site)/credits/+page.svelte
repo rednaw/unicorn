@@ -36,7 +36,7 @@
 	</section>
 
 	<section class="credits__section">
-		<h2>Atelier</h2>
+		<h2>Bronnen</h2>
 		<p>
 			Francis Barraud, <em>His Master’s Voice</em>(1898), via
 			<a href="https://commons.wikimedia.org/wiki/File:His_Master%27s_Voice.jpg">Wikimedia Commons</a>
