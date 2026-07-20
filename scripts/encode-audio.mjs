@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Build-time Opus/WebM siblings for Voice Memo m4a masters in static/audio/.
+ * Build-time Opus/WebM siblings for m4a masters in static/audio/ and static/atelier/.
  * Outputs are gitignored; CI and local build run this before `vite build`.
  */
 
@@ -12,8 +12,22 @@ import { kb, needsEncode } from './build-utils.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, '..');
-const AUDIO_DIR = process.env.AUDIO_DIR ?? join(root, 'static/audio');
-const OPUS_BITRATE = process.env.AUDIO_OPUS_BITRATE ?? '128k';
+
+/** @typedef {{ dir: string; opusBitrate: string; label: string }} AudioEncodeTarget */
+
+/** @type {AudioEncodeTarget[]} */
+const TARGETS = [
+	{
+		dir: process.env.AUDIO_DIR ?? join(root, 'static/audio'),
+		opusBitrate: process.env.AUDIO_OPUS_BITRATE ?? '128k',
+		label: 'audio'
+	},
+	{
+		dir: process.env.ATELIER_AUDIO_DIR ?? join(root, 'static/atelier'),
+		opusBitrate: process.env.ATELIER_OPUS_BITRATE ?? '48k',
+		label: 'atelier'
+	}
+];
 
 function ensureFfmpeg() {
 	const result = spawnSync('ffmpeg', ['-version'], { stdio: 'ignore' });
@@ -22,14 +36,14 @@ function ensureFfmpeg() {
 	}
 }
 
-function listM4aFiles() {
-	if (!existsSync(AUDIO_DIR)) return [];
-	return readdirSync(AUDIO_DIR)
+function listM4aFiles(dir) {
+	if (!existsSync(dir)) return [];
+	return readdirSync(dir)
 		.filter((name) => name.toLowerCase().endsWith('.m4a'))
 		.sort();
 }
 
-function encodeOne(inputPath, outputPath) {
+function encodeOne(inputPath, outputPath, opusBitrate) {
 	const result = spawnSync(
 		'ffmpeg',
 		[
@@ -42,7 +56,7 @@ function encodeOne(inputPath, outputPath) {
 			'-c:a',
 			'libopus',
 			'-b:a',
-			OPUS_BITRATE,
+			opusBitrate,
 			'-vbr',
 			'on',
 			'-application',
@@ -56,36 +70,49 @@ function encodeOne(inputPath, outputPath) {
 	}
 }
 
-function main() {
-	const sources = listM4aFiles();
+function encodeDir({ dir, opusBitrate, label }) {
+	const sources = listM4aFiles(dir);
 	if (sources.length === 0) {
-		console.log('encode-audio: no m4a in static/audio/ (skip)');
-		return;
+		console.log(`encode-audio: no m4a in ${label}/ (skip)`);
+		return { encoded: 0, skipped: 0 };
 	}
-
-	ensureFfmpeg();
 
 	let encoded = 0;
 	let skipped = 0;
 
 	for (const file of sources) {
-		const input = join(AUDIO_DIR, file);
-		const output = join(AUDIO_DIR, file.replace(/\.m4a$/i, '.webm'));
+		const input = join(dir, file);
+		const output = join(dir, file.replace(/\.m4a$/i, '.webm'));
 
 		if (!needsEncode(input, output)) {
 			skipped++;
 			continue;
 		}
 
-		encodeOne(input, output);
-		console.log(`✓ ${file.replace(/\.m4a$/i, '.webm')}  ←  ${file}  (${kb(output)} KB)`);
+		encodeOne(input, output, opusBitrate);
+		console.log(`✓ ${label}/${file.replace(/\.m4a$/i, '.webm')}  ←  ${file}  (${kb(output)} KB)`);
 		encoded++;
+	}
+
+	return { encoded, skipped };
+}
+
+function main() {
+	ensureFfmpeg();
+
+	let encoded = 0;
+	let skipped = 0;
+
+	for (const target of TARGETS) {
+		const result = encodeDir(target);
+		encoded += result.encoded;
+		skipped += result.skipped;
 	}
 
 	if (encoded === 0 && skipped > 0) {
 		console.log(`encode-audio: ${skipped} webm up to date`);
 	} else if (encoded > 0) {
-		console.log(`\n${encoded} webm → ${AUDIO_DIR}`);
+		console.log(`\n${encoded} webm encoded`);
 	}
 }
 

@@ -29,7 +29,15 @@ export const ATELIER_GESTURES = {
 
 export const ATELIER_AUDIO = {
 	/** Gain fade when switching pieces or stopping on back (milliseconds). */
-	crossfadeMs: 300
+	crossfadeMs: 300,
+	/** Vinyl needle SFX under the music graph (linear gain). */
+	needleGain: 0.55,
+	/**
+	 * How long needle SFX and music may share the air at handoff (ms).
+	 * Intro: music fades in over the last stretch of the drop.
+	 * Outro: lift starts while music fades out over the same window.
+	 */
+	needleMusicOverlapMs: 400
 } as const;
 
 export const ATELIER_ANIM = {
