@@ -38,12 +38,15 @@
 	<section class="credits__section">
 		<h2>Atelier</h2>
 		<p>
-			Plaquettes op werken met muziek: Francis Barraud, <em>His Master’s Voice</em>
-			(1898), via
-			<a href="https://commons.wikimedia.org/wiki/File:His_Master%27s_Voice.jpg"
-				>Wikimedia Commons</a
-			> — niet het moderne HMV/RCA-handelsmerk.
+			Francis Barraud, <em>His Master’s Voice</em>(1898), via
+			<a href="https://commons.wikimedia.org/wiki/File:His_Master%27s_Voice.jpg">Wikimedia Commons</a>
 		</p>
+		<p>
+      45rpm needle drop.wav by FreqMan -- https://freesound.org/s/42819/ -- License: Attribution 4.0
+		</p>
+    <p>
+      vinyl_record_needle_lift_01.wav by joedeshon -- https://freesound.org/s/79578/ -- License: Attribution 4.0
+    </p>
 	</section>
 
 	<section class="credits__section credits__section--last">

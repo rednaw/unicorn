@@ -31,6 +31,7 @@ export class MockAudio extends EventTarget {
 	paused = true;
 	ended = false;
 	currentTime = 0;
+	duration = NaN;
 	preload = 'metadata';
 	readyState = 0;
 	loop = false;
@@ -71,6 +72,7 @@ export class MockAudioContext {
 	destination = {};
 
 	resume = vi.fn().mockResolvedValue(undefined);
+	decodeAudioData = vi.fn(async () => ({ duration: 1, length: 1, numberOfChannels: 1, sampleRate: 44100 }));
 
 	createGain() {
 		return new MockGainNode();
@@ -89,16 +91,31 @@ export class MockAudioContext {
 	}
 
 	createBufferSource() {
-		return {
+		const node = {
 			buffer: null as AudioBuffer | null,
 			connect: vi.fn(),
-			start: vi.fn()
+			disconnect: vi.fn(),
+			start: vi.fn(),
+			stop: vi.fn(),
+			onended: null as (() => void) | null
 		};
+		bufferSources.push(node);
+		return node;
 	}
 }
 
+const bufferSources: Array<{
+	buffer: AudioBuffer | null;
+	connect: ReturnType<typeof vi.fn>;
+	disconnect: ReturnType<typeof vi.fn>;
+	start: ReturnType<typeof vi.fn>;
+	stop: ReturnType<typeof vi.fn>;
+	onended: (() => void) | null;
+}> = [];
+
 export function installAudioMocks() {
 	const instances: MockAudio[] = [];
+	bufferSources.length = 0;
 
 	const AudioCtor = vi.fn(function Audio(this: MockAudio) {
 		const el = new MockAudio();
@@ -112,6 +129,7 @@ export function installAudioMocks() {
 
 	return {
 		instances,
+		bufferSources,
 		lastAudio: () => instances.at(-1)
 	};
 }
@@ -119,4 +137,11 @@ export function installAudioMocks() {
 export async function flushMicrotasks() {
 	await Promise.resolve();
 	await Promise.resolve();
+}
+
+/** Drain a longer async chain (fetch → decode → play). */
+export async function flushAsyncWork(times = 12) {
+	for (let i = 0; i < times; i++) {
+		await Promise.resolve();
+	}
 }
