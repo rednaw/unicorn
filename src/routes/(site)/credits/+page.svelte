@@ -36,26 +36,28 @@
 	</section>
 
 	<section class="credits__section">
-		<h2>Bronnen</h2>
-		<p>
-			Francis Barraud, <em>His Master’s Voice</em>(1898), via
-			<a href="https://commons.wikimedia.org/wiki/File:His_Master%27s_Voice.jpg">Wikimedia Commons</a>
-		</p>
-		<p>
-      45rpm needle drop.wav by Richard Frohlich -- https://freesound.org/s/42819/ -- License: Attribution 4.0
-		</p>
-    <p>
-      vinyl_record_needle_lift_01.wav by Joe DeShon -- https://freesound.org/s/79578/ -- License: Attribution 4.0
-    </p>
-	</section>
-
-	<section class="credits__section credits__section--last">
-		<h2>Rechten</h2>
+  	<h2>Rechten</h2>
 		<p>© 2023–2026 {artist.name}. Alle rechten voorbehouden.</p>
 		<p>
 			Persoonlijke site om te bekijken — geen bibliotheek. Tekeningen en opnames niet
 			kopiëren of hergebruiken zonder schriftelijke toestemming.
 		</p>
+	</section>
+
+	<section class="credits__section credits__section--last">
+  	<h2>Bronnen</h2>
+		<p>
+			Francis Barraud, <em>His Master’s Voice</em> (1898) <br/>
+      License: <a href="https://commons.wikimedia.org/wiki/File:His_Master%27s_Voice.jpg">Wikimedia Commons</a>
+		</p>
+		<p>
+      45rpm needle drop.wav by Richard Frohlich (https://freesound.org/s/42819/) <br/>
+      License: <a href="https://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0</a>
+		</p>
+    <p>
+      vinyl_record_needle_lift_01.wav by Joe DeShon (https://freesound.org/s/79578/) <br/>
+      License: <a href="https://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0</a>
+    </p>
 	</section>
 </article>
 
