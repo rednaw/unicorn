@@ -1,5 +1,5 @@
 # Debian-based image — Cursor/VS Code server needs glibc (Alpine/musl fails to install it).
-FROM node:24.18.0-bookworm-slim
+FROM node:24.18.1-bookworm-slim
 
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 
