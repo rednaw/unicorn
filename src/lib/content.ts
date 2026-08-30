@@ -24,8 +24,8 @@ const atelier = {
 			srcWidth: 2956,
 			srcHeight: 4398,
 			rotation: -4,
-			portrait: { x: 405, y: 22 },
-			landscape: { x: 120, y: 62 },
+			portrait: { x: 80, y: 80 },
+			landscape: { x: 80, y: 40 },
 			width: 300,
 			track: {
 				id: 'chopin-ballade-4',
@@ -43,8 +43,8 @@ const atelier = {
 			srcWidth: 3100,
 			srcHeight: 4471,
 			rotation: 3,
-			portrait: { x: 62, y: 420 },
-			landscape: { x: 598, y: 248 },
+			portrait: { x: 520, y: 80 },
+			landscape: { x: 650, y: 40 },
 			width: 300,
 			track: {
 				id: 'beethoven-rondo-op51-1',
@@ -62,8 +62,8 @@ const atelier = {
 			srcWidth: 2885,
 			srcHeight: 4413,
 			rotation: -3,
-			portrait: { x: 780, y: 370 },
-			landscape: { x: 250, y: 780 },
+			portrait: { x: 80, y: 2000 },
+			landscape: { x: 80, y: 560 },
 			width: 300
 		},
 		{
@@ -75,8 +75,8 @@ const atelier = {
 			srcWidth: 3057,
 			srcHeight: 4398,
 			rotation: 4,
-			portrait: { x: 58, y: 1450 },
-			landscape: { x: 1280, y: 90 },
+			portrait: { x: 520, y: 720 },
+			landscape: { x: 1280, y: 40 },
 			width: 300,
 			track: {
 				id: 'chopin-mazurka-op50-2',
@@ -94,8 +94,8 @@ const atelier = {
 			srcWidth: 3057,
 			srcHeight: 4441,
 			rotation: 2,
-			portrait: { x: 398, y: 900 },
-			landscape: { x: 1200, y: 660 },
+			portrait: { x: 80, y: 720 },
+			landscape: { x: 1200, y: 560 },
 			width: 300,
 			track: {
 				id: 'brahms-intermezzo-op118-2',
@@ -113,9 +113,22 @@ const atelier = {
 			srcWidth: 2999,
 			srcHeight: 4441,
 			rotation: 8,
-			portrait: { x: 775, y: 1275 },
-			landscape: { x: 740, y: 830 },
+			portrait: { x: 520, y: 2000 },
+			landscape: { x: 80, y: 1100 },
 			width: 300
+		},
+		{
+			id: 'handenboom',
+			title: 'Handenboom',
+			year: '2023',
+			medium: 'potlood op papier',
+			...drawingPaths('image009.jpg'),
+			srcWidth: 4866,
+			srcHeight: 3441,
+			rotation: -2,
+			portrait: { x: 130, y: 1380 },
+			landscape: { x: 500, y: 560 },
+			width: 600
 		},
 		{
 			id: 'statue-of-venus',
@@ -126,9 +139,22 @@ const atelier = {
 			srcWidth: 2918,
 			srcHeight: 4377,
 			rotation: -3,
-			portrait: { x: 780, y: 2150 },
-			landscape: { x: 40, y: 1280 },
+			portrait: { x: 80, y: 2620 },
+			landscape: { x: 80, y: 1640 },
 			width: 300
+		},
+		{
+			id: 'torso',
+			title: 'Torso',
+			year: '2023',
+			medium: 'potlood op papier',
+			...drawingPaths('image010.jpg'),
+			srcWidth: 3432,
+			srcHeight: 4836,
+			rotation: 2,
+			portrait: { x: 237, y: 3250 },
+			landscape: { x: 587, y: 1100 },
+			width: 426
 		},
 		{
 			id: 'de-man-van-achter',
@@ -136,11 +162,11 @@ const atelier = {
 			year: '2023',
 			medium: 'potlood op papier',
 			...drawingPaths('image008.jpg'),
-			srcWidth: 3309,
-			srcHeight: 4736,
+			srcWidth: 3033,
+			srcHeight: 4341,
 			rotation: 3,
-			portrait: { x: 55, y: 2280 },
-			landscape: { x: 1320, y: 1280 },
+			portrait: { x: 520, y: 2620 },
+			landscape: { x: 1280, y: 1100 },
 			width: 300
 		}
 	]
