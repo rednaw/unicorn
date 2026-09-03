@@ -41,7 +41,12 @@ function createAudioPlayer() {
 	/** Guards async decode so a late buffer never plays after stop / a newer cue. */
 	let needleIntent: 'drop' | 'lift' | null = null;
 
-	const { crossfadeMs, needleGain: needleGainLevel, needleMusicOverlapMs } = ATELIER_AUDIO;
+	const {
+		crossfadeMs,
+		needleGain: needleGainLevel,
+		needleMusicOverlapMs,
+		needleTailTrimMs
+	} = ATELIER_AUDIO;
 
 	function initAudio(): void {
 		if (player.ready || typeof window === 'undefined') return;
@@ -190,8 +195,10 @@ function createAudioPlayer() {
 			onDone?.();
 		};
 		activeNeedle = src;
+		const trimmedDuration = Math.max(0, buffer.duration - needleTailTrimMs / 1000);
 		try {
-			src.start();
+			if (trimmedDuration > 0) src.start(0, 0, trimmedDuration);
+			else src.start();
 		} catch {
 			activeNeedle = undefined;
 			onDone?.();

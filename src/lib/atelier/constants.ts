@@ -31,7 +31,9 @@ export const ATELIER_AUDIO = {
 	/** Gain fade when switching pieces or stopping on back (milliseconds). */
 	crossfadeMs: 300,
 	/** Vinyl needle SFX under the music graph (linear gain). */
-	needleGain: 0.55,
+	needleGain: 0.3,
+	/** Trim a bit of the SFX tail so lift/drop don't linger over the recording. */
+	needleTailTrimMs: 250,
 	/**
 	 * How long needle SFX and music may share the air at handoff (ms).
 	 * Intro: music fades in over the last stretch of the drop.
