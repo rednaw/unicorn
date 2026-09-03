@@ -44,8 +44,7 @@ function createAudioPlayer() {
 	const {
 		crossfadeMs,
 		needleGain: needleGainLevel,
-		needleMusicOverlapMs,
-		needleTailTrimMs
+		needleMusicOverlapMs
 	} = ATELIER_AUDIO;
 
 	function initAudio(): void {
@@ -195,10 +194,8 @@ function createAudioPlayer() {
 			onDone?.();
 		};
 		activeNeedle = src;
-		const trimmedDuration = Math.max(0, buffer.duration - needleTailTrimMs / 1000);
 		try {
-			if (trimmedDuration > 0) src.start(0, 0, trimmedDuration);
-			else src.start();
+			src.start();
 		} catch {
 			activeNeedle = undefined;
 			onDone?.();
