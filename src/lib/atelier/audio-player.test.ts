@@ -12,8 +12,14 @@ import {
 	stop
 } from './audio-player.svelte';
 
-/** 1s drop → music handoff at 1s − overlap. */
-const fakeBuffer = { duration: 1, length: 1, numberOfChannels: 1, sampleRate: 44100 } as AudioBuffer;
+/** Drop longer than overlap so music waits for a positive handoff delay. */
+const FAKE_DROP_MS = 3000;
+const fakeBuffer = {
+	duration: FAKE_DROP_MS / 1000,
+	length: 1,
+	numberOfChannels: 1,
+	sampleRate: 44100
+} as AudioBuffer;
 
 function needleStarts() {
 	// Unlock beep uses createBuffer() (no duration); SFX use decoded buffers.
@@ -144,7 +150,7 @@ describe('audio-player', () => {
 
 		const el = audioMocks.instances[0]!;
 		// Finish the drop handoff so the element is playing before we pause mid-track.
-		vi.advanceTimersByTime(1000);
+		vi.advanceTimersByTime(FAKE_DROP_MS);
 		el.currentTime = 12;
 		stop({ fadeMs: 0 });
 		audioMocks.bufferSources.length = 0;
@@ -162,7 +168,7 @@ describe('audio-player', () => {
 		const el = audioMocks.instances[0]!;
 		expect(el.paused).toBe(true);
 
-		const delay = 1000 - ATELIER_AUDIO.needleMusicOverlapMs;
+		const delay = FAKE_DROP_MS - ATELIER_AUDIO.needleMusicOverlapMs;
 		vi.advanceTimersByTime(delay - 1);
 		expect(el.paused).toBe(true);
 
@@ -181,7 +187,7 @@ describe('audio-player', () => {
 		el.duration = 5;
 
 		// Reach the drop→music handoff so the end handoff arms with known duration.
-		const introDelay = 1000 - ATELIER_AUDIO.needleMusicOverlapMs;
+		const introDelay = FAKE_DROP_MS - ATELIER_AUDIO.needleMusicOverlapMs;
 		vi.advanceTimersByTime(introDelay);
 		await flushMicrotasks();
 		audioMocks.bufferSources.length = 0;

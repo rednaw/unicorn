@@ -37,7 +37,7 @@ export const ATELIER_AUDIO = {
 	 * Intro: music fades in over the last stretch of the drop.
 	 * Outro: lift starts while music fades out over the same window.
 	 */
-	needleMusicOverlapMs: 1500
+	needleMusicOverlapMs: 2000
 } as const;
 
 export const ATELIER_ANIM = {
