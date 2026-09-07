@@ -62,7 +62,7 @@ const atelier = {
 			srcWidth: 2885,
 			srcHeight: 4413,
 			rotation: -3,
-			portrait: { x: 60, y: 1360 },
+			portrait: { x: 700, y: 1360 },
 			landscape: { x: 80, y: 560 },
 			width: 300
 		},
@@ -113,7 +113,7 @@ const atelier = {
 			srcWidth: 2999,
 			srcHeight: 4441,
 			rotation: 8,
-			portrait: { x: 420, y: 1360 },
+      portrait: { x: 60, y: 2690 },
 			landscape: { x: 80, y: 1100 },
 			width: 300
 		},
@@ -139,8 +139,8 @@ const atelier = {
 			srcWidth: 2918,
 			srcHeight: 4377,
 			rotation: -3,
-			portrait: { x: 780, y: 1360 },
-			landscape: { x: 80, y: 1640 },
+			portrait: { x: 420, y: 2580 },
+			landscape: { x: 1910, y: 60 },
 			width: 300
 		},
 		{
@@ -152,7 +152,7 @@ const atelier = {
 			srcWidth: 3432,
 			srcHeight: 4836,
 			rotation: 2,
-			portrait: { x: 60, y: 2000 },
+			portrait: { x: 600, y: 1900 },
 			landscape: { x: 587, y: 1100 },
 			width: 426
 		},
@@ -165,9 +165,35 @@ const atelier = {
 			srcWidth: 3033,
 			srcHeight: 4341,
 			rotation: 3,
-			portrait: { x: 780, y: 2000 },
+			portrait: { x: 60, y: 2100 },
 			landscape: { x: 1280, y: 1100 },
 			width: 300
+		},
+		{
+			id: 'luisteren',
+			title: 'Luisteren',
+			year: '2026',
+			medium: 'potlood op papier',
+			...drawingPaths('image011.jpg'),
+			srcWidth: 3452,
+			srcHeight: 4854,
+			rotation: 0,
+			portrait: { x: 60, y: 1360 },
+			landscape: { x: 1843, y: 1100 },
+			width: 435
+		},
+		{
+			id: 'linten',
+			title: 'Linten',
+			year: '2026',
+			medium: 'potlood op papier',
+			...drawingPaths('image012.jpg'),
+			srcWidth: 4752,
+			srcHeight: 3429,
+			rotation: 90,
+			portrait: { x: 717, y: 2740 },
+			landscape: { x: 1647, y: 660 },
+			width: 426
 		}
 	]
 } satisfies import('./content-types').Atelier;
