@@ -1,0 +1,12 @@
+---
+description: Unicorn identity — atelier-first static site
+alwaysApply: true
+---
+
+# Unicorn
+
+SvelteKit **adapter-static** site for one artist's drawings and piano. GH Pages (`rednaw.github.io/unicorn`).
+
+**Atelier first:** crisp pan/zoom on full-res drawings. Home (`/`) is a fast door sketch. Litmus: still sharp at max zoom? If no, stop. Lighthouse / GH Pages TTL are secondary.
+
+Open **this folder** → Reopen in Container. Host needs Docker + Cursor, not Node. Drawings and audio under `static/` are Git LFS.

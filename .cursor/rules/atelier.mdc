@@ -1,0 +1,14 @@
+---
+description: Atelier pan/zoom, drawings, gestures, scale
+globs: src/lib/atelier/**,src/lib/drawing/**,src/lib/content.ts,src/lib/content-types.ts,src/lib/content-derive.ts,src/routes/**/*.svelte,src/lib/atelier/constants.ts
+alwaysApply: false
+---
+
+# Atelier
+
+- **Zoom:** `maxSharpZoomForDrawing()` per piece — never a global cap from the smallest drawing.
+- **Images:** full-res only via `requestDrawing(id, intent)` → `DrawingImg`. Native `<img>`, serial queue, coverage gate (`ATELIER_PREFETCH`). No blob cache, no fetching drawing URLs elsewhere.
+- **Motion:** pan/zoom on `translate` + `scale` only; no heavy filters on zoomed art. Gestures stay smooth during playback.
+- **Input:** tap piece → focus; wheel/pinch → zoom at cursor; drag / two-finger → pan; Escape / ← back. No double-tap zoom.
+- **Scale:** `portrait` / `landscape` coords in `content.ts`; never load all full-res JPEGs on entry.
+- **Reach:** Safari, Chrome, Firefox; slow networks, budget phones. Native `<img>`. No Chrome-only APIs (Speculation Rules, HLS/MSE, …) without a universal fallback.

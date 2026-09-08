@@ -131,7 +131,7 @@ which pair is active (portrait phones vs wider viewports).
 - At most **one** recording plays at a time; tap another audio piece to switch (crossfade).
 - Fresh starts play a short vinyl **needle-drop** cue, then the recording fades in (≤0.4s overlap); near the end the music fades out into **needle-lift** (same overlap). The HMV plaque stays “playing” until the lift finishes. Web Audio buffers — not on pause/resume or stop.
 
-Agent-oriented constraints and file map: [`CURSOR.md`](./CURSOR.md).
+Agent-oriented constraints: `.cursor/rules/` (`project.mdc`, `atelier.mdc`, `audio.mdc`, `sw.mdc`).
 
 ## Architecture
 

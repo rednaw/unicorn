@@ -1,0 +1,13 @@
+---
+description: Explicit-listen audio and needle cues
+globs: src/lib/atelier/listening.svelte.ts,src/lib/atelier/audio-player.svelte.ts,src/lib/atelier/needle-sfx.ts,src/lib/audio-format.ts,scripts/encode-audio.mjs
+alwaysApply: false
+---
+
+# Audio
+
+Explicit listen — tap to play. One `<audio>` element; `play()` inside the tap gesture only. Resume positions per drawing.
+
+m4a masters (LFS) + WebM at build; `pickAudioSrc()` at runtime. Vinyl needle drop/lift via decoded Web Audio buffers on fresh start / natural end — not on pause/resume.
+
+Safari / Chrome / Firefox: native `<audio>` + Web Audio + gesture unlock. Service worker is an enhancement, not required for playback.

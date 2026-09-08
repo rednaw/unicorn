@@ -1,0 +1,11 @@
+---
+description: Service worker media cache — enhancement only
+globs: scripts/sw.template.js,scripts/service-worker.mjs,scripts/media-cache-key.mjs
+alwaysApply: false
+---
+
+# Service worker
+
+Revisit cache for drawings / hall / atelier / audio; media-hash bucket; precache hall + atelier webp + thumbs.
+
+Core path (atelier pan/zoom + listen) works **without** SW. SW and view transitions are enhancements, not requirements.
