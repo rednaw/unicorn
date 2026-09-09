@@ -29,8 +29,10 @@ vite.config.ts.timestamp-*
 # Local perf captures (Lighthouse / DevTools HAR exports)
 *.har
 
-# Opus/WebM siblings — generated from m4a at build (scripts/encode-audio.mjs)
+# Audio derivatives — generated from m4a at build (scripts/encode-audio.mjs)
 static/audio/*.webm
+static/audio/*.vinyl.m4a
+static/audio/*.vinyl.webm
 static/atelier/*.webm
 
 # WebP thumbs — generated from jpg at build (scripts/encode-thumbs.mjs)

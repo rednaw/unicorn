@@ -15,6 +15,11 @@ function webmSrcFromM4a(m4aSrc: string): string {
 	return m4aSrc.replace(/\.m4a$/i, '.webm');
 }
 
+/** Performance master → generated vinyl mix (drop + music + lift). */
+export function vinylSrc(m4aSrc: string): string {
+	return m4aSrc.replace(/\.m4a$/i, '.vinyl.m4a');
+}
+
 /** Pick the recording URL for this browser. */
 export function pickAudioSrc(m4aSrc: string): string {
 	const webmSrc = webmSrcFromM4a(m4aSrc);

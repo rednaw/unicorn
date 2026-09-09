@@ -7,29 +7,9 @@ import {
 	playDrawing,
 	player,
 	resetAudioPlayerForTests,
-	setNeedleBuffersForTests,
 	setOnEnded,
 	stop
 } from './audio-player.svelte';
-
-/** Drop longer than overlap so music waits for a positive handoff delay. */
-const FAKE_DROP_MS = 3000;
-const fakeBuffer = {
-	duration: FAKE_DROP_MS / 1000,
-	length: 1,
-	numberOfChannels: 1,
-	sampleRate: 44100
-} as AudioBuffer;
-
-function needleStarts() {
-	// Unlock beep uses createBuffer() (no duration); SFX use decoded buffers.
-	return audioMocks.bufferSources.filter(
-		(s) =>
-			s.buffer != null &&
-			'duration' in s.buffer &&
-			s.start.mock.calls.length > 0
-	);
-}
 
 describe('audio-player', () => {
 	beforeEach(() => {
@@ -38,11 +18,11 @@ describe('audio-player', () => {
 		audioMocks.bufferSources.length = 0;
 		resetAudioPlayerForTests();
 		setOnEnded(undefined);
-		setNeedleBuffersForTests(fakeBuffer, fakeBuffer);
 	});
 
 	afterEach(() => {
 		resetAudioPlayerForTests();
+		vi.useRealTimers();
 	});
 
 	it('ignores playDrawing for drawings without audio', async () => {
@@ -51,13 +31,15 @@ describe('audio-player', () => {
 		expect(player.drawingId).toBeNull();
 	});
 
-	it('loads and marks an audio drawing after metadata is ready', async () => {
+	it('loads the vinyl mix after metadata is ready', async () => {
 		playDrawing('maskers');
 		await flushMicrotasks();
 		const el = audioMocks.instances[0]!;
 		expect(player.drawingId).toBe('maskers');
 		expect(el.src).toContain('chopin-ballade');
+		expect(el.src).toContain('.vinyl.');
 		expect(el.preload).toBe('auto');
+		expect(el.paused).toBe(false);
 	});
 
 	it('reset stop clears the active session and releases src', async () => {
@@ -107,6 +89,7 @@ describe('audio-player', () => {
 		await flushMicrotasks();
 		expect(player.drawingId).toBe('claudio-abbado');
 		expect(el.src).toContain('brahms');
+		expect(el.src).toContain('.vinyl.');
 
 		stop({ fadeMs: 0 });
 		playDrawing('maskers');
@@ -129,10 +112,10 @@ describe('audio-player', () => {
 		el.paused = false;
 
 		const onDone = vi.fn();
-		stop({ fadeMs: 300, onDone });
+		stop({ fadeMs: ATELIER_AUDIO.crossfadeMs, onDone });
 		expect(onDone).not.toHaveBeenCalled();
 
-		vi.advanceTimersByTime(300);
+		vi.advanceTimersByTime(ATELIER_AUDIO.crossfadeMs);
 		expect(onDone).toHaveBeenCalledOnce();
 		expect(player.drawingId).toBeNull();
 	});
@@ -142,41 +125,7 @@ describe('audio-player', () => {
 		expect(player.ready).toBe(true);
 	});
 
-	it('plays a needle drop on a fresh start, not on resume', async () => {
-		playDrawing('maskers');
-		await flushMicrotasks();
-
-		expect(needleStarts().length).toBe(1);
-
-		const el = audioMocks.instances[0]!;
-		// Finish the drop handoff so the element is playing before we pause mid-track.
-		vi.advanceTimersByTime(FAKE_DROP_MS);
-		el.currentTime = 12;
-		stop({ fadeMs: 0 });
-		audioMocks.bufferSources.length = 0;
-
-		playDrawing('maskers');
-		await flushMicrotasks();
-
-		expect(needleStarts().length).toBe(0);
-	});
-
-	it('holds the music until the needle-drop handoff', async () => {
-		playDrawing('maskers');
-		await flushMicrotasks();
-
-		const el = audioMocks.instances[0]!;
-		expect(el.paused).toBe(true);
-
-		const delay = FAKE_DROP_MS - ATELIER_AUDIO.needleMusicOverlapMs;
-		vi.advanceTimersByTime(delay - 1);
-		expect(el.paused).toBe(true);
-
-		vi.advanceTimersByTime(1);
-		expect(el.paused).toBe(false);
-	});
-
-	it('fades into needle-lift near the end of the track, not on stop', async () => {
+	it('notifies listening when the vinyl mix ends', async () => {
 		const onEnded = vi.fn();
 		setOnEnded(onEnded);
 
@@ -184,87 +133,8 @@ describe('audio-player', () => {
 		await flushMicrotasks();
 
 		const el = audioMocks.instances[0]!;
-		const trackS = 30;
-		el.duration = trackS;
-
-		// Reach the drop→music handoff so the end handoff arms with known duration.
-		const introDelay = FAKE_DROP_MS - ATELIER_AUDIO.needleMusicOverlapMs;
-		vi.advanceTimersByTime(introDelay);
-		await flushMicrotasks();
-		audioMocks.bufferSources.length = 0;
-
-		const toLift = trackS * 1000 - ATELIER_AUDIO.needleMusicOverlapMs;
-		vi.advanceTimersByTime(toLift - 1);
-		expect(needleStarts().length).toBe(0);
-
-		vi.advanceTimersByTime(1);
-		expect(needleStarts().length).toBe(1);
-		expect(onEnded).not.toHaveBeenCalled();
-
-		// Music element ends while lift is still playing — plaque stays up.
 		el.dispatchEvent(new Event('ended'));
 		await flushMicrotasks();
-		expect(onEnded).not.toHaveBeenCalled();
-
-		// Lift cue finishes → listening/plaque may reset.
-		const liftSrc = needleStarts().at(-1)!;
-		liftSrc.onended?.();
 		expect(onEnded).toHaveBeenCalledOnce();
-
-		// Stop must not play lift.
-		audioMocks.bufferSources.length = 0;
-		el.paused = false;
-		el.ended = false;
-		playDrawing('maskers');
-		await flushMicrotasks();
-		audioMocks.bufferSources.length = 0;
-		stop({ fadeMs: 0 });
-		await flushMicrotasks();
-		expect(needleStarts().length).toBe(0);
-	});
-
-	it('does not lift when media duration is still a short metadata stub', async () => {
-		playDrawing('maskers');
-		await flushMicrotasks();
-
-		const el = audioMocks.instances[0]!;
-		el.duration = FAKE_DROP_MS / 1000;
-
-		const introDelay = FAKE_DROP_MS - ATELIER_AUDIO.needleMusicOverlapMs;
-		vi.advanceTimersByTime(introDelay);
-		await flushMicrotasks();
-		audioMocks.bufferSources.length = 0;
-
-		vi.advanceTimersByTime(FAKE_DROP_MS);
-		expect(needleStarts().length).toBe(0);
-
-		el.duration = 30;
-		el.dispatchEvent(new Event('durationchange'));
-		const toLift = 30_000 - ATELIER_AUDIO.needleMusicOverlapMs;
-		vi.advanceTimersByTime(toLift - 1);
-		expect(needleStarts().length).toBe(0);
-		vi.advanceTimersByTime(1);
-		expect(needleStarts().length).toBe(1);
-	});
-
-	it('ignores ended while duration is still a short stub', async () => {
-		const onEnded = vi.fn();
-		setOnEnded(onEnded);
-
-		playDrawing('maskers');
-		await flushMicrotasks();
-
-		const el = audioMocks.instances[0]!;
-		el.duration = FAKE_DROP_MS / 1000;
-		const introDelay = FAKE_DROP_MS - ATELIER_AUDIO.needleMusicOverlapMs;
-		vi.advanceTimersByTime(introDelay);
-		await flushMicrotasks();
-		audioMocks.bufferSources.length = 0;
-
-		el.dispatchEvent(new Event('ended'));
-		await flushMicrotasks();
-		expect(onEnded).not.toHaveBeenCalled();
-		expect(needleStarts().length).toBe(0);
-		expect(el.paused).toBe(false);
 	});
 });

@@ -129,7 +129,7 @@ which pair is active (portrait phones vs wider viewports).
 - **Theme picker** (top right) — nine room backgrounds; choice persists in `localStorage`.
 - Full-resolution JPEGs load on demand when a piece covers enough of the viewport (not all at once).
 - At most **one** recording plays at a time; tap another audio piece to switch (crossfade).
-- Fresh starts play a short vinyl **needle-drop** cue, then the recording fades in (≤0.4s overlap); near the end the music fades out into **needle-lift** (same overlap). The HMV plaque stays “playing” until the lift finishes. Web Audio buffers — not on pause/resume or stop.
+- Fresh starts hear **needle-drop** then the recording; **needle-lift** is at the end of the mixed file. Drop, overlap, and lift are baked at encode (`*.vinyl.m4a` / `.webm`). Stop mid-track has no lift. Resume uses the vinyl timeline.
 
 Agent-oriented constraints: `.cursor/rules/` (`project.mdc`, `atelier.mdc`, `audio.mdc`, `sw.mdc`).
 

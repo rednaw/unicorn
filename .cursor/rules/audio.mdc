@@ -1,6 +1,6 @@
 ---
 description: Explicit-listen audio and needle cues
-globs: src/lib/atelier/listening.svelte.ts,src/lib/atelier/audio-player.svelte.ts,src/lib/atelier/needle-sfx.ts,src/lib/audio-format.ts,scripts/encode-audio.mjs
+globs: src/lib/atelier/listening.svelte.ts,src/lib/atelier/audio-player.svelte.ts,src/lib/audio-format.ts,scripts/encode-audio.mjs
 alwaysApply: false
 ---
 
@@ -8,6 +8,6 @@ alwaysApply: false
 
 Explicit listen — tap to play. One `<audio>` element; `play()` inside the tap gesture only. Resume positions per drawing.
 
-m4a masters (LFS) + WebM at build; `pickAudioSrc()` at runtime. Vinyl needle drop/lift via decoded Web Audio buffers on fresh start / natural end — not on pause/resume.
+m4a masters (LFS). Encode bakes needle drop/lift/overlap into `*.vinyl.m4a` / `.webm`. Player plays that file; `pickAudioSrc()` at runtime. No runtime vinyl clocks.
 
 Safari / Chrome / Firefox: native `<audio>` + Web Audio + gesture unlock. Service worker is an enhancement, not required for playback.

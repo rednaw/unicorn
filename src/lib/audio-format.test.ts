@@ -1,8 +1,18 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { pickAudioSrc } from './audio-format';
+import { pickAudioSrc, vinylSrc } from './audio-format';
 
 const WEBM = 'audio/webm; codecs="opus"';
 const M4A = 'audio/mp4; codecs="mp4a.40.2"';
+
+describe('vinylSrc', () => {
+	it('inserts .vinyl before the m4a extension', () => {
+		expect(vinylSrc('/audio/foo.m4a')).toBe('/audio/foo.vinyl.m4a');
+	});
+
+	it('is a no-op for non-m4a paths', () => {
+		expect(vinylSrc('/audio/foo.webm')).toBe('/audio/foo.webm');
+	});
+});
 
 describe('pickAudioSrc', () => {
 	afterEach(() => {
