@@ -14,24 +14,27 @@ export function renderServiceWorker(cacheKey, precacheUrls = []) {
 		.replace('__PRECACHE_URLS__', JSON.stringify(precacheUrls));
 }
 
-/** Serve `sw.js` in dev; production build emits via CLI after adapter. */
+/** Serve `sw.js` in `vite dev` and `vite preview`; production build emits via CLI after adapter. */
 export function serviceWorkerPlugin() {
 	return {
 		name: 'service-worker',
-		configureServer(server) {
-			server.middlewares.use((req, res, next) => {
-				const path = req.url?.split('?')[0];
-				if (path !== '/sw.js') return next();
-				void (async () => {
-					const { key } = await computeMediaCacheKey();
-					const urls = await listPrecacheUrls(process.env.BASE_PATH ?? '');
-					res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
-					res.setHeader('Cache-Control', 'no-store');
-					res.end(renderServiceWorker(key, urls));
-				})().catch(next);
-			});
-		}
+		configureServer: attachSwMiddleware,
+		configurePreviewServer: attachSwMiddleware
 	};
+}
+
+function attachSwMiddleware(server) {
+	server.middlewares.use((req, res, next) => {
+		const path = req.url?.split('?')[0];
+		if (path !== '/sw.js') return next();
+		void (async () => {
+			const { key } = await computeMediaCacheKey();
+			const urls = await listPrecacheUrls(process.env.BASE_PATH ?? '');
+			res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+			res.setHeader('Cache-Control', 'no-store');
+			res.end(renderServiceWorker(key, urls));
+		})().catch(next);
+	});
 }
 
 export async function emitServiceWorker(outDir = 'build') {

@@ -1,0 +1,11 @@
+---
+description: Adding drawings or audio — owner tests in the browser
+globs: src/lib/content.ts,static/audio/**,static/drawings/**
+alwaysApply: false
+---
+
+# Adding drawings and audio
+
+Wire `content.ts` (paths, metadata, optional `track`). Encode webm/thumbs as usual.
+
+Do not browser-snapshot, CDP, or fetch pages to verify new drawings or recordings. The owner tests layout and playback manually.

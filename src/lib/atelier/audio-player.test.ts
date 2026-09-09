@@ -46,7 +46,7 @@ describe('audio-player', () => {
 	});
 
 	it('ignores playDrawing for drawings without audio', async () => {
-		playDrawing('bela-bartok');
+		playDrawing('torso');
 		await flushMicrotasks();
 		expect(player.drawingId).toBeNull();
 	});

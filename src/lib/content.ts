@@ -64,7 +64,13 @@ const atelier = {
 			rotation: -3,
 			portrait: { x: 700, y: 1360 },
 			landscape: { x: 80, y: 560 },
-			width: 300
+			width: 300,
+			track: {
+				id: 'brahms-ballade-op118-3',
+				title: 'Ballade in g klein, op. 118 nr. 3',
+				composer: 'Johannes Brahms',
+				src: asset('/audio/brahms-ballade-opus-118-no-3-in-g-minor.m4a')
+			}
 		},
 		{
 			id: 'frederic-chopin',
@@ -128,7 +134,13 @@ const atelier = {
 			rotation: -2,
 			portrait: { x: 420, y: 720 },
 			landscape: { x: 500, y: 560 },
-			width: 600
+			width: 600,
+			track: {
+				id: 'mozart-sonata-k280-adagio',
+				title: 'Pianosonate nr. 2 in F, KV 280: Adagio',
+				composer: 'Wolfgang Amadeus Mozart',
+				src: asset('/audio/mozart-piano-sonata-no-2-k280-adagio.m4a')
+			}
 		},
 		{
 			id: 'statue-of-venus',
