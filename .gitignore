@@ -35,3 +35,6 @@ static/atelier/*.webm
 
 # WebP thumbs — generated from jpg at build (scripts/encode-thumbs.mjs)
 static/drawings/*-thumb.webp
+
+# Host skills bind-mounted in the Dev Container
+.cursor/skills/

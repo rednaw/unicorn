@@ -6,14 +6,17 @@
 	},
 	"workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
 	"workspaceFolder": "/workspace",
+	"remoteUser": "node",
 	"containerEnv": {
 		"COREPACK_ENABLE_DOWNLOAD_PROMPT": "0"
 	},
 	"mounts": [
-		"source=${localEnv:HOME}/.ssh,target=/root/.ssh,type=bind,readonly,consistency=cached",
-		"source=${localEnv:HOME}/.gitconfig,target=/root/.gitconfig,type=bind,readonly,consistency=cached"
+		"source=${localEnv:HOME}/.ssh,target=/home/node/.ssh,type=bind,readonly,consistency=cached",
+		"source=${localEnv:HOME}/.gitconfig,target=/home/node/.gitconfig,type=bind,readonly,consistency=cached",
+		"source=${localEnv:HOME}/.cursor/skills,target=/home/node/.cursor/skills,type=bind,consistency=cached",
+		"source=${localEnv:HOME}/.cursor/skills,target=/workspace/.cursor/skills,type=bind,consistency=cached"
 	],
-	"postCreateCommand": "corepack enable && corepack prepare \"$(node -p \"require('./package.json').packageManager\")\" --activate && git lfs pull && pnpm install",
+	"postCreateCommand": "corepack prepare \"$(node -p \"require('./package.json').packageManager\")\" --activate && git lfs pull && pnpm install",
 	"forwardPorts": [5173],
 	"portsAttributes": {
 		"5173": {

@@ -6,6 +6,7 @@ ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 RUN apt-get update \
 	&& apt-get install -y --no-install-recommends git git-lfs ca-certificates openssh-client ffmpeg curl \
 	&& git lfs install \
+	&& git config --system --add safe.directory '*' \
 	&& rm -rf /var/lib/apt/lists/*
 
 WORKDIR /workspace
