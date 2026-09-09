@@ -5,7 +5,7 @@
  * - Atelier needle masters: Opus/WebM siblings
  * Outputs are gitignored; CI and local build run this before `vite build`.
  *
- * Vinyl mix numbers match the old runtime handoff (sync with former ATELIER_AUDIO vinyl fields).
+ * Mix: drop at dropVol, lift at liftVol, music overlap/fade as below.
  */
 
 import { spawnSync } from 'node:child_process';
@@ -27,11 +27,12 @@ const AAC_BITRATE = process.env.AUDIO_AAC_BITRATE ?? '128k';
 const NEEDLE_DROP = join(ATELIER_DIR, 'needle-drop.m4a');
 const NEEDLE_LIFT = join(ATELIER_DIR, 'needle-lift.m4a');
 
-/** @type {{ overlapSec: number; fadeInSec: number; needleVol: number }} */
+/** @type {{ overlapSec: number; fadeInSec: number; dropVol: number; liftVol: number }} */
 const VINYL = {
 	overlapSec: 2,
 	fadeInSec: 0.3,
-	needleVol: 0.3
+	dropVol: 0.15,
+	liftVol: 0.3
 };
 
 function ensureFfmpeg() {
@@ -97,9 +98,9 @@ function mixVinyl(musicPath, wavPath) {
 	const fmt = 'aformat=sample_fmts=fltp:sample_rates=48000:channel_layouts=stereo';
 	const delay = (ms) => (ms > 0 ? `,adelay=${ms}|${ms}:all=1` : '');
 	const filter = [
-		`[0:a]${fmt},volume=${VINYL.needleVol}[d]`,
+		`[0:a]${fmt},volume=${VINYL.dropVol}[d]`,
 		`[1:a]${fmt},afade=t=in:st=0:d=${VINYL.fadeInSec},afade=t=out:st=${fadeOutStart}:d=${overlap}${delay(musicDelayMs)}[m]`,
-		`[2:a]${fmt},volume=${VINYL.needleVol}${delay(liftDelayMs)}[l]`,
+		`[2:a]${fmt},volume=${VINYL.liftVol}${delay(liftDelayMs)}[l]`,
 		`[d][m][l]amix=inputs=3:duration=longest:dropout_transition=0:normalize=0[a]`
 	].join(';');
 
