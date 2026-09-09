@@ -23,6 +23,7 @@ function createAudioPlayer() {
 	let stopTimer: ReturnType<typeof setTimeout> | undefined;
 	let musicIntroTimer: ReturnType<typeof setTimeout> | undefined;
 	let musicEndHandoffTimer: ReturnType<typeof setTimeout> | undefined;
+	let durationWatch: (() => void) | undefined;
 	/** Lift already started for this playthrough (near-end handoff) — skip a second cue on `ended`. */
 	let liftPlayed = false;
 	/** Listening `onEnded` already fired for this playthrough (after lift). */
@@ -44,7 +45,8 @@ function createAudioPlayer() {
 	const {
 		crossfadeMs,
 		needleGain: needleGainLevel,
-		needleMusicOverlapMs
+		needleMusicOverlapMs,
+		minTrackDurationS
 	} = ATELIER_AUDIO;
 
 	function initAudio(): void {
@@ -76,6 +78,11 @@ function createAudioPlayer() {
 			needleGain.connect(ctx.destination);
 		}
 		el.addEventListener('ended', () => {
+			if (!el || !trackDurationUsable(el)) {
+				// Stub duration / end-of-buffer — not the recording. Keep playing.
+				void el?.play().catch(() => {});
+				return;
+			}
 			clearMusicEndHandoffTimer();
 			if (gain && ctx) {
 				gain.gain.cancelScheduledValues(ctx.currentTime);
@@ -249,6 +256,19 @@ function createAudioPlayer() {
 		}
 	}
 
+	function clearDurationWatch(): void {
+		durationWatch?.();
+		durationWatch = undefined;
+	}
+
+	/** True when `duration` is long enough to be the recording, not a metadata stub. */
+	function trackDurationUsable(media: HTMLAudioElement): boolean {
+		const d = media.duration;
+		if (!Number.isFinite(d) || d <= 0) return false;
+		const minS = Math.max(minTrackDurationS, (dropBuffer?.duration ?? 0) * 2);
+		return d > minS;
+	}
+
 	function sendListeningEnded(): void {
 		if (listeningEndSent) return;
 		listeningEndSent = true;
@@ -272,6 +292,8 @@ function createAudioPlayer() {
 	/**
 	 * Arm the end-of-record handoff once music is audible: lift starts in the last
 	 * `needleMusicOverlapMs` while gain fades out — mirror of the drop intro.
+	 * Re-arms on `durationchange` so a short first estimate (often ~drop length)
+	 * cannot schedule the lift as the needle-drop finishes.
 	 */
 	function scheduleMusicEndHandoff(stale: () => boolean): void {
 		clearMusicEndHandoffTimer();
@@ -280,27 +302,23 @@ function createAudioPlayer() {
 		if (!el) return;
 
 		const arm = () => {
-			if (stale() || !el) return;
-			const duration = el.duration;
-			if (!Number.isFinite(duration) || duration <= 0) {
-				const onDuration = () => {
-					el?.removeEventListener('durationchange', onDuration);
-					el?.removeEventListener('loadedmetadata', onDuration);
-					if (!stale()) scheduleMusicEndHandoff(stale);
-				};
-				el.addEventListener('durationchange', onDuration);
-				el.addEventListener('loadedmetadata', onDuration);
-				return;
-			}
-
-			const remainingMs = Math.max(0, (duration - el.currentTime) * 1000);
+			if (stale() || !el || liftPlayed) return;
+			if (!trackDurationUsable(el)) return;
+			const remainingMs = Math.max(0, (el.duration - el.currentTime) * 1000);
 			const delay = Math.max(0, remainingMs - needleMusicOverlapMs);
+			clearMusicEndHandoffTimer();
 			musicEndHandoffTimer = setTimeout(() => {
 				musicEndHandoffTimer = undefined;
 				beginNeedleLiftHandoff(stale);
 			}, delay);
 		};
 
+		clearDurationWatch();
+		const onDuration = () => {
+			if (!stale()) arm();
+		};
+		el.addEventListener('durationchange', onDuration);
+		durationWatch = () => el?.removeEventListener('durationchange', onDuration);
 		arm();
 	}
 
@@ -390,6 +408,7 @@ function createAudioPlayer() {
 		clearStopTimer();
 		clearMusicIntroTimer();
 		clearMusicEndHandoffTimer();
+		clearDurationWatch();
 		stopNeedle();
 		liftPlayed = false;
 		listeningEndSent = false;
@@ -501,6 +520,7 @@ function createAudioPlayer() {
 		clearStopTimer();
 		clearMusicIntroTimer();
 		clearMusicEndHandoffTimer();
+		clearDurationWatch();
 		stopNeedle();
 		const fadeMs = opts.fadeMs ?? crossfadeMs;
 		const reset = opts.reset === true;
@@ -570,6 +590,7 @@ function createAudioPlayer() {
 		clearStopTimer();
 		clearMusicIntroTimer();
 		clearMusicEndHandoffTimer();
+		clearDurationWatch();
 		stopNeedle();
 		stop({ fadeMs: 0, reset: true });
 	}
@@ -579,6 +600,7 @@ function createAudioPlayer() {
 		clearStopTimer();
 		clearMusicIntroTimer();
 		clearMusicEndHandoffTimer();
+		clearDurationWatch();
 		stopNeedle();
 		invalidatePendingPlay();
 		onEndedCb = undefined;

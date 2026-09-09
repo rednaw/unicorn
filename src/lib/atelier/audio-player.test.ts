@@ -184,7 +184,8 @@ describe('audio-player', () => {
 		await flushMicrotasks();
 
 		const el = audioMocks.instances[0]!;
-		el.duration = 5;
+		const trackS = 30;
+		el.duration = trackS;
 
 		// Reach the drop→music handoff so the end handoff arms with known duration.
 		const introDelay = FAKE_DROP_MS - ATELIER_AUDIO.needleMusicOverlapMs;
@@ -192,7 +193,7 @@ describe('audio-player', () => {
 		await flushMicrotasks();
 		audioMocks.bufferSources.length = 0;
 
-		const toLift = 5000 - ATELIER_AUDIO.needleMusicOverlapMs;
+		const toLift = trackS * 1000 - ATELIER_AUDIO.needleMusicOverlapMs;
 		vi.advanceTimersByTime(toLift - 1);
 		expect(needleStarts().length).toBe(0);
 
@@ -220,5 +221,50 @@ describe('audio-player', () => {
 		stop({ fadeMs: 0 });
 		await flushMicrotasks();
 		expect(needleStarts().length).toBe(0);
+	});
+
+	it('does not lift when media duration is still a short metadata stub', async () => {
+		playDrawing('maskers');
+		await flushMicrotasks();
+
+		const el = audioMocks.instances[0]!;
+		el.duration = FAKE_DROP_MS / 1000;
+
+		const introDelay = FAKE_DROP_MS - ATELIER_AUDIO.needleMusicOverlapMs;
+		vi.advanceTimersByTime(introDelay);
+		await flushMicrotasks();
+		audioMocks.bufferSources.length = 0;
+
+		vi.advanceTimersByTime(FAKE_DROP_MS);
+		expect(needleStarts().length).toBe(0);
+
+		el.duration = 30;
+		el.dispatchEvent(new Event('durationchange'));
+		const toLift = 30_000 - ATELIER_AUDIO.needleMusicOverlapMs;
+		vi.advanceTimersByTime(toLift - 1);
+		expect(needleStarts().length).toBe(0);
+		vi.advanceTimersByTime(1);
+		expect(needleStarts().length).toBe(1);
+	});
+
+	it('ignores ended while duration is still a short stub', async () => {
+		const onEnded = vi.fn();
+		setOnEnded(onEnded);
+
+		playDrawing('maskers');
+		await flushMicrotasks();
+
+		const el = audioMocks.instances[0]!;
+		el.duration = FAKE_DROP_MS / 1000;
+		const introDelay = FAKE_DROP_MS - ATELIER_AUDIO.needleMusicOverlapMs;
+		vi.advanceTimersByTime(introDelay);
+		await flushMicrotasks();
+		audioMocks.bufferSources.length = 0;
+
+		el.dispatchEvent(new Event('ended'));
+		await flushMicrotasks();
+		expect(onEnded).not.toHaveBeenCalled();
+		expect(needleStarts().length).toBe(0);
+		expect(el.paused).toBe(false);
 	});
 });

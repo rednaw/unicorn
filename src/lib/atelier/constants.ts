@@ -37,7 +37,14 @@ export const ATELIER_AUDIO = {
 	 * Intro: music fades in over the last stretch of the drop.
 	 * Outro: lift starts while music fades out over the same window.
 	 */
-	needleMusicOverlapMs: 2000
+	needleMusicOverlapMs: 2000,
+	/**
+	 * Floor before a media `duration` is trusted for the end handoff.
+	 * Metadata / first-range estimates are often a few seconds (in the same
+	 * ballpark as the needle-drop cue) and would fade the recording out as
+	 * the drop finishes.
+	 */
+	minTrackDurationS: 15
 } as const;
 
 export const ATELIER_ANIM = {
