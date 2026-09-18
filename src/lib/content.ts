@@ -192,7 +192,13 @@ const atelier = {
 			rotation: 0,
 			portrait: { x: 60, y: 1360 },
 			landscape: { x: 1843, y: 1100 },
-			width: 435
+			width: 435,
+			track: {
+				id: 'beethoven-rondo-op51-no-1',
+				title: 'Rondo in C majeur, op. 51 nr. 1: 2nd movement and coda',
+				composer: 'Ludwig von Beethoven',
+				src: asset('/audio/beethoven-rondo-in-c-majeur-opus-51-no-1-2nd-movement-and-coda.m4a')
+			}
 		},
 		{
 			id: 'linten',
