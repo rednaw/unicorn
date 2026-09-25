@@ -9,7 +9,7 @@ RUN apt-get update \
 	&& git config --system --add safe.directory '*' \
 	&& rm -rf /var/lib/apt/lists/*
 
-WORKDIR /workspace
+WORKDIR /workspaces/unicorn
 
 RUN corepack enable
 

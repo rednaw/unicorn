@@ -4,8 +4,8 @@
 		"dockerfile": "Dockerfile",
 		"context": ".."
 	},
-	"workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
-	"workspaceFolder": "/workspace",
+	"workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/unicorn,type=bind,consistency=cached",
+	"workspaceFolder": "/workspaces/unicorn",
 	"remoteUser": "node",
 	"containerEnv": {
 		"COREPACK_ENABLE_DOWNLOAD_PROMPT": "0",
@@ -17,7 +17,7 @@
 		"source=${localEnv:HOME}/.ssh,target=/home/node/.ssh,type=bind,readonly,consistency=cached",
 		"source=${localEnv:HOME}/.gitconfig,target=/home/node/.gitconfig,type=bind,readonly,consistency=cached",
 		"source=${localEnv:HOME}/.cursor/skills,target=/home/node/.cursor/skills,type=bind,consistency=cached",
-		"source=${localEnv:HOME}/.cursor/skills,target=/workspace/.cursor/skills,type=bind,consistency=cached"
+		"source=${localEnv:HOME}/.cursor/skills,target=/workspaces/unicorn/.cursor/skills,type=bind,consistency=cached"
 	],
 	"postCreateCommand": "corepack prepare \"$(node -p \"require('./package.json').packageManager\")\" --activate && git lfs pull && pnpm install",
 	"forwardPorts": [5173],
