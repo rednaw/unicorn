@@ -20,7 +20,11 @@ const config = {
 			mode: 'auto',
 			directives: {
 				'default-src': ['self'],
-				'script-src': ['self', 'https://scripts.simpleanalyticscdn.com'],
+				'script-src': [
+					'self',
+					'https://scripts.simpleanalyticscdn.com',
+					'https://analytics.rednaw.nl'
+				],
 				// Svelte SSR event delegation: on*="this.__e=event" (nonces/hashes on script-src do not apply).
 				'script-src-attr': [
 					'unsafe-hashes',
@@ -35,7 +39,8 @@ const config = {
 				'connect-src': [
 					'self',
 					'https://queue.simpleanalyticscdn.com',
-					'https://scripts.simpleanalyticscdn.com'
+					'https://scripts.simpleanalyticscdn.com',
+					'https://analytics.rednaw.nl'
 				],
 				'object-src': ['none'],
 				'base-uri': ['self'],
