@@ -24,10 +24,10 @@ describe('atelier-themes', () => {
 		expect(isAtelierThemeId('neon')).toBe(false);
 	});
 
-	it('falls back to graphite for missing or invalid storage', () => {
-		expect(readStoredAtelierTheme()).toBe('graphite');
+	it('falls back to washi (Paper) for missing or invalid storage', () => {
+		expect(readStoredAtelierTheme()).toBe('washi');
 		localStorage.setItem(ATELIER_THEME_STORAGE_KEY, 'not-a-theme');
-		expect(readStoredAtelierTheme()).toBe('graphite');
+		expect(readStoredAtelierTheme()).toBe('washi');
 	});
 
 	it('round-trips a stored theme', () => {

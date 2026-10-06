@@ -1,5 +1,7 @@
 export const ATELIER_THEME_STORAGE_KEY = 'atelier-room-theme';
 export const ATELIER_THEME_HTML_ATTR = 'data-atelier-theme';
+/** Default when nothing is stored — keep in sync with bootstrap + CSS `:not([data-atelier-theme])`. */
+export const DEFAULT_ATELIER_THEME = 'washi' as const;
 
 export const ATELIER_THEMES = [
 	{ id: 'washi', label: 'Paper' },
@@ -29,9 +31,9 @@ export function applyAtelierThemeToDocument(id: AtelierThemeId): void {
 }
 
 export function readStoredAtelierTheme(): AtelierThemeId {
-	if (typeof localStorage === 'undefined') return 'graphite';
+	if (typeof localStorage === 'undefined') return DEFAULT_ATELIER_THEME;
 	const stored = localStorage.getItem(ATELIER_THEME_STORAGE_KEY);
-	return stored && isAtelierThemeId(stored) ? stored : 'graphite';
+	return stored && isAtelierThemeId(stored) ? stored : DEFAULT_ATELIER_THEME;
 }
 
 export function storeAtelierTheme(id: AtelierThemeId): void {

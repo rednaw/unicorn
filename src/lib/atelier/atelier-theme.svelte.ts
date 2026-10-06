@@ -1,12 +1,13 @@
 import { browser } from '$app/environment';
 import {
+	DEFAULT_ATELIER_THEME,
 	applyAtelierThemeToDocument,
 	readStoredAtelierTheme,
 	storeAtelierTheme,
 	type AtelierThemeId
 } from './atelier-themes';
 
-const initialId = browser ? readStoredAtelierTheme() : 'graphite';
+const initialId = browser ? readStoredAtelierTheme() : DEFAULT_ATELIER_THEME;
 if (browser) applyAtelierThemeToDocument(initialId);
 
 /** Shared room theme — set via ThemePicker, persisted per device. */

@@ -13,8 +13,7 @@
 			'salon'
 		];
 		var stored = localStorage.getItem(key);
-		if (stored && ids.indexOf(stored) !== -1) {
-			document.documentElement.setAttribute('data-atelier-theme', stored);
-		}
+		var id = stored && ids.indexOf(stored) !== -1 ? stored : 'washi';
+		document.documentElement.setAttribute('data-atelier-theme', id);
 	} catch (e) {}
 })();

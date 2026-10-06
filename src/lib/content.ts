@@ -26,7 +26,7 @@ const atelier = {
 			rotation: -4,
 			portrait: { x: 60, y: 80 },
 			landscape: { x: 80, y: 40 },
-			width: 300,
+			width: 360,
 			track: {
 				id: 'chopin-ballade-4',
 				title: 'Ballade nr. 4 in f klein, op. 52',
@@ -43,9 +43,9 @@ const atelier = {
 			srcWidth: 3100,
 			srcHeight: 4471,
 			rotation: 3,
-			portrait: { x: 420, y: 80 },
-			landscape: { x: 650, y: 40 },
-			width: 300,
+			portrait: { x: 564, y: 80 },
+			landscape: { x: 878, y: 40 },
+			width: 360,
 			track: {
 				id: 'beethoven-rondo-op51-1',
 				title: 'Rondo in C majeur, op. 51 nr. 1',
@@ -62,9 +62,9 @@ const atelier = {
 			srcWidth: 2885,
 			srcHeight: 4413,
 			rotation: -3,
-			portrait: { x: 700, y: 1360 },
-			landscape: { x: 80, y: 560 },
-			width: 300,
+			portrait: { x: 564, y: 800 },
+			landscape: { x: 480, y: 560 },
+			width: 360,
 			track: {
 				id: 'brahms-ballade-op118-3',
 				title: 'Ballade in g klein, op. 118 nr. 3',
@@ -81,9 +81,9 @@ const atelier = {
 			srcWidth: 3057,
 			srcHeight: 4398,
 			rotation: 4,
-			portrait: { x: 780, y: 80 },
-			landscape: { x: 1280, y: 40 },
-			width: 300,
+			portrait: { x: 1068, y: 80 },
+			landscape: { x: 1760, y: 40 },
+			width: 360,
 			track: {
 				id: 'chopin-mazurka-op50-2',
 				title: 'Mazurka in As, op. 50 nr. 2',
@@ -100,9 +100,9 @@ const atelier = {
 			srcWidth: 3057,
 			srcHeight: 4441,
 			rotation: 2,
-			portrait: { x: 60, y: 720 },
-			landscape: { x: 1200, y: 560 },
-			width: 300,
+			portrait: { x: 60, y: 800 },
+			landscape: { x: 1288, y: 560 },
+			width: 360,
 			track: {
 				id: 'brahms-intermezzo-op118-2',
 				title: 'Intermezzo in A majeur, op. 118 nr. 2',
@@ -119,9 +119,9 @@ const atelier = {
 			srcWidth: 2999,
 			srcHeight: 4441,
 			rotation: 8,
-      portrait: { x: 60, y: 2690 },
+			portrait: { x: 564, y: 2240 },
 			landscape: { x: 80, y: 1100 },
-			width: 300
+			width: 360
 		},
 		{
 			id: 'handenboom',
@@ -132,8 +132,8 @@ const atelier = {
 			srcWidth: 4866,
 			srcHeight: 3441,
 			rotation: -2,
-			portrait: { x: 420, y: 720 },
-			landscape: { x: 500, y: 560 },
+			portrait: { x: 564, y: 2960 },
+			landscape: { x: 2124, y: 1800 },
 			width: 600,
 			track: {
 				id: 'mozart-sonata-k280-adagio',
@@ -151,9 +151,9 @@ const atelier = {
 			srcWidth: 2918,
 			srcHeight: 4377,
 			rotation: -3,
-			portrait: { x: 420, y: 2580 },
-			landscape: { x: 1910, y: 60 },
-			width: 300
+			portrait: { x: 1068, y: 800 },
+			landscape: { x: 2642, y: 60 },
+			width: 360
 		},
 		{
 			id: 'torso',
@@ -164,8 +164,8 @@ const atelier = {
 			srcWidth: 3432,
 			srcHeight: 4836,
 			rotation: 2,
-			portrait: { x: 600, y: 1900 },
-			landscape: { x: 587, y: 1100 },
+			portrait: { x: 564, y: 1520 },
+			landscape: { x: 790, y: 1150 },
 			width: 426
 		},
 		{
@@ -177,9 +177,9 @@ const atelier = {
 			srcWidth: 3033,
 			srcHeight: 4341,
 			rotation: 3,
-			portrait: { x: 60, y: 2100 },
-			landscape: { x: 1280, y: 1100 },
-			width: 300
+			portrait: { x: 60, y: 2240 },
+			landscape: { x: 1760, y: 1100 },
+			width: 400
 		},
 		{
 			id: 'luisteren',
@@ -190,8 +190,8 @@ const atelier = {
 			srcWidth: 3452,
 			srcHeight: 4854,
 			rotation: 0,
-			portrait: { x: 60, y: 1360 },
-			landscape: { x: 1843, y: 1100 },
+			portrait: { x: 60, y: 1520 },
+			landscape: { x: 2548, y: 1100 },
 			width: 435,
 			track: {
 				id: 'beethoven-rondo-op51-no-1',
@@ -209,9 +209,35 @@ const atelier = {
 			srcWidth: 4752,
 			srcHeight: 3429,
 			rotation: 90,
-			portrait: { x: 717, y: 2740 },
-			landscape: { x: 1647, y: 660 },
-			width: 426
+			portrait: { x: 1068, y: 2240 },
+			landscape: { x: 2104, y: 620 },
+			width: 526
+		},
+		{
+			id: 'de-vrouw',
+			title: 'De vrouw',
+			year: '2026',
+			medium: 'potlood op papier',
+			...drawingPaths('image013.jpg'),
+			srcWidth: 3452,
+			srcHeight: 4797,
+			rotation: -2,
+			portrait: { x: 1068, y: 1520 },
+			landscape: { x: 164, y: 1800 },
+			width: 435
+		},
+		{
+			id: 'de-spanning',
+			title: 'De spanning',
+			year: '2026',
+			medium: 'potlood op papier',
+			...drawingPaths('image014.jpg'),
+			srcWidth: 3509,
+			srcHeight: 4923,
+			rotation: 3,
+			portrait: { x: 60, y: 2960 },
+			landscape: { x: 1144, y: 1800 },
+			width: 435
 		}
 	]
 } satisfies import('./content-types').Atelier;

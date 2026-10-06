@@ -4,6 +4,7 @@
  * walls sinking into tea-stained shadow below, and a strong pad shadow so
  * the paper floats over the desk.
  */
+html:not([data-atelier-theme]) .atelier,
 html[data-atelier-theme='washi'] .atelier {
 	--lib-wall-deep: #a8946e;
 	--lib-wall-mid: #ddcfb2;
