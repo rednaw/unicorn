@@ -26,7 +26,7 @@
     "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^25.9.8",
     "@vitest/coverage-v8": "^5.0.2",
-    "happy-dom": "20.14.5",
+    "happy-dom": "21.0.3",
     "sharp": "^0.35.4",
     "svelte": "^5.57.1",
     "svelte-check": "^4.7.6",
