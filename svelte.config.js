@@ -20,11 +20,7 @@ const config = {
 			mode: 'auto',
 			directives: {
 				'default-src': ['self'],
-				'script-src': [
-					'self',
-					'https://scripts.simpleanalyticscdn.com',
-					'https://analytics.rednaw.nl'
-				],
+				'script-src': ['self', 'https://analytics.rednaw.nl'],
 				// Svelte SSR event delegation: on*="this.__e=event" (nonces/hashes on script-src do not apply).
 				'script-src-attr': [
 					'unsafe-hashes',
@@ -33,15 +29,10 @@ const config = {
 				'worker-src': ['self'],
 				// Svelte scoped styles + view transitions inject <style> blocks.
 				'style-src': ['self', 'unsafe-inline'],
-				'img-src': ['self', 'blob:', 'data:', 'https://queue.simpleanalyticscdn.com'],
+				'img-src': ['self', 'blob:', 'data:'],
 				'media-src': ['self'],
 				'font-src': ['self', 'data:'],
-				'connect-src': [
-					'self',
-					'https://queue.simpleanalyticscdn.com',
-					'https://scripts.simpleanalyticscdn.com',
-					'https://analytics.rednaw.nl'
-				],
+				'connect-src': ['self', 'https://analytics.rednaw.nl'],
 				'object-src': ['none'],
 				'base-uri': ['self'],
 				'form-action': ['self'],

@@ -76,14 +76,6 @@ App) and opens dependency PRs. Setup: [`docs/dependency-updates.md`](docs/depend
 - **`src/**/*.test.ts`** — unit tests co-located with the module they cover.
 - **`src/test/`** — everything that is not a test file but exists only for tests: setup, fixtures, mocks, harnesses, shared helpers. Import via the **`$test/`** alias (e.g. `$test/fixtures`, `$test/atelier/session.harness.svelte`). Production code under `src/lib/` must not import from `$test/`.
 
-### Simple Analytics
-
-Production only — reports under **`unicorn.rednaw.github.io`**
-(`app.html` + `site-config.ts`). The script is stripped during `pnpm dev`.
-
-1. In [Simple Analytics](https://simpleanalytics.com/) → **Websites** → add `unicorn.rednaw.github.io`.
-2. Deploy — page views appear after the first visit (SPA navigation is tracked automatically).
-
 ## Content & assets
 
 The site uses the artist's own drawings and piano recordings.
@@ -137,7 +129,7 @@ Agent-oriented constraints: `.cursor/rules/` (`project.mdc`, `atelier.mdc`, `aud
 
 ```
 src/
-  app.html                  # favicon links, HTML shell, Simple Analytics (prod)
+  app.html                  # favicon links, HTML shell, analytics (prod)
   routes/
     +layout.svelte          # service worker registration
     +layout.ts              # prerender + trailingSlash: 'always'
@@ -153,7 +145,6 @@ src/
     content.ts              # site data (drawings, lookups)
     content-types.ts        # Drawing / Atelier types + constants
     content-derive.ts       # pure derivations (audio list, sharp zoom)
-    site-config.ts          # Simple Analytics hostname
     drawing/
       prefetch.svelte.ts    # thumb warmup + full-res coordinator
     atelier/                # studio canvas, gestures, explicit listen audio
@@ -187,7 +178,6 @@ The door home page crossfades into the atelier. Piece-level morphs use
 - **Web Audio + native `<audio>`** for explicit listen playback (`audio-player.svelte.ts`)
 - **@sveltejs/adapter-static** with `404.html` SPA fallback
 - Dev tooling in `.devcontainer/` — GitHub Actions for production builds
-- **Simple Analytics** — privacy-first page views (`app.html` + `site-config.ts`)
 
 ## Out of scope
 

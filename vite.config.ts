@@ -3,8 +3,6 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
 import { serviceWorkerPlugin } from './scripts/service-worker.mjs';
 
-const SA_SCRIPT =
-	/<script[\s\S]*?scripts\.simpleanalyticscdn\.com\/latest\.js[\s\S]*?<\/script>\s*/;
 const UMAMI_SCRIPT =
 	/<script[\s\S]*?analytics\.rednaw\.nl\/script\.js[\s\S]*?<\/script>\s*/;
 
@@ -16,7 +14,7 @@ function analyticsDevPlugin() {
 			order: 'pre' as const,
 			handler(html: string, ctx: { server?: unknown }) {
 				if (!ctx.server) return html;
-				return html.replace(SA_SCRIPT, '').replace(UMAMI_SCRIPT, '');
+				return html.replace(UMAMI_SCRIPT, '');
 			}
 		}
 	};
