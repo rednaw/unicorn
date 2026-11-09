@@ -19,7 +19,7 @@
 		"source=${localEnv:HOME}/.cursor/skills,target=/home/node/.cursor/skills,type=bind,consistency=cached",
 		"source=${localEnv:HOME}/.cursor/skills,target=/workspaces/unicorn/.cursor/skills,type=bind,consistency=cached"
 	],
-	"postCreateCommand": "corepack prepare \"$(node -p \"require('./package.json').packageManager\")\" --activate && git lfs pull && pnpm install",
+	"postCreateCommand": "corepack prepare \"$(node -p \"require('./package.json').packageManager\")\" --activate && git lfs pull && rm -rf node_modules && pnpm install",
 	"forwardPorts": [5173],
 	"portsAttributes": {
 		"5173": {

@@ -5,3 +5,9 @@ allowBuilds:
 
 # pnpm 11 default — explicit so Renovate and CI share the same 24h gate.
 minimumReleaseAge: 1440
+
+# Devcontainer bind mount (virtiofs + consistency=cached): keep the store on the
+# same filesystem as node_modules, and copy instead of hardlink. Hardlinks into
+# node_modules/.pnpm/*_pacquet-stage_* race as ENOENT during postCreate.
+packageImportMethod: copy
+storeDir: .pnpm-store
