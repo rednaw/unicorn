@@ -16,8 +16,10 @@
 	"mounts": [
 		"source=${localEnv:HOME}/.ssh,target=/home/node/.ssh,type=bind,readonly,consistency=cached",
 		"source=${localEnv:HOME}/.gitconfig,target=/home/node/.gitconfig,type=bind,readonly,consistency=cached",
+		"source=${localEnv:HOME}/projects/rednaw/store/unicorn,target=/workspaces/unicorn/.cursor,type=bind,consistency=cached",
 		"source=${localEnv:HOME}/.cursor/skills,target=/home/node/.cursor/skills,type=bind,consistency=cached",
-		"source=${localEnv:HOME}/.cursor/skills,target=/workspaces/unicorn/.cursor/skills,type=bind,consistency=cached"
+		"source=${localEnv:HOME}/.cursor/skills,target=/workspaces/unicorn/.cursor/skills,type=bind,consistency=cached",
+		"source=${localEnv:HOME}/projects/rednaw/store/rednaw/history.md,target=/workspaces/unicorn/.cursor/history.md,type=bind,consistency=cached"
 	],
 	"postCreateCommand": "corepack prepare \"$(node -p \"require('./package.json').packageManager\")\" --activate && git lfs pull && rm -rf node_modules && pnpm install",
 	"forwardPorts": [5173],
