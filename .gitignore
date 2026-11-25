@@ -39,4 +39,4 @@ static/atelier/*.webm
 static/drawings/*-thumb.webp
 
 # Host skills bind-mounted in the Dev Container
-.cursor/skills/
+.cursor

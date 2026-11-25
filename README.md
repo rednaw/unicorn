@@ -123,7 +123,7 @@ which pair is active (portrait phones vs wider viewports).
 - At most **one** recording plays at a time; tap another audio piece to switch (crossfade).
 - Fresh starts hear **needle-drop** then the recording; **needle-lift** is at the end of the mixed file. Drop, overlap, and lift are baked at encode (`*.vinyl.m4a` / `.webm`). Stop mid-track has no lift. Resume uses the vinyl timeline.
 
-Agent-oriented constraints: `.cursor/rules/` (`project.mdc`, `atelier.mdc`, `audio.mdc`, `sw.mdc`).
+Agent-oriented constraints: local `.cursor/rules/` mount (`project.mdc`, `atelier.mdc`, `audio.mdc`, `sw.mdc`) — not committed in this repo.
 
 ## Architecture
 
